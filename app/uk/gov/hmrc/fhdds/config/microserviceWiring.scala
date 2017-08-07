@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.fhdds
+package uk.gov.hmrc.fhdds.config
 
 import uk.gov.hmrc.play.audit.http.config.LoadAuditingConfig
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
@@ -32,5 +32,5 @@ object MicroserviceAuditConnector extends AuditConnector with RunMode {
 }
 
 object MicroserviceAuthConnector extends AuthConnector with ServicesConfig {
-  override val authBaseUrl = baseUrl("auth")
+  override val authBaseUrl: String = baseUrl("auth")
 }

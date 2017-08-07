@@ -14,14 +14,15 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.fhdds.controllers
+package uk.gov.hmrc.fhdds
 
 import play.api.http.Status
 import play.api.test.FakeRequest
+import uk.gov.hmrc.fhdds.controllers.MicroserviceHelloWorld
 import uk.gov.hmrc.play.test.{UnitSpec, WithFakeApplication}
 
 
-class MicroserviceHelloWorldControllerSpec extends UnitSpec with WithFakeApplication{
+class MicroserviceHelloWorldControllerSpec extends UnitSpec with WithFakeApplication {
 
   val fakeRequest = FakeRequest("GET", "/")
 
