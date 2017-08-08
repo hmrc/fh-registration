@@ -14,18 +14,22 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.fhdds.controllers
+package uk.gov.hmrc.fhdds.connectors
 
-import play.api.mvc._
-import uk.gov.hmrc.play.microservice.controller.BaseController
+import com.google.common.base.Charsets
+import com.google.common.io.BaseEncoding
+import uk.gov.hmrc.play.config.ServicesConfig
 
-import scala.concurrent.Future
+object CompaniesHouseConfig extends ServicesConfig {
 
-object MicroserviceHelloWorld extends MicroserviceHelloWorld
+  val authHeader = s"Basic ${encodeAuthCode(getCompaniesHouseAuthCode)}"
+  val url = config("companies-house").getString("url").getOrElse("")
 
-trait MicroserviceHelloWorld extends BaseController {
+  def getCompaniesHouseAuthCode: String = {
+    config("companies-house").getString("api-key").getOrElse("")
+  }
 
-  def hello() = Action.async { implicit request =>
-    Future.successful(Ok("Hello world"))
+  def encodeAuthCode(code: String): String = {
+    BaseEncoding.base64().encode(code.getBytes(Charsets.UTF_8))
   }
 }

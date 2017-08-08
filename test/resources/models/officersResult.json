@@ -1,0 +1,57 @@
+{
+  "total_results": 2,
+  "resigned_count": 0,
+  "links": {
+    "self": "/company/01234567/officers"
+  },
+  "kind": "officer-list",
+  "start_index": 0,
+  "items": [
+    {
+      "links": {
+        "officer": {
+          "appointments": "/officers/aaaaaaaaalTmHAwruibMa00IxaI/appointments"
+        }
+      },
+      "name": "HELLO",
+      "appointed_on": "2017-06-06",
+      "officer_role": "secretary",
+      "address": {
+        "locality": "Gloucester",
+        "region": "Gloucestershire",
+        "postal_code": "GL00 0AA",
+        "premises": "Premise A",
+        "address_line_1": "Some Road"
+      }
+    },
+    {
+      "nationality": "British",
+      "links": {
+        "officer": {
+          "appointments": "/officers/999999999J2fnPjUpINMAFU_FM0/appointments"
+        }
+      },
+      "name": "HELLO, Kitty Thomas",
+      "appointed_on": "2017-06-06",
+      "resigned_on": "2017-06-07",
+      "date_of_birth": {
+        "year": 1960,
+        "month": 5
+      },
+      "officer_role": "director",
+      "address": {
+        "locality": "Gloucester",
+        "region": "Gloucestershire",
+        "postal_code": "GL00 0AA",
+        "premises": "Premise A",
+        "address_line_1": "Some Road"
+      },
+      "country_of_residence": "United Kingdom",
+      "occupation": "Director"
+    }
+  ],
+  "active_count": 2,
+  "inactive_count": 0,
+  "items_per_page": 35,
+  "etag": "bff99ca3c94110867b4ff92bb0aed62bbbd5256a"
+}
