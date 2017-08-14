@@ -20,7 +20,7 @@ import java.io.InputStream
 
 import org.joda.time.LocalDate
 import play.api.libs.json.Json
-import uk.gov.hmrc.fhdds.models.CompaniesHouse._
+import uk.gov.hmrc.fhdds.models.companyHouse.{CompanySearchResult, OfficersSearchResult}
 import uk.gov.hmrc.play.test.UnitSpec
 
 class CompaniesHouseSpec extends UnitSpec {

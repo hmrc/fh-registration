@@ -17,8 +17,8 @@
 package uk.gov.hmrc.fhdds.connectors
 
 import uk.gov.hmrc.fhdds.config.WSHttp
-import uk.gov.hmrc.fhdds.models.CompaniesHouse._
-import uk.gov.hmrc.fhdds.models.{Company, CompanySearchResult, Officer, OfficersSearchResult}
+import uk.gov.hmrc.fhdds.models.companyHouse.CompanySearchResult.companySearchResultReader
+import uk.gov.hmrc.fhdds.models.companyHouse.{Company, CompanySearchResult, Officer, OfficersSearchResult}
 import uk.gov.hmrc.play.http.HeaderCarrier
 import uk.gov.hmrc.play.http.logging.Authorization
 import uk.gov.hmrc.play.http.ws.WSHttp
