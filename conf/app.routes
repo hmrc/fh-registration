@@ -1,4 +1,4 @@
 # microservice specific routes
 
-GET        /hello-world             uk.gov.hmrc.fhdds.controllers.MicroserviceHelloWorld.hello
-GET         /companyDetails         uk.gov.hmrc.fhdds.controllers.FhddsController.companyDetails
+GET        /hello-world           uk.gov.hmrc.fhdds.controllers.MicroserviceHelloWorld.hello
+GET        /companyDetails        @uk.gov.hmrc.fhdds.controllers.FhddsController.companyDetails
