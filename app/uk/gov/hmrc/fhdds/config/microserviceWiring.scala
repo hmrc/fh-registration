@@ -33,5 +33,5 @@ object MicroserviceAuditConnector extends AuditConnector with RunMode {
 
 object MicroserviceAuthConnector extends PlayAuthConnector with ServicesConfig {
   val serviceUrl: String = baseUrl("auth")
-  lazy val http: WSHttp.type = WSHttp
+  lazy val http = WSHttp
 }
