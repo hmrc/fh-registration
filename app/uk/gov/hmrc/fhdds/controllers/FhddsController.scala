@@ -42,7 +42,6 @@ class FhddsController @Inject() extends BaseController with AuthorisedFunctions 
         FhddsPrepopulationDataProvider
           .getCompanyDetails(utr)
           .map { companyDetails ⇒
-            println(s"====$companyDetails")
             Ok(Json.toJson(companyDetails))
           }
   }
@@ -50,7 +49,8 @@ class FhddsController @Inject() extends BaseController with AuthorisedFunctions 
   def authorisedUserWithUtr(action: Request[AnyContent] ⇒ String ⇒ Future[Result]): Action[AnyContent] =
     Action.async { implicit request ⇒
       authorised(authProvider).retrieve(allEnrolments) {
-        findUtr(ConfidenceLevel.L200, _) match {
+        //TODO set to the right confidence Level, maybe L200
+        findUtr(ConfidenceLevel.L0, _) match {
           case Some(utr) ⇒ action(request)(utr)
           case None ⇒ Future successful Unauthorized("Unauthorized")
         }
