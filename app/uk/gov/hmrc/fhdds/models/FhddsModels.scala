@@ -16,7 +16,8 @@
 
 package uk.gov.hmrc.fhdds.models
 
-import org.joda.time.LocalDate
+import java.time.LocalDate
+
 import play.api.libs.json.Json
 
 object FhddsModels {

@@ -17,8 +17,8 @@
 package uk.gov.hmrc.fhdds.models
 
 import java.io.InputStream
+import java.time.LocalDate
 
-import org.joda.time.LocalDate
 import play.api.libs.json.Json
 import uk.gov.hmrc.fhdds.models.companyHouse.{CompanySearchResult, OfficersSearchResult}
 import uk.gov.hmrc.play.test.UnitSpec
@@ -46,7 +46,7 @@ class CompaniesHouseSpec extends UnitSpec {
       val result = Json.parse(stream).as[OfficersSearchResult]
 
       result.items.size shouldBe 2
-      result.items.map(_.resignedOn) shouldBe List(None, Some(new LocalDate(2017, 6, 7)))
+      result.items.map(_.resignedOn) shouldBe List(None, Some(LocalDate of (2017, 6, 7)))
       result.items.map(_.officerRole) shouldBe List("secretary", "director")
       result.items.map(_.lastName) shouldBe List("HELLO", "HELLO")
       result.items.map(_.firstName) shouldBe List("", "Kitty Thomas")

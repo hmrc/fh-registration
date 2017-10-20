@@ -19,7 +19,8 @@ object MicroServiceBuild extends Build with MicroService {
     "uk.gov.hmrc" %% "logback-json-logger" % "3.1.0",
     "uk.gov.hmrc" %% "domain" % "4.1.0",
     "uk.gov.hmrc" %% "play-auth" % "1.2.0",
-    "com.github.tototoshi" %% "play-json-naming" % "1.1.0"
+    "com.github.tototoshi" %% "play-json-naming" % "1.1.0",
+    "com.eclipsesource" %% "play-json-schema-validator" % "0.9.4"
 
   )
 

@@ -27,6 +27,7 @@ trait MicroService {
 
   lazy val microservice = Project(appName, file("."))
     .enablePlugins(Seq(play.sbt.PlayScala,SbtAutoBuildPlugin, SbtGitVersioning, SbtDistributablesPlugin) ++ plugins : _*)
+    .settings(unmanagedResourceDirectories in Compile += baseDirectory.value / "resources")
     .settings(PlayKeys.playDefaultPort := 1119)
     .settings(playSettings : _*)
     .settings(scalaSettings: _*)
@@ -48,6 +49,7 @@ trait MicroService {
       parallelExecution in IntegrationTest := false)
       .settings(resolvers ++= Seq(
         Resolver.bintrayRepo("hmrc", "releases"),
+        "emueller-bintray" at "http://dl.bintray.com/emueller/maven",
         Resolver.jcenterRepo
       ))
 }
