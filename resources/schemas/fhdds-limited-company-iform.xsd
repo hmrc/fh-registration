@@ -248,8 +248,8 @@
                         <xs:element minOccurs="0" name="hide_postcode" type="TextQuestion"/>
                         <xs:element minOccurs="0" name="hide_houseNameNumber" type="TextQuestion"/>
                         <xs:element minOccurs="0" name="radiobutton_results" type="RadioQuestion"/>
-                        <xs:element name="searchState" type="TextQuestion"/>
-                        <xs:element name="searchResults" type="TextQuestion"/>
+                        <xs:element minOccurs="0" name="searchState" type="TextQuestion"/>
+                        <xs:element minOccurs="0" name="searchResults" type="TextQuestion"/>
                         <xs:element minOccurs="0" name="blockAddressUKPlus" type="AddressUKPlusQuestion"/>
                       </xs:sequence>
                     </xs:complexType>
@@ -282,8 +282,8 @@
                                           <xs:element minOccurs="0" name="hide_postcode" type="TextQuestion"/>
                                           <xs:element minOccurs="0" name="hide_houseNameNumber" type="TextQuestion"/>
                                           <xs:element minOccurs="0" name="radiobutton_results" type="RadioQuestion"/>
-                                          <xs:element name="searchState" type="TextQuestion"/>
-                                          <xs:element name="searchResults" type="TextQuestion"/>
+                                          <xs:element minOccurs="0" name="searchState" type="TextQuestion"/>
+                                          <xs:element minOccurs="0" name="searchResults" type="TextQuestion"/>
                                           <xs:element minOccurs="0" name="blockAddressUKPlus" type="AddressUKPlusQuestion"/>
                                         </xs:sequence>
                                       </xs:complexType>
@@ -313,15 +313,15 @@
             <xs:element minOccurs="0" name="addressLookUpContactAddress">
               <xs:complexType>
                 <xs:sequence>
-                  <xs:element name="selectLocation" type="RadioQuestion"/>
+                  <xs:element minOccurs="0" name="selectLocation" type="RadioQuestion"/>
                   <xs:element minOccurs="0" name="ukPanel">
                     <xs:complexType>
                       <xs:sequence>
                         <xs:element minOccurs="0" name="hide_postcode" type="TextQuestion"/>
                         <xs:element minOccurs="0" name="hide_houseNameNumber" type="TextQuestion"/>
                         <xs:element minOccurs="0" name="radiobutton_results" type="RadioQuestion"/>
-                        <xs:element name="searchState" type="TextQuestion"/>
-                        <xs:element name="searchResults" type="TextQuestion"/>
+                        <xs:element minOccurs="0" name="searchState" type="TextQuestion"/>
+                        <xs:element minOccurs="0" name="searchResults" type="TextQuestion"/>
                         <xs:element minOccurs="0" name="blockAddressUKPlus" type="AddressUKPlusQuestion"/>
                       </xs:sequence>
                     </xs:complexType>

@@ -50,7 +50,5 @@ class JsonSchemaSpecs extends UnitSpec  {
 
   def getJsonInputStream(name: String) = {
     getClass.getResourceAsStream(s"/json/$name")
-
-
   }
 }
