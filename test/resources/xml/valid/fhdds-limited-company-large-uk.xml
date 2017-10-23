@@ -28,8 +28,8 @@
             <role>Director</role>
         </repeatingCompanyOfficial>
         <repeatingCompanyOfficial>
-            <firstName>FName2</firstName>
-            <lastName>LName2</lastName>
+            <firstName>FNameI</firstName>
+            <lastName>LNameI</lastName>
             <hasNino>Yes</hasNino>
             <panelNino>
                 <nino>AA123456B</nino>
@@ -77,8 +77,8 @@
         </panelOtherStorageSites>
     </otherStorageSites>
     <contactPerson>
-        <firstName>Fname3</firstName>
-        <lastName>LName3</lastName>
+        <firstName>FnameT</firstName>
+        <lastName>LNameT</lastName>
         <telephoneNumber>1313131231</telephoneNumber>
         <contactCorrectAddress>No</contactCorrectAddress>
         <addressLookUpContactAddress>

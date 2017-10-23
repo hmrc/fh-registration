@@ -33,6 +33,7 @@ class JsonSchemaSpecs extends UnitSpec  {
 
     validate("fhdds-limited-company-minimum-international")
     validate("fhdds-limited-company-minimum")
+    validate("fhdds-limited-company-large-uk")
 
     invalidate("has-other-storage-sites") 
     invalidate("intended-trading-start-date") 
