@@ -27,18 +27,27 @@ class JsonSchemaSpecs extends UnitSpec  {
   val validator = new SchemaValidator().validate(schema) _
 
   "Json Schema" should {
-    "accept valid json" in {
-      isValid("valid/valid-test-data.json") shouldBe true
-      isValid("valid/limited-company-example.json") shouldBe true
-      isValid("valid/limited-company-example-minimum.json") shouldBe true
-      isValid("valid/fhdds-limited-company-minimum-international.json") shouldBe true
-    }
+    validate("valid-test-data")
+    validate("limited-company-example")
+    validate("limited-company-example-minimum")
 
-    "not accept valid json" in {
-      isValid("invalid/has-other-storage-sites.json") shouldBe false
-      isValid("invalid/intended-trading-start-date.json") shouldBe false
-      isValid("invalid/new-fulfilment-business.json") shouldBe false
-      isValid("invalid/place-of-business-last-3-years.json") shouldBe false
+    validate("fhdds-limited-company-minimum-international")
+    validate("fhdds-limited-company-minimum")
+
+    invalidate("has-other-storage-sites") 
+    invalidate("intended-trading-start-date") 
+    invalidate("new-fulfilment-business") 
+    invalidate("place-of-business-last-3-years") 
+  }
+
+  def validate(name: String) = {
+    s"accept valid json $name" in {
+      isValid(s"valid/$name.json") shouldBe true
+    }
+  }
+  def invalidate(name: String) = {
+    s"reject invalid json $name" in {
+      isValid(s"invalid/$name.json") shouldBe false
     }
   }
 
