@@ -27,6 +27,7 @@ case class FhddsApplication (
   intendedStartTradingDate: Option[LocalDate],
   companyName: String,
   companyUTR: String,
+  hasTradingName: Boolean,
   tradingName: Option[String],
   hasVatRegistrationNumber: Boolean,
   vatRegistrationNumber: Option[String],

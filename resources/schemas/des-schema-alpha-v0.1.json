@@ -14,6 +14,9 @@
     "companyUTR": {
       "$ref": "#/definitions/utr"
     },
+    "hasTradingName": {
+      "type": "boolean"
+    },
     "tradingName": {
       "$ref": "#/definitions/tradingName"
     },
@@ -134,7 +137,7 @@
     },
     "dateString": {
       "type": "string",
-      "pattern": "^[0-3][0-9]/[0-1][0-9]/[[1-9][0-9][0-9][0-9]$",
+      "pattern": "^[0-3][0-9]/[0-1][0-9]/[1-9][0-9][0-9][0-9]$",
       "description": "DD/MM/YYYY"
     },
     "nino": {
@@ -545,6 +548,7 @@
   "additionalProperties": false,
   "required": [
     "isNewFulfilmentBusiness",
+    "hasTradingName",
     "companyName",
     "companyUTR",
     "companyRegistrationNumber",
@@ -584,6 +588,36 @@
           "not": {
             "required": [
               "intendedStartTradingDate"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "anyOf": [
+        {
+          "properties": {
+            "hasTradingName": {
+              "enum": [
+                true
+              ]
+            }
+          },
+          "required": [
+            "tradingName"
+          ]
+        },
+        {
+          "properties": {
+            "hasTradingName": {
+              "enum": [
+                false
+              ]
+            }
+          },
+          "not": {
+            "required": [
+              "tradingName"
             ]
           }
         }

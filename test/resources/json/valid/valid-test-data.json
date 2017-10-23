@@ -3,6 +3,7 @@
   "intendedStartTradingDate": "02/02/2018",
   "companyName": "FH Ltd",
   "companyUTR": "8123456789",
+  "hasTradingName": true,
   "tradingName": "ABC Company Ltd",
   "vatRegistrationNumber": "123456789",
   "companyRegistrationNumber": "123456789",
