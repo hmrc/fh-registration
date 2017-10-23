@@ -1,0 +1,59 @@
+{
+  "companyName": "cc",
+  "companyUTR": "2211111111",
+  "companyRegistrationNumber": "111111111",
+  "contactAddress": {
+    "line1": "",
+    "line2": "",
+    "line3": "",
+    "countryCode": "GB"
+  },
+  "isNewFulfilmentBusiness": false,
+  "hasTradingName": true,
+  "tradingName": "cc",
+  "hasVatRegistrationNumber": true,
+  "vatRegistrationNumber": "111111111",
+  "numberOfCustomersOutsideOfEU": "0",
+  "companyOfficials": [
+    {
+      "firstName": "ff",
+      "lastName": "ll",
+      "hasNino": false,
+      "role": "Director+Secretary"
+    }
+  ],
+  "registeredAddress": {
+    "line1": "bb",
+    "line2": "",
+    "line3": "",
+    "town": "bb",
+    "countryCode": "GB",
+    "postalCode": "AA11 1AA"
+  },
+  "principalTradingBusinessAddress": {
+    "line1": "bb",
+    "line2": "",
+    "line3": "",
+    "town": "bb",
+    "countryCode": "GB",
+    "postalCode": "AA11 1AA"
+  },
+  "isPrincipalPlaceOfBusinessForLastThreeYears": true,
+  "numberOfYearsAtPrincipalBusinessAddress": "3 to 5 years",
+  "hasOtherStorageSites": true,
+  "otherStorageSites": [
+    {
+      "line1": "bb",
+      "line2": "",
+      "line3": "",
+      "town": "bb",
+      "countryCode": "GB",
+      "postalCode": "AA11 1AA"
+    }
+  ],
+  "contactPerson": {
+    "firstName": "ff",
+    "lastName": "ll",
+    "telephoneNumber": "12313123"
+  }
+}

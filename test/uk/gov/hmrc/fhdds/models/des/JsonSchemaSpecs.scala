@@ -31,6 +31,7 @@ class JsonSchemaSpecs extends UnitSpec  {
       isValid("valid/valid-test-data.json") shouldBe true
       isValid("valid/limited-company-example.json") shouldBe true
       isValid("valid/limited-company-example-minimum.json") shouldBe true
+      isValid("valid/fhdds-limited-company-minimum-international.json") shouldBe true
     }
 
     "not accept valid json" in {
