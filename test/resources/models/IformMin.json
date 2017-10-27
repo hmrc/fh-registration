@@ -1,0 +1,46 @@
+{
+  "organizationType": "Limited Liability Partnership",
+  "companyRegistrationNumber": "AB123456",
+  "dateOfIncorporation": "10/10/2010",
+  "businessAddressForFHDDS": {
+    "currentAddress": {
+      "line1": "line1",
+      "line2": "line2",
+      "postalCode": "AA11 2BB",
+      "countryCode": "GB"
+    },
+    "commontDetails": {
+      "email":"yuan@yy.com"
+    },
+    "dateStartedTradingAsFulfilmentHouse": "10/10/2010",
+    "isOnlyPrinicipalPlaceOfBusinessInLastThreeYears": true
+  },
+  "contactDetail": {
+    "firstName": "first",
+    "lastName": "last",
+    "usingSameContactAddress": true,
+    "commonDetails": {
+      "email":"yuan@yy.com"
+    }
+  },
+  "additionalBusinessInformation": {
+    "fulfilmentOrdersType": "Any",
+    "numberOfCustomers": "1-10",
+    "premises":{
+      "numberOfPremises": "3",
+      "thirdPartyStorageUsed": true,
+      "goodsImportedOutEORI": true
+    },
+    "address":{
+      "line1": "line1",
+      "line2": "line2",
+      "postalCode": "AA11 2BB",
+      "countryCode": "GB"
+    }
+  },
+  "declaration":{
+    "personName": "yuan",
+    "personStatus": "director",
+    "isInformationAccurate": true
+  }
+}

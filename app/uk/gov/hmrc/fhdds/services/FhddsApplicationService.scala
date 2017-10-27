@@ -31,44 +31,44 @@ trait FhddsApplicationService {
   val businessInformationService: BusinessExtraDataService
   val dtf = DateTimeFormatter.ofPattern("dd/MM/yyyy")
 
-  def iformXmlToApplication(submissionRef: String, xmlString: String): Either[String, FhddsApplication] = {
-    for {
-      brd ← businessRegistrationDetails(submissionRef)
-      xml = XML loadString xmlString
-      data ← scalaxb.fromXMLEither[generated.Data](xml)
-    } yield {
+  def iformXmlToApplication(submissionRef: String, xmlString: String): Either[String, FhddsApplication] = {???
+//    for {
+//      brd ← businessRegistrationDetails(submissionRef)
+//      xml = XML loadString xmlString
+//      data ← scalaxb.fromXMLEither[generated.Data](xml)
+//    } yield {
 
-      FhddsApplication(
-        isNewFulfilmentBusiness = isYes(data.businessDetails.isNewFulfilmentBusiness),
-        intendedStartTradingDate =
-          data
-            .businessDetails
-            .panelIntendedStartTradingDate
-            .map(_.intendedStartTradingDate)
-            .map(LocalDate.parse(_, dtf)),
-        companyName = brd.businessName, //TODO
-        companyUTR = brd.utr.get,//TODO not get
-        hasTradingName = isYes(data.businessDetails.hasTradingName),
-        tradingName = data.businessDetails.panelTradingName.map(_.tradingName),
-        hasVatRegistrationNumber = isYes(data.businessDetails.hasVatRegistrationNumber),
-        vatRegistrationNumber = data.businessDetails.panelVatRegistrationNumber.map(_.vatRegistrationNumber),
-        companyRegistrationNumber = ???,
-        numberOfCustomersOutsideOfEU = data.businessActivities.numberOfCustomersOutsideOfEU,
-        isPrincipalPlaceOfBusinessForLastThreeYears = isYes(data.principalPlaceOfBusiness.isPrincipalPlaceOfBusinessForLastThreeYears),
-        numberOfYearsAtPrincipalBusinessAddress = data
-          .principalPlaceOfBusiness
-          .panelNumberOfYearsAtPrincipalBusinessAddress
-          .map(_.numberOfYearsAtPrincipalBusinessAddress),
-
-        registeredAddress = mkRegisteredAdderess(brd),
-        principalTradingBusinessAddress = mkRegisteredAdderess(brd),
-        previousPrincipalTradingBusinessAddresses = ???,
-        hasOtherStorageSites = isYes(data.otherStorageSites.hasOtherStorageSites),
-        otherStorageSites = ???,
-        contactAddress = ???,
-        companyOfficials = ???,
-        contactPerson = ???
-
+//      FhddsApplication(
+//        isNewFulfilmentBusiness = isYes(data.businessDetails.isNewFulfilmentBusiness),
+//        intendedStartTradingDate =
+//          data
+//            .businessDetails
+//            .panelIntendedStartTradingDate
+//            .map(_.intendedStartTradingDate)
+//            .map(LocalDate.parse(_, dtf)),
+//        companyName = brd.businessName, //TODO
+//        companyUTR = brd.utr.get,//TODO not get
+//        hasTradingName = isYes(data.businessDetails.hasTradingName),
+//        tradingName = data.businessDetails.panelTradingName.map(_.tradingName),
+//        hasVatRegistrationNumber = isYes(data.businessDetails.hasVatRegistrationNumber),
+//        vatRegistrationNumber = data.businessDetails.panelVatRegistrationNumber.map(_.vatRegistrationNumber),
+//        companyRegistrationNumber = ???,
+//        numberOfCustomersOutsideOfEU = data.businessActivities.numberOfCustomersOutsideOfEU,
+//        isPrincipalPlaceOfBusinessForLastThreeYears = isYes(data.principalPlaceOfBusiness.isPrincipalPlaceOfBusinessForLastThreeYears),
+//        numberOfYearsAtPrincipalBusinessAddress = data
+//          .principalPlaceOfBusiness
+//          .panelNumberOfYearsAtPrincipalBusinessAddress
+//          .map(_.numberOfYearsAtPrincipalBusinessAddress),
+//
+//        registeredAddress = mkRegisteredAdderess(brd),
+//        principalTradingBusinessAddress = mkRegisteredAdderess(brd),
+//        previousPrincipalTradingBusinessAddresses = ???,
+//        hasOtherStorageSites = isYes(data.otherStorageSites.hasOtherStorageSites),
+//        otherStorageSites = ???,
+//        contactAddress = ???,
+//        companyOfficials = ???,
+//        contactPerson = ???
+//
 //        previousPrincipalTradingBusinessAddress = getPreviousPrincipalTradingBusinessAddress(xml.principalPlaceOfBusiness),
 //        principalTradingBusinessAddress = registeredAddress,
 //        otherStorageSites = getOtherStorageSites(xml.otherBusinessPremises),
@@ -84,10 +84,10 @@ trait FhddsApplicationService {
 //        isPrincipalPlaceOfBusinessForLastThreeYears = ???,
 //        numberOfYearAtPrincipalBusinessAddress = ???,
 //        contactPerson = ???
-
-      )
-
-    }
+//
+//      )
+//
+//    }
   }
 
   def getPreviousPrincipalTradingBusinessAddress(ppob: PrincipalPlaceOfBusiness): Option[List[Address]] = {

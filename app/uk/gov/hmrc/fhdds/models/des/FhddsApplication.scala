@@ -23,7 +23,7 @@ import play.api.libs.json.{JsString, Json, Reads, Writes}
 
 
 case class FhddsApplication(organizationType: String = "Limited Liability Partnership",
-                            companyRegistrationNumber: String = "AB",
+                            companyRegistrationNumber: String = "AB123456",
                             dateOfIncorporation: LocalDate = LocalDate.now(),
                             businessAddressForFHDDS: BusinessAddressForFHDDS,
                             contactDetail: ContactDetail,
@@ -51,32 +51,14 @@ case class FhddsApplication(organizationType: String = "Limited Liability Partne
 //                            contactPerson: ContactPerson
                            )
 
-object FhddsApplication {
-  val dateTimeFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")
-  implicit val localDateReads = Reads.localDateReads("dd/MM/yyyy")
-  implicit val localDateWrites = Writes { date: LocalDate ⇒
-    JsString(date.format(dateTimeFormatter))
-  }
+case class Declaration(personName: String,
+                       personStatus:String,
+                       isInformationAccurate: Boolean)
 
-  implicit val format = Json.format[FhddsApplication]
-
+object Declaration {
+  implicit val format = Json.format[Declaration]
 }
 
-case class BusinessAddressForFHDDS(currentAddress: Address,
-                                   commontDetails: Email = Email(""),
-                                   dateStartedTradingAsFulfilmentHouse: LocalDate = LocalDate.now(),
-                                   isOnlyPrinicipalPlaceOfBusinessInLastThreeYears: Boolean)
-object BusinessAddressForFHDDS {
-  val dateTimeFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")
-  implicit val localDateReads = Reads.localDateReads("dd/MM/yyyy")
-  implicit val localDateWrites = Writes { date: LocalDate ⇒
-    JsString(date.format(dateTimeFormatter))
-  }
-
-
-  implicit val format = Json.format[BusinessAddressForFHDDS]
-
-}
 
 case class Email(email: String)
 
@@ -93,18 +75,24 @@ object ContactDetail {
   implicit val format = Json.format[ContactDetail]
 }
 
-case class LimitedLiabilityOrCorporateBodyWithGroup(creatingFHDDSGroup: Boolean,
-                                                    confirmationByRepresentative: Boolean,
-                                                    GroupMemberDetail: GroupMemberDetail)
+//case class GroupMemberDetail(numberOfMembersInGroup: String, memberDetails: List[MemberDetails])
+//
+//object GroupMemberDetail {
+//  implicit val format = Json.format[GroupMemberDetail]
+//}
 
-object LimitedLiabilityOrCorporateBodyWithGroup {
-  implicit val format = Json.format[LimitedLiabilityOrCorporateBodyWithGroup]
-}
+//case class LimitedLiabilityOrCorporateBodyWithGroup(creatingFHDDSGroup: Boolean,
+//                                                    confirmationByRepresentative: Boolean,
+//                                                    GroupMemberDetail: GroupMemberDetail)
+//
+//object LimitedLiabilityOrCorporateBodyWithGroup {
+//  implicit val format = Json.format[LimitedLiabilityOrCorporateBodyWithGroup]
+//}
 
-case class GroupMemberDetail(numberOfMembersInGroup: String, memberDetails: List[MemberDetails])
+case class Name(companyName: String, tradingName: String)
 
-object GroupMemberDetail {
-  implicit val format = Json.format[GroupMemberDetail]
+object Name {
+  implicit val format = Json.format[Name]
 }
 
 case class MemberDetails(name: Name, tradingName: String)
@@ -113,11 +101,14 @@ object MemberDetails {
   implicit val format = Json.format[MemberDetails]
 }
 
-case class Name(companyName: String, tradingName: String)
+case class Premises(numberOfPremises: String,
+                    thirdPartyStorageUsed:Boolean,
+                    goodsImportedOutEORI: Boolean)
 
-object Name {
-  implicit val format = Json.format[Name]
+object Premises {
+  implicit val format = Json.format[Premises]
 }
+
 
 case class AdditionalBusinessInformation(fulfilmentOrdersType: String,
                                          numberOfCustomers:String,
@@ -127,14 +118,29 @@ object AdditionalBusinessInformation {
   implicit val format = Json.format[AdditionalBusinessInformation]
 }
 
-case class Premises(numberOfPremises: String, thirdPartyStorageUsed:Boolean, goodsImportedOutEORI: Boolean)
+case class BusinessAddressForFHDDS(currentAddress: Address,
+                                   commontDetails: Email = Email(""),
+                                   dateStartedTradingAsFulfilmentHouse: LocalDate = LocalDate.now(),
+                                   isOnlyPrinicipalPlaceOfBusinessInLastThreeYears: Boolean)
+object BusinessAddressForFHDDS {
+  val dateTimeFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")
+  implicit val localDateReads = Reads.localDateReads("dd/MM/yyyy")
+  implicit val localDateWrites = Writes { date: LocalDate ⇒
+    JsString(date.format(dateTimeFormatter))
+  }
 
-object Premises {
-  implicit val format = Json.format[Premises]
+  implicit val format = Json.format[BusinessAddressForFHDDS]
+
 }
 
-case class Declaration(personName: String, personStatus:String, isInformationAccurate: Boolean)
 
-object Declaration {
-  implicit val format = Json.format[Declaration]
+object FhddsApplication {
+  val dateTimeFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")
+  implicit val localDateReads = Reads.localDateReads("dd/MM/yyyy")
+  implicit val localDateWrites = Writes { date: LocalDate ⇒
+    JsString(date.format(dateTimeFormatter))
+  }
+
+  implicit val format = Json.format[FhddsApplication]
+
 }
