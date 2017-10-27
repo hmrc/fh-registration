@@ -1,6 +1,23 @@
+/*
+ * Copyright 2017 HM Revenue & Customs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package uk.gov.hmrc.fhdds.repositories
 
 import play.api.libs.json.Json
+import reactivemongo.api.indexes.{Index, IndexType}
 import reactivemongo.bson.{BSONDocument, BSONObjectID}
 import reactivemongo.play.json._
 import uk.gov.hmrc.fhdds.models.businessregistration.BusinessRegistrationDetails
@@ -24,9 +41,7 @@ class SubmissionExtraDataRepository(implicit mc: MongoConnector)
     atomicUpsert(
       finder = findSubmissionDataBSON(userId, formTypeRef),
       set(BSONDocument("businessRegistrationDetails" → Json.toJson(brd))))
-      .map { result ⇒
-        result.writeResult.
-      }
+      .map { result ⇒ result.updateType.savedValue.businessRegistrationDetails}
   }
 
   def updateFormId(userId: String, formTypeRef: String, formId: String): Future[Boolean] = {
@@ -53,8 +68,13 @@ class SubmissionExtraDataRepository(implicit mc: MongoConnector)
   }
 
   override def isInsertion(newRecordId: BSONObjectID, oldRecord: SubmissionExtraData): Boolean = oldRecord.id match {
-    case id => newRecordId.equals(id)
-    case _ => false
+    case null ⇒ false
+    case id   ⇒ newRecordId.equals(id)
   }
 
+  override def ensureIndexes(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Seq[scala.Boolean]] = {
+    Future.sequence(Seq(
+      collection.indexesManager.ensure(Index(Seq("userId" -> IndexType.Ascending), name = Some("userIdIdx"), unique = false, sparse = true)),
+      collection.indexesManager.ensure(Index(Seq("formId" -> IndexType.Ascending), name = Some("formIdIdx"), unique = false, sparse = true))))
+  }
 }
