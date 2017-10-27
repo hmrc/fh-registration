@@ -228,7 +228,7 @@
           </xs:sequence>
         </xs:complexType>
       </xs:element>
-      <xs:element minOccurs="0" name="principalPlaceOfBusiness">
+      <xs:element name="principalPlaceOfBusiness">
         <xs:complexType>
           <xs:sequence>
             <xs:element name="isPrincipalPlaceOfBusinessForLastThreeYears" type="RadioQuestion"/>
