@@ -27,18 +27,7 @@ class JsonSchemaSpecs extends UnitSpec  {
   val validator = new SchemaValidator().validate(schema) _
 
   "Json Schema" should {
-    validate("valid-test-data")
-    validate("limited-company-example")
-    validate("limited-company-example-minimum")
-
-    validate("fhdds-limited-company-minimum-international")
-    validate("fhdds-limited-company-minimum")
-    validate("fhdds-limited-company-large-uk")
-
-    invalidate("has-other-storage-sites") 
-    invalidate("intended-trading-start-date") 
-    invalidate("new-fulfilment-business") 
-    invalidate("place-of-business-last-3-years") 
+    validate("IformMin")
   }
 
   def validate(name: String) = {

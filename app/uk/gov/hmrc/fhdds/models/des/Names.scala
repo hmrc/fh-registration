@@ -14,22 +14,14 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.fhdds.models.iform
-
-import java.io.InputStream
+package uk.gov.hmrc.fhdds.models.des
 
 import play.api.libs.json.Json
-import uk.gov.hmrc.fhdds.models.des.SubScriptionCreate
-import uk.gov.hmrc.play.test.UnitSpec
 
-class IformApplicationSpec extends UnitSpec {
+case class Names(firstName: String = "firstName",
+                 middleName: Option[String],
+                 lastName: String = "lastName")
 
-  "Parse Json" should {
-    "read a companies house result" in {
-      val stream: InputStream = getClass.getResourceAsStream("/json/valid/IformMin.json")
-      val result = Json.parse(stream).as[SubScriptionCreate]
-      result.subScriptionCreate.organizationType shouldBe "Limited Liability Partnership"
-    }
-  }
-
+object Names {
+  implicit val format = Json.format[Names]
 }
