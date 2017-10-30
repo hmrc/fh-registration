@@ -16,7 +16,10 @@
 
 package uk.gov.hmrc.fhdds.repositories
 
+import javax.inject.Inject
+
 import play.api.libs.json.Json
+import play.modules.reactivemongo.ReactiveMongoComponent
 import reactivemongo.api.indexes.{Index, IndexType}
 import reactivemongo.bson.{BSONDocument, BSONObjectID}
 import reactivemongo.play.json._
@@ -27,10 +30,11 @@ import uk.gov.hmrc.mongo.{AtomicUpdate, MongoConnector, ReactiveRepository}
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class SubmissionExtraDataRepository(implicit mc: MongoConnector)
+
+class SubmissionExtraDataRepository @Inject() (implicit rmc: ReactiveMongoComponent)
   extends ReactiveRepository[SubmissionExtraData, BSONObjectID](
     "submission-extra-data",
-    mc.db,
+    rmc.mongoConnector.db,
     SubmissionExtraData.formats,
     ReactiveMongoFormats.objectIdFormats)
 

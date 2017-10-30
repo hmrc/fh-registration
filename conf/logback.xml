@@ -49,6 +49,7 @@
     <logger name="uk.gov" level="INFO"/>
 
     <logger name="application" level="DEBUG"/>
+    <logger name="org.asynchttpclient.netty.channel.DefaultChannelPool" level="INFO"/>
 
     <logger name="reactivemongo" level="INFO"/>
 

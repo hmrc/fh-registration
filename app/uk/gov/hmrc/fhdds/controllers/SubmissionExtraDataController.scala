@@ -38,13 +38,15 @@ class SubmissionExtraDataController @Inject()(
         .recover(onRepositoryError)
   }
 
-  def updateFormId(userId: String, formTypeRef: String, formId: String) = Action.async {
-    submissionDataRepository
-      .updateFormId(userId, formTypeRef, formId)
-      .map(found ⇒
-        if (found) Ok
-        else NotFound)
-      .recover(onRepositoryError)
+  def updateFormId(userId: String, formTypeRef: String) = Action.async(parse.json[String]) {
+    request ⇒
+      val formId = request.body
+      submissionDataRepository
+        .updateFormId(userId, formTypeRef, formId)
+        .map(found ⇒
+          if (found) Ok(Json.toJson("Updated"))
+          else NotFound)
+        .recover(onRepositoryError)
   }
 
   val onRepositoryError: PartialFunction[Throwable, Result] = {

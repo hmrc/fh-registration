@@ -22,6 +22,7 @@ object MicroServiceBuild extends Build with MicroService {
     "com.eclipsesource" %% "play-json-schema-validator" % "0.8.9",
     "org.scala-lang.modules" %% "scala-xml" % "1.0.6",
     "org.typelevel" %% "cats" % "0.9.0",
+    "uk.gov.hmrc" %% "play-reactivemongo" % "6.0.0",
     "uk.gov.hmrc" %% "simple-reactivemongo" % "6.0.0"
 
   )
