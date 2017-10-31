@@ -18,7 +18,7 @@ package uk.gov.hmrc.fhdds.models.des
 
 import play.api.libs.json.Json
 
-case class FhddsApplication(organizationType: String = "Limited Liability Partnership",
+case class FhddsApplication(organizationType: String = "Corporate Body",
                             businessDetail: BusinessDetail,
                             businessAddressForFHDDS: BusinessAddressForFHDDS,
                             contactDetail: ContactDetail,

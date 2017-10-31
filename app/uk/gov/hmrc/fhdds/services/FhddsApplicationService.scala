@@ -19,80 +19,69 @@ package uk.gov.hmrc.fhdds.services
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
+import generated.{AddressUKPlusQuestion, Data, PanelNino, PrincipalPlaceOfBusiness, RepeatingCompanyOfficial}
 import uk.gov.hmrc.fhdds.models.businessregistration.BusinessRegistrationDetails
 import uk.gov.hmrc.fhdds.models.des._
-import cats.implicits._
-import generated.{AddressUKPlusQuestion, PanelNino, PrincipalPlaceOfBusiness, RepeatingCompanyOfficial}
-import play.api.libs.json.JsString
-import uk.gov.hmrc.fhdds.models.des.IncorporationDetails.dateTimeFormatter
-
-import scala.xml.XML
 
 trait FhddsApplicationService {
+
+  val DefaultOrganizationType = "Corporate Body"
+  val DefaultCompanyRegistrationNumber = "AB123456"
+  val DefaultIncorporationDate = LocalDate.of(2008, 1, 1)
 
   val businessInformationService: BusinessExtraDataService
   val dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd")
 
-  def iformXmlToApplication(xml: generated.Data, businessRegistrationDetails: BusinessRegistrationDetails): SubScriptionCreate = {
+  val DefaultContactEmail = "email@email.com"
 
-    val businessAddress = businessRegistrationDetails.businessAddress
-    val agentReferenceNumber = businessRegistrationDetails.agentReferenceNumber
-    val businessName = businessRegistrationDetails.businessName
-    val businessType = businessRegistrationDetails.businessType
-    val sapNumber = businessRegistrationDetails.sapNumber
-    val safeId = businessRegistrationDetails.safeId
-    val isAGroup = businessRegistrationDetails.isAGroup
-    val directMatch = businessRegistrationDetails.directMatch
-    val firstName = businessRegistrationDetails.firstName
-    val lastName = businessRegistrationDetails.lastName
-    val utr = businessRegistrationDetails.utr
-    val identification = businessRegistrationDetails.identification
-    val isBusinessDetailsEditable = businessRegistrationDetails.isBusinessDetailsEditable
-
-
-    val xmlBusinessDetails = xml.businessDetails
-
-    val IntendedStartTradingDate = xmlBusinessDetails.panelIntendedStartTradingDate
-    val hasTradingName = xmlBusinessDetails.hasTradingName
-    val hasVatRegistrationNumber = xmlBusinessDetails.hasVatRegistrationNumber
-    val isNewFulfilmentBusiness = xmlBusinessDetails.isNewFulfilmentBusiness
-    val vatRegistaionNumber = xmlBusinessDetails.panelVatRegistrationNumber
-    val tradingName = xmlBusinessDetails.panelTradingName
-
-
-    val businessActivities = xml.businessActivities
-
-    val numberOfCustomersOutsideOfEU = businessActivities.numberOfCustomersOutsideOfEU
-
-
-    val companyOfficials: Seq[RepeatingCompanyOfficial] = xml.companyOfficials.repeatingCompanyOfficial
-    val companyOfficialsDetails = companyOfficials.map(
-      companyOfficial ⇒ CompanyOfficials(role = companyOfficial.role,
-        name = Names(firstName = companyOfficial.firstName,
-          middleName = None,
-          lastName = companyOfficial.lastName),
-        identification = Identification(nino = Some(companyOfficial.panelNino.getOrElse(PanelNino("")).nino))
-      )
+  def iformXmlToApplication(xml: generated.Data, brd: BusinessRegistrationDetails): SubScriptionCreate = {
+    SubScriptionCreate(
+      FhddsApplication(
+        organizationType = brd.businessType.getOrElse(DefaultOrganizationType),
+        businessDetail = businessDetails(xml, brd),
+        businessAddressForFHDDS = businessAddressForFHDDS(xml, brd),
+        contactDetail = contactDetail(xml),
+        additionalBusinessInformation = additionalBusinessInformation(brd, xml),
+        declaration = declaration(xml),
+        FHbusinessDetail = FHbusinessDetail(isNewFulfilmentBusiness = isYes(xml.businessDetails.isNewFulfilmentBusiness)))
     )
+  }
 
-    val contactPerson = xml.contactPerson
+  private def declaration(xml: Data) = {
+    val firstName = ???
+    val lastName = ???
+    Declaration(personName = s"$firstName $lastName",
+      personStatus = "",
+      personStatusOther = Some(""),
+      isInformationAccurate = true)
+  }
 
-    val contactPersonAddress = contactPerson.addressLookUpContactAddress.flatMap(
-      address ⇒ address.blockAddressInternationalPlus.map(
-        blockAddressInternationalPlus ⇒ Address(
-          blockAddressInternationalPlus.line1,
-          Some(blockAddressInternationalPlus.line2),
-          blockAddressInternationalPlus.line3,
-          Some(""),
-          "",
-          blockAddressInternationalPlus.country_code.getOrElse("GB")
+  private def additionalBusinessInformation(brd: BusinessRegistrationDetails, xml: Data) = {
+    val numberOfCustomersOutsideOfEU = xml.businessActivities.numberOfCustomersOutsideOfEU
+
+
+    val officials = companyOfficialsDetails(xml)
+
+    val otherStorageSitesDetail = otherStorageSitesDetails(xml)
+
+    AdditionalBusinessInformationwithType(
+      partnerCorporateBody = Some(
+        PartnerCorporateBody(
+          numberOfOtherOfficials = officials.size,
+          companyOfficials = Some(officials)
         )
+      ),
+      allOtherInformation = AllOtherInformation(
+        fulfilmentOrdersType = OnLineOnly(),
+        numberOfCustomers = numberOfCustomersOutsideOfEU,
+        premises = Premises(numberOfpremises = otherStorageSitesDetail.getOrElse(List(principalBusinessAddress(brd))).length.toString,
+          address = otherStorageSitesDetail.getOrElse(List(principalBusinessAddress(brd))))
       )
     )
+  }
 
-    val otherStorageSites = xml.otherStorageSites
-
-    val otherStorageSitesDetail = otherStorageSites.panelOtherStorageSites.map(
+  private def otherStorageSitesDetails(xml: Data) = {
+    xml.otherStorageSites.panelOtherStorageSites.map(
       otherStorageSites ⇒
         otherStorageSites.repeatingSectionOtherTradingPremises.flatMap(
           blockAddressUKPlus ⇒
@@ -112,91 +101,96 @@ trait FhddsApplicationService {
             )
         ).toList
     )
+  }
 
-
-    val principalPlaceOfBusinessDetails = xml.principalPlaceOfBusiness
-
-    val principalPlaceOfBusinessDetailsAddress =
-      principalPlaceOfBusinessDetails.panelPreviousPrincipalTradingBusinessAddresses.map(
-        previousPrincipalTradingBusinessAddresses ⇒
-          previousPrincipalTradingBusinessAddresses.repeatingPreviousPrincipalTradingBusinessAddress.blockAddressUKPlus.map(
-            blockAddressUKPlus ⇒ Address(
-              blockAddressUKPlus.line1,
-              blockAddressUKPlus.line2,
-              blockAddressUKPlus.line3,
-              blockAddressUKPlus.town,
-              blockAddressUKPlus.postcode,
-              "GB"
-            )
-          ).toList
+  def companyOfficialsDetails(xml: generated.Data) = {
+    val companyOfficials: Seq[RepeatingCompanyOfficial] = xml.companyOfficials.repeatingCompanyOfficial
+    companyOfficials.toList.map(
+      companyOfficial ⇒ CompanyOfficials(role = companyOfficial.role,
+        name = Names(firstName = companyOfficial.firstName,
+          middleName = None,
+          lastName = companyOfficial.lastName),
+        identification = Identification(nino = Some(companyOfficial.panelNino.getOrElse(PanelNino("")).nino))
       )
-
-    val businessAddressForFHDDS = Address(businessAddress.line1,
-      Some(businessAddress.line2),
-      businessAddress.line3,
-      businessAddress.line4,
-      businessAddress.postcode.getOrElse(""),
-      businessAddress.country)
-
-    SubScriptionCreate(
-      FhddsApplication(
-        organizationType = "Limited Liability Partnership",
-        businessDetail = BusinessDetail(
-          LimitedLiabilityPartnershipCorporateBody(
-            IncorporationDetails(
-              companyRegistrationNumber = "AB123456",
-              dateOfIncorporation = LocalDate.now()
-            )
-          )
-        ),
-        businessAddressForFHDDS = BusinessAddressForFHDDS(
-          currentAddress = businessAddressForFHDDS,
-          commonDetails = CommonDetails(
-            telephone = Some(contactPerson.telephoneNumber),
-            mobileNumber = None,
-            email = "email@email.com"
-          ),
-          dateStartedTradingAsFulfilmentHouse = LocalDate.now(),
-          isOnlyPrinicipalPlaceOfBusinessInLastThreeYears = principalPlaceOfBusinessDetails.isPrincipalPlaceOfBusinessForLastThreeYears.contains("true"),
-          previousOperationalAddress = principalPlaceOfBusinessDetailsAddress
-        ),
-        contactDetail = ContactDetail(
-          title = None,
-          names = Names(
-            firstName = contactPerson.firstName,
-            lastName = contactPerson.lastName
-          ),
-          usingSameContactAddress = true,
-          address = contactPersonAddress,
-          commonDetails = CommonDetails(
-            telephone = Some(contactPerson.telephoneNumber),
-            mobileNumber = None,
-            email = "email@email.com"
-          ),
-          roleInOrganization = Some(RoleInOrganization())
-        ),
-        additionalBusinessInformation = AdditionalBusinessInformationwithType(
-          partnerCorporateBody = Some(
-            PartnerCorporateBody(
-              numberOfOtherOfficials = companyOfficials.size,
-              companyOfficials = Some(companyOfficialsDetails.toList)
-            )
-          ),
-          allOtherInformation = AllOtherInformation(
-            fulfilmentOrdersType = OnLineOnly(),
-            numberOfCustomers = numberOfCustomersOutsideOfEU,
-            premises = Premises(numberOfpremises = otherStorageSitesDetail.getOrElse(List(businessAddressForFHDDS)).length.toString,
-              address = otherStorageSitesDetail.getOrElse(List(businessAddressForFHDDS)))
-          )
-        ),
-        declaration = Declaration(personName = s"$firstName $lastName",
-          personStatus = "",
-          personStatusOther = Some(""),
-          isInformationAccurate = true),
-        FHbusinessDetail = FHbusinessDetail(isNewFulfilmentBusiness = isNewFulfilmentBusiness.toBoolean))
     )
   }
 
+  private def contactDetail(xml: Data) = {
+    val contactPersonAddress = xml.contactPerson.addressLookUpContactAddress.flatMap(
+      address ⇒ address.blockAddressInternationalPlus.map(
+        blockAddressInternationalPlus ⇒ Address(
+          blockAddressInternationalPlus.line1,
+          Some(blockAddressInternationalPlus.line2),
+          blockAddressInternationalPlus.line3,
+          Some(""),
+          "",
+          blockAddressInternationalPlus.country_code.getOrElse("GB"))))
+
+    ContactDetail(
+      title = None,
+      names = Names(
+        firstName = xml.contactPerson.firstName,
+        lastName = xml.contactPerson.lastName),
+      usingSameContactAddress = true,
+      address = contactPersonAddress,
+      commonDetails = CommonDetails(
+        telephone = Some(xml.contactPerson.telephoneNumber),
+        mobileNumber = None,
+        email = DefaultContactEmail),
+      roleInOrganization = Some(RoleInOrganization())
+    )
+  }
+
+  def businessDetails(xml: generated.Data, brd: BusinessRegistrationDetails) = {
+    BusinessDetail(
+      LimitedLiabilityPartnershipCorporateBody(
+        IncorporationDetails(
+          companyRegistrationNumber = DefaultCompanyRegistrationNumber,
+          dateOfIncorporation = DefaultIncorporationDate
+        )
+      )
+    )
+  }
+
+  def businessAddressForFHDDS(xml: generated.Data, brd: BusinessRegistrationDetails) = {
+    BusinessAddressForFHDDS(
+      currentAddress = principalBusinessAddress(brd),
+      commonDetails = CommonDetails(
+        telephone = Some(xml.contactPerson.telephoneNumber),
+        mobileNumber = None,
+        email = DefaultContactEmail
+      ),
+      dateStartedTradingAsFulfilmentHouse = LocalDate.now(),
+      isOnlyPrinicipalPlaceOfBusinessInLastThreeYears =
+        isYes(xml.principalPlaceOfBusiness.isPrincipalPlaceOfBusinessForLastThreeYears),
+      previousOperationalAddress = previousPrincipalPlaceOfBusinessAddresses(xml)
+    )
+  }
+
+  private def previousPrincipalPlaceOfBusinessAddresses(xml: Data) = {
+    xml.principalPlaceOfBusiness.panelPreviousPrincipalTradingBusinessAddresses.map(
+      previousPrincipalTradingBusinessAddresses ⇒
+        previousPrincipalTradingBusinessAddresses.repeatingPreviousPrincipalTradingBusinessAddress.blockAddressUKPlus.map(
+          blockAddressUKPlus ⇒ Address(
+            blockAddressUKPlus.line1,
+            blockAddressUKPlus.line2,
+            blockAddressUKPlus.line3,
+            blockAddressUKPlus.town,
+            blockAddressUKPlus.postcode,
+            "GB"
+          )
+        ).toList
+    )
+  }
+
+  private def principalBusinessAddress(brd: BusinessRegistrationDetails) = {
+    Address(brd.businessAddress.line1,
+      Some(brd.businessAddress.line2),
+      brd.businessAddress.line3,
+      brd.businessAddress.line4,
+      brd.businessAddress.postcode.getOrElse(""),
+      brd.businessAddress.country)
+  }
 
   def getPreviousPrincipalTradingBusinessAddress(ppob: PrincipalPlaceOfBusiness): Option[List[Address]] = {
     //    if (isYes(ppob.isPrincipalPlaceOfBusinessForLastThreeYears))
