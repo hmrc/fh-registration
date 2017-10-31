@@ -34,5 +34,5 @@ case class SubmissionExtraData(
 object SubmissionExtraData {
   import uk.gov.hmrc.mongo.json.ReactiveMongoFormats.{objectIdFormats, mongoEntity}
 
-  val formats = mongoEntity (Json.format[SubmissionExtraData])
+  implicit val formats = mongoEntity (Json.format[SubmissionExtraData])
 }

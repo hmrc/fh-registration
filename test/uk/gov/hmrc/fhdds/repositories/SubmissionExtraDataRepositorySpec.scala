@@ -18,7 +18,7 @@ package uk.gov.hmrc.fhdds.repositories
 
 import org.scalatest.concurrent.Eventually
 import org.scalatest.{BeforeAndAfterEach, Matchers, WordSpec}
-import reactivemongo.core.errors.DatabaseException
+import play.modules.reactivemongo.ReactiveMongoComponent
 import uk.gov.hmrc.fhdds.models.businessregistration.{Address, BusinessRegistrationDetails}
 import uk.gov.hmrc.mongo.{Awaiting, CurrentTime, MongoSpecSupport}
 import uk.gov.hmrc.play.test.LogCapturing
@@ -33,6 +33,10 @@ class SubmissionExtraDataRepositorySpec
     with Eventually
     with LogCapturing {
 
+  implicit val reactiveMongoComponent = new ReactiveMongoComponent {
+    override def mongoConnector = mongoConnectorForTest
+  }
+
   val repository = new SubmissionExtraDataRepository()
   val anUserId = "userid-1"
   val unknownUserId = "userid-u"
@@ -42,36 +46,26 @@ class SubmissionExtraDataRepositorySpec
   val aFormId = "111-333-444"
 
   override protected def beforeEach(): Unit = {
-    await(repository.removeAll())
-  }
-
-  "Saving an object" should {
-    "not upsert" in {
-
-      await(repository.drop)
-      await(repository.ensureIndexes)
-
-      val originalSave = mkExtraData(aCompanyName)
-      await(repository.insert(originalSave))
-
-      val notUpsert = originalSave
-        .copy(businessRegistrationDetails = originalSave.businessRegistrationDetails
-          .copy("should-not-upsert"))
-      a [DatabaseException] should be thrownBy await(repository.insert(notUpsert))
-    }
+    await(repository.drop)
+    await(repository.ensureIndexes)
   }
 
   "Updating a bpr" should {
-    "update with empty bpr" in {
-      repository.saveBusinessRegistrationDetails(anUserId, formTypeRef, mkBusinessRegistrationDetails(aCompanyName))
+    "should write the value to mongo" in {
+      val brd = mkBusinessRegistrationDetails(aCompanyName)
+      repository.saveBusinessRegistrationDetails(anUserId, formTypeRef, brd)
+      val updated = await(repository.findSubmissionExtraData(anUserId, formTypeRef))
+      updated.map(_.businessRegistrationDetails) shouldEqual Some(brd)
     }
   }
 
   "Updating formId" should {
-    "return true" in {
+    "save to mongo" in {
       await(repository.saveBusinessRegistrationDetails(anUserId, formTypeRef, mkBusinessRegistrationDetails(aCompanyName)))
       val result = repository.updateFormId(anUserId, formTypeRef, aFormId)
       await(result) shouldBe true
+      val updated = await(repository.findSubmissionExtraData(anUserId, formTypeRef))
+      updated.flatMap(_.formId) shouldEqual Some(aFormId)
     }
 
     "return false" in {
@@ -113,7 +107,7 @@ class SubmissionExtraDataRepositorySpec
       lastName = None,
       utr = None,
       identification = None,
-      false
+      isBusinessDetailsEditable = false
     )
   }
 

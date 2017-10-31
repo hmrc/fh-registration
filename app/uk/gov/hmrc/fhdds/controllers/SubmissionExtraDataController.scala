@@ -17,13 +17,14 @@
 package uk.gov.hmrc.fhdds.controllers
 
 import javax.inject.Inject
-import scala.concurrent.ExecutionContext.Implicits.global
 
 import play.api.libs.json.Json
 import play.api.mvc.{Action, Result}
 import uk.gov.hmrc.fhdds.models.businessregistration.BusinessRegistrationDetails
 import uk.gov.hmrc.fhdds.repositories.SubmissionExtraDataRepository
 import uk.gov.hmrc.play.microservice.controller.BaseController
+import uk.gov.hmrc.fhdds.repositories.SubmissionExtraData.formats
+import scala.concurrent.ExecutionContext.Implicits.global
 
 class SubmissionExtraDataController @Inject()(
   val submissionDataRepository: SubmissionExtraDataRepository)
@@ -47,6 +48,15 @@ class SubmissionExtraDataController @Inject()(
           if (found) Ok(Json.toJson("Updated"))
           else NotFound)
         .recover(onRepositoryError)
+  }
+
+  def getBusinessRegistrationDetails(userId: String, formTypeRef: String) = Action.async {
+    submissionDataRepository
+      .findSubmissionExtraData(userId, formTypeRef)
+      .map {
+        case Some(data) ⇒ Ok(Json.toJson(data.businessRegistrationDetails))
+        case None       ⇒ NotFound
+      }
   }
 
   val onRepositoryError: PartialFunction[Throwable, Result] = {

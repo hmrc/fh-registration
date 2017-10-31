@@ -55,19 +55,19 @@ class SubmissionExtraDataRepository @Inject() (implicit rmc: ReactiveMongoCompon
       .map(_.isDefined)
   }
 
-  def findSubmissionDataBSON(userId: String, formTypeRef: String): BSONDocument = {
+  private def findSubmissionDataBSON(userId: String, formTypeRef: String): BSONDocument = {
     and(BSONDocument("encUserId" -> userId), BSONDocument("formTypeRef"-> formTypeRef))
   }
 
-  def findSubmissionDataBSON(submissionRef: String): BSONDocument = {
+  private def findSubmissionDataBSON(submissionRef: String): BSONDocument = {
     BSONDocument("submissionRef" -> submissionRef)
   }
 
-  def findBusinessRegistrationDetails(submissionRef: String) = {
+  def findSubmissionExtraData(submissionRef: String) = {
     collection.find(findSubmissionDataBSON(submissionRef)).one[SubmissionExtraData]
   }
 
-  def findBusinessRegistrationDetails(userId: String, formTypeRef: String) = {
+  def findSubmissionExtraData(userId: String, formTypeRef: String) = {
     collection.find(findSubmissionDataBSON(userId, formTypeRef)).one[SubmissionExtraData]
   }
 
