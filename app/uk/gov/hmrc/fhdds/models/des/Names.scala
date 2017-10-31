@@ -19,7 +19,7 @@ package uk.gov.hmrc.fhdds.models.des
 import play.api.libs.json.Json
 
 case class Names(firstName: String = "firstName",
-                 middleName: Option[String],
+                 middleName: Option[String] = None,
                  lastName: String = "lastName")
 
 object Names {
