@@ -14,30 +14,20 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.fhdds.models.companyHouse
+package uk.gov.hmrc.fhdds.services
 
-import java.time.LocalDate
+import uk.gov.hmrc.fhdds.models.businessregistration.BusinessRegistrationDetails
+import uk.gov.hmrc.fhdds.repositories.SubmissionExtraDataRepository
 
-import com.github.tototoshi.play.json.JsonNaming
-import play.api.libs.json.{Json, Reads}
+import scala.concurrent.Future
 
-case class Officer(
-  name       : String,
-  resignedOn : Option[LocalDate],
-  officerRole: String
-) {
+trait BusinessExtraDataService {
+  val repository: SubmissionExtraDataRepository
 
-  def lastName = name.split(",")(0).trim
+  def getBusinessRegistrationDetails(
+    formSubmissionRef: String): Future[Option[BusinessRegistrationDetails]]
 
-  def firstName = {
-    val parts = name.split(",")
-    if (parts.length > 1) parts(1).trim
-    else ""
-  }
-}
+  def saveBusinessRegistrationDetails(
+    userId: String, formTypeRef: String, brd: BusinessRegistrationDetails): Future[Any]
 
-
-object Officer {
-  implicit val localDateReads = Reads.localDateReads("yyyy-MM-dd")
-  implicit val officerResultReader = JsonNaming snakecase Json.reads[Officer]
 }

@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<data>
+    <businessDetails>
+        <isNewFulfilmentBusiness>No</isNewFulfilmentBusiness>
+        <hasTradingName>No</hasTradingName>
+        <hasVatRegistrationNumber>No</hasVatRegistrationNumber>
+    </businessDetails>
+    <businessActivities>
+        <numberOfCustomersOutsideOfEU>1-10</numberOfCustomersOutsideOfEU>
+    </businessActivities>
+    <companyOfficials>
+        <repeatingCompanyOfficial>
+            <firstName>Fname</firstName>
+            <lastName>Lname</lastName>
+            <hasNino>No</hasNino>
+            <role>Director</role>
+        </repeatingCompanyOfficial>
+    </companyOfficials>
+    <principalPlaceOfBusiness>
+        <isPrincipalPlaceOfBusinessForLastThreeYears>Yes</isPrincipalPlaceOfBusinessForLastThreeYears>
+        <panelNumberOfYearsAtPrincipalBusinessAddress>
+            <numberOfYearsAtPrincipalBusinessAddress>3 to 5 years</numberOfYearsAtPrincipalBusinessAddress>
+        </panelNumberOfYearsAtPrincipalBusinessAddress>
+        <panelPreviousPrincipalTradingBusinessAddresses>
+            <repeatingPreviousPrincipalTradingBusinessAddress>
+                <searchState>initial</searchState>
+                <blockAddressUKPlus data_type="" uprn=""/>
+            </repeatingPreviousPrincipalTradingBusinessAddress>
+        </panelPreviousPrincipalTradingBusinessAddresses>
+    </principalPlaceOfBusiness>
+    <otherStorageSites>
+        <hasOtherStorageSites>No</hasOtherStorageSites>
+        <panelOtherStorageSites>
+            <repeatingSectionOtherTradingPremises>
+                <repeatingPanel>
+                    <otherTradingPremisesAddressLookup>
+                        <ukPanel>
+                            <searchState>initial</searchState>
+                            <blockAddressUKPlus data_type="" uprn=""/>
+                        </ukPanel>
+                    </otherTradingPremisesAddressLookup>
+                </repeatingPanel>
+            </repeatingSectionOtherTradingPremises>
+        </panelOtherStorageSites>
+    </otherStorageSites>
+    <contactPerson>
+        <firstName>Fname2</firstName>
+        <lastName>LName2</lastName>
+        <telephoneNumber>112313212</telephoneNumber>
+        <contactCorrectAddress>Yes</contactCorrectAddress>
+        <addressLookUpContactAddress>
+            <ukPanel>
+                <searchState>initial</searchState>
+                <blockAddressUKPlus data_type="" uprn=""/>
+            </ukPanel>
+            <blockAddressInternationalPlus data_type=""/>
+        </addressLookUpContactAddress>
+    </contactPerson>
+</data>

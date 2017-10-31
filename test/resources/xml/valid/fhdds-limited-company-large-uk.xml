@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<data>
+    <businessDetails>
+        <isNewFulfilmentBusiness>Yes</isNewFulfilmentBusiness>
+        <panelIntendedStartTradingDate>
+            <intendedStartTradingDate>31/07/2018</intendedStartTradingDate>
+        </panelIntendedStartTradingDate>
+        <hasTradingName>Yes</hasTradingName>
+        <panelTradingName>
+            <tradingName>DodgyCO</tradingName>
+        </panelTradingName>
+        <hasVatRegistrationNumber>Yes</hasVatRegistrationNumber>
+        <panelVatRegistrationNumber>
+            <vatRegistrationNumber>123456789</vatRegistrationNumber>
+        </panelVatRegistrationNumber>
+    </businessDetails>
+    <businessActivities>
+        <numberOfCustomersOutsideOfEU>1-10</numberOfCustomersOutsideOfEU>
+    </businessActivities>
+    <companyOfficials>
+        <repeatingCompanyOfficial>
+            <firstName>FName</firstName>
+            <lastName>LName</lastName>
+            <hasNino>Yes</hasNino>
+            <panelNino>
+                <nino>AA252813D</nino>
+            </panelNino>
+            <role>Director</role>
+        </repeatingCompanyOfficial>
+        <repeatingCompanyOfficial>
+            <firstName>FNameI</firstName>
+            <lastName>LNameI</lastName>
+            <hasNino>Yes</hasNino>
+            <panelNino>
+                <nino>AA123456B</nino>
+            </panelNino>
+            <role>Director+Secretary</role>
+        </repeatingCompanyOfficial>
+    </companyOfficials>
+    <principalPlaceOfBusiness>
+        <isPrincipalPlaceOfBusinessForLastThreeYears>No</isPrincipalPlaceOfBusinessForLastThreeYears>
+        <panelPreviousPrincipalTradingBusinessAddresses>
+            <repeatingPreviousPrincipalTradingBusinessAddress>
+                <hide_postcode>AA00 0AA</hide_postcode>
+                <searchState>manual</searchState>
+                <blockAddressUKPlus data_type="addressUKLookup" line1="aline1" line2="line2" postcode="AA00 0AA"
+                                    town="town" uprn="manual"/>
+            </repeatingPreviousPrincipalTradingBusinessAddress>
+        </panelPreviousPrincipalTradingBusinessAddresses>
+    </principalPlaceOfBusiness>
+    <otherStorageSites>
+        <hasOtherStorageSites>Yes</hasOtherStorageSites>
+        <panelOtherStorageSites>
+            <repeatingSectionOtherTradingPremises>
+                <repeatingPanel>
+                    <otherTradingPremisesAddressLookup>
+                        <ukPanel>
+                            <hide_postcode>ZZ11 1ZZ</hide_postcode>
+                            <hide_houseNameNumber/>
+                            <searchState>manual</searchState>
+                            <blockAddressUKPlus data_type="addressUKLookup" line1="Flat 1A" line2="asfasdf"
+                                                postcode="ZZ11 1ZZ" town="3333" uprn="manual"/>
+                        </ukPanel>
+                    </otherTradingPremisesAddressLookup>
+                </repeatingPanel>
+                <repeatingPanel>
+                    <otherTradingPremisesAddressLookup>
+                        <ukPanel>
+                            <hide_postcode>AA00 0AA</hide_postcode>
+                            <searchState>manual</searchState>
+                            <blockAddressUKPlus data_type="addressUKLookup" line1="address1" line2="address2"
+                                                postcode="AA00 0AA" town="some town" uprn="manual"/>
+                        </ukPanel>
+                    </otherTradingPremisesAddressLookup>
+                </repeatingPanel>
+            </repeatingSectionOtherTradingPremises>
+        </panelOtherStorageSites>
+    </otherStorageSites>
+    <contactPerson>
+        <firstName>FnameT</firstName>
+        <lastName>LNameT</lastName>
+        <telephoneNumber>1313131231</telephoneNumber>
+        <contactCorrectAddress>No</contactCorrectAddress>
+        <addressLookUpContactAddress>
+            <selectLocation>Yes</selectLocation>
+            <ukPanel>
+                <hide_postcode>Z99 2YY</hide_postcode>
+                <searchState>manual</searchState>
+                <blockAddressUKPlus data_type="addressUKLookup" line1="l1" line2="l2" postcode="Z99 2YY" town="cl"
+                                    uprn="manual"/>
+            </ukPanel>
+            <blockAddressInternationalPlus data_type=""/>
+        </addressLookUpContactAddress>
+    </contactPerson>
+</data>

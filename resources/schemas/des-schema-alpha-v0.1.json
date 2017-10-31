@@ -1,0 +1,725 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "isNewFulfilmentBusiness": {
+      "type": "boolean"
+    },
+    "intendedStartTradingDate": {
+      "$ref": "#/definitions/dateString"
+    },
+    "companyName": {
+      "$ref": "#/definitions/companyName"
+    },
+    "companyUTR": {
+      "$ref": "#/definitions/utr"
+    },
+    "hasTradingName": {
+      "type": "boolean"
+    },
+    "tradingName": {
+      "$ref": "#/definitions/tradingName"
+    },
+    "hasVatRegistrationNumber": {
+      "type": "boolean"
+    },
+    "vatRegistrationNumber": {
+      "$ref": "#/definitions/vrn"
+    },
+    "companyRegistrationNumber": {
+      "$ref": "#/definitions/crn"
+    },
+    "numberOfCustomersOutsideOfEU": {
+      "type": "string",
+      "enum": [
+        "0",
+        "1-10",
+        "11-50",
+        "51-100",
+        "101+"
+      ]
+    },
+    "isPrincipalPlaceOfBusinessForLastThreeYears": {
+      "type": "boolean"
+    },
+    "numberOfYearsAtPrincipalBusinessAddress": {
+      "type": "string",
+      "enum": [
+        "Less than 3 years",
+        "3 to 5 years",
+        "5 to 10 years",
+        "10 or more years"
+      ]
+    },
+    "registeredAddress": {
+      "$ref": "#/definitions/addressType"
+    },
+    "principalTradingBusinessAddress": {
+      "$ref": "#/definitions/addressType"
+    },
+    "previousPrincipalTradingBusinessAddresses": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/definitions/addressType"
+      }
+    },
+    "hasOtherStorageSites": {
+      "type": "boolean"
+    },
+    "otherStorageSites": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/definitions/addressType"
+      }
+    },
+    "contactAddress": {
+      "$ref": "#/definitions/anyAddress"
+    },
+    "companyOfficials": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/definitions/companyOfficial"
+      }
+    },
+    "contactPerson": {
+      "type": "object",
+      "properties": {
+        "firstName": {
+          "$ref": "#/definitions/name"
+        },
+        "lastName": {
+          "$ref": "#/definitions/name"
+        },
+        "telephoneNumber": {
+          "$ref": "#/definitions/telephone"
+        }
+      },
+      "required": [
+        "firstName",
+        "lastName",
+        "telephoneNumber"
+      ]
+    }
+  },
+  "definitions": {
+    "anyAddress": {
+      "oneOf": [
+        {
+          "$ref": "#/definitions/addressType"
+        },
+        {
+          "$ref": "#/definitions/internationalAddressType"
+        }
+      ]
+    },
+    "crn": {
+      "type": "string",
+      "pattern": "^\\d{9}$",
+      "description": "Company Registration Number"
+    },
+    "vrn": {
+      "type": "string",
+      "pattern": "^\\d{9}$",
+      "description": "VAT Registration Number"
+    },
+    "utr": {
+      "type": "string",
+      "pattern": "^\\d{10}$",
+      "description": "Unique Tax Reference"
+    },
+    "telephone": {
+      "type": "string",
+      "pattern": "^(\\+\\d\\d)?\\s?[\\d\\(]?\\d{0,5}[\\d\\)][\\s\\d]{0,15}$",
+      "description": "Telephone number"
+    },
+    "dateString": {
+      "type": "string",
+      "pattern": "^[0-3][0-9]/[0-1][0-9]/[1-9][0-9][0-9][0-9]$",
+      "description": "DD/MM/YYYY"
+    },
+    "nino": {
+      "type": "string",
+      "pattern": "^(?!BG)(?!GB)(?!NK)(?!KN)(?!TN)(?!NT)(?!ZZ)(?:[A-CEGHJ-PR-TW-Z][A-CEGHJ-NPR-TW-Z])(?:\\d){6}([A-D]|\\s)?$",
+      "description": "National Insurance number"
+    },
+    "postcode": {
+      "type": "string",
+      "pattern": "^(([aA-zZ]{1,2}[0-9]{1,2}?[\\s]?[0-9][aA-zZ]{2})|([aA-zZ]{1,2}[0-9]{1,2}?[aA-zZ][\\s]?[0-9][aA-zZ]{2}))$",
+      "description": "UK Postcode"
+    },
+    "companyName": {
+      "type": "string",
+      "pattern": "^[a-zA-Z0-9À-ÿ !#$%&'‘’\"“”«»()*+,./:;=?@\\[\\]£€¥\\u005C—–‐-]{1,140}$"
+    },
+    "tradingName": {
+      "type": "string",
+      "pattern": "^[a-zA-Z0-9À-ÿ !#$%&'‘’\"“”«»()*+,./:;=?@\\[\\]|~£€¥\\u005C—–‐_^`-]{1,120}$"
+    },
+    "name": {
+       "type": "string",
+       "pattern": "^[a-zA-Z\u00C0-\u00FF '‘’\u2014\u2013\u2010\u002d]{1,35}$"
+    },
+    "companyOfficial": {
+      "type": "object",
+      "properties": {
+        "firstName": {
+          "$ref": "#/definitions/name"
+        },
+        "lastName": {
+          "$ref": "#/definitions/name"
+        },
+        "hasNino": {
+          "type": "boolean"
+        },
+        "nino": {
+          "$ref": "#/definitions/nino"
+        },
+        "role": {
+          "type": "string",
+          "enum": [
+            "Director",
+            "Secretary",
+            "Director+Secretary"
+          ]
+        }
+      },
+      "required": [
+        "firstName",
+        "lastName",
+        "role",
+        "hasNino"
+      ],
+      "anyOf": [
+        {
+          "properties": {
+            "hasNino": {
+              "enum": [
+                true
+              ]
+            }
+          },
+          "required": [
+            "nino"
+          ]
+        },
+        {
+          "properties": {
+            "hasNino": {
+              "enum": [
+                false
+              ]
+            }
+          },
+          "not": {
+            "required": [
+              "nino"
+            ]
+          }
+        }
+      ]
+    },
+    "addressType": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "line1",
+        "town",
+        "postalCode",
+        "countryCode"
+      ],
+      "properties": {
+        "line1": {
+          "$ref": "#/definitions/addressLineType"
+        },
+        "line2": {
+          "type": "string"
+        },
+        "line3": {
+          "type": "string"
+        },
+        "town": {
+          "$ref": "#/definitions/addressLineType"
+        },
+        "postalCode": {
+          "$ref": "#/definitions/postcode"
+        },
+        "countryCode": {
+          "$ref": "#/definitions/countryCodes"
+        }
+      }
+    },
+    "internationalAddressType": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "line1",
+        "countryCode"
+      ],
+      "properties": {
+        "line1": {
+          "type": "string"
+        },
+        "line2": {
+          "type": "string"
+        },
+        "line3": {
+          "type": "string"
+        },
+        "line4": {
+          "type": "string"
+        },
+        "country": {
+          "type": "string"
+        },
+        "countryCode": {
+          "$ref": "#/definitions/countryCodes"
+        }
+      }
+    },
+    "addressLineType": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 35,
+      "pattern": "^[A-Za-z0-9 !'‘’\"“”(),./—–‐-]{1,35}$"
+    },
+    "countryCodes": {
+      "type": "string",
+      "enum": [
+        "AD",
+        "AE",
+        "AF",
+        "AG",
+        "AI",
+        "AL",
+        "AM",
+        "AN",
+        "AO",
+        "AQ",
+        "AR",
+        "AS",
+        "AT",
+        "AU",
+        "AW",
+        "AX",
+        "AZ",
+        "BA",
+        "BB",
+        "BD",
+        "BE",
+        "BF",
+        "BG",
+        "BH",
+        "BI",
+        "BJ",
+        "BM",
+        "BN",
+        "BO",
+        "BQ",
+        "BR",
+        "BS",
+        "BT",
+        "BV",
+        "BW",
+        "BY",
+        "BZ",
+        "CA",
+        "CC",
+        "CD",
+        "CF",
+        "CG",
+        "CH",
+        "CI",
+        "CK",
+        "CL",
+        "CM",
+        "CN",
+        "CO",
+        "CR",
+        "CS",
+        "CU",
+        "CV",
+        "CW",
+        "CX",
+        "CY",
+        "CZ",
+        "DE",
+        "DJ",
+        "DK",
+        "DM",
+        "DO",
+        "DZ",
+        "EC",
+        "EE",
+        "EG",
+        "EH",
+        "ER",
+        "ES",
+        "ET",
+        "EU",
+        "FI",
+        "FJ",
+        "FK",
+        "FM",
+        "FO",
+        "FR",
+        "GA",
+        "GB",
+        "GD",
+        "GE",
+        "GF",
+        "GG",
+        "GH",
+        "GI",
+        "GL",
+        "GM",
+        "GN",
+        "GP",
+        "GQ",
+        "GR",
+        "GS",
+        "GT",
+        "GU",
+        "GW",
+        "GY",
+        "HK",
+        "HM",
+        "HN",
+        "HR",
+        "HT",
+        "HU",
+        "ID",
+        "IE",
+        "IL",
+        "IM",
+        "IN",
+        "IO",
+        "IQ",
+        "IR",
+        "IS",
+        "IT",
+        "JE",
+        "JM",
+        "JO",
+        "JP",
+        "KE",
+        "KG",
+        "KH",
+        "KI",
+        "KM",
+        "KN",
+        "KP",
+        "KR",
+        "KW",
+        "KY",
+        "KZ",
+        "LA",
+        "LB",
+        "LC",
+        "LI",
+        "LK",
+        "LR",
+        "LS",
+        "LT",
+        "LU",
+        "LV",
+        "LY",
+        "MA",
+        "MC",
+        "MD",
+        "ME",
+        "MF",
+        "MG",
+        "MH",
+        "MK",
+        "ML",
+        "MM",
+        "MN",
+        "MO",
+        "MP",
+        "MQ",
+        "MR",
+        "MS",
+        "MT",
+        "MU",
+        "MV",
+        "MW",
+        "MX",
+        "MY",
+        "MZ",
+        "NA",
+        "NC",
+        "NE",
+        "NF",
+        "NG",
+        "NI",
+        "NL",
+        "NO",
+        "NP",
+        "NR",
+        "NT",
+        "NU",
+        "NZ",
+        "OM",
+        "PA",
+        "PE",
+        "PF",
+        "PG",
+        "PH",
+        "PK",
+        "PL",
+        "PM",
+        "PN",
+        "PR",
+        "PS",
+        "PT",
+        "PW",
+        "PY",
+        "QA",
+        "RE",
+        "RO",
+        "RS",
+        "RU",
+        "RW",
+        "SA",
+        "SB",
+        "SC",
+        "SD",
+        "SE",
+        "SG",
+        "SH",
+        "SI",
+        "SJ",
+        "SK",
+        "SL",
+        "SM",
+        "SN",
+        "SO",
+        "SR",
+        "SS",
+        "ST",
+        "SV",
+        "SX",
+        "SY",
+        "SZ",
+        "TC",
+        "TD",
+        "TF",
+        "TG",
+        "TH",
+        "TJ",
+        "TK",
+        "TL",
+        "TM",
+        "TN",
+        "TO",
+        "TP",
+        "TR",
+        "TT",
+        "TV",
+        "TW",
+        "TZ",
+        "UA",
+        "UG",
+        "UM",
+        "UN",
+        "US",
+        "UY",
+        "UZ",
+        "VA",
+        "VC",
+        "VE",
+        "VG",
+        "VI",
+        "VN",
+        "VU",
+        "WF",
+        "WS",
+        "YE",
+        "YT",
+        "ZA",
+        "ZM",
+        "ZW"
+      ]
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "isNewFulfilmentBusiness",
+    "hasTradingName",
+    "companyName",
+    "companyUTR",
+    "companyRegistrationNumber",
+    "hasVatRegistrationNumber",
+    "numberOfCustomersOutsideOfEU",
+    "isPrincipalPlaceOfBusinessForLastThreeYears",
+    "registeredAddress",
+    "principalTradingBusinessAddress",
+    "hasOtherStorageSites",
+    "contactAddress",
+    "companyOfficials",
+    "contactPerson"
+  ],
+  "allOf": [
+    {
+      "anyOf": [
+        {
+          "properties": {
+            "isNewFulfilmentBusiness": {
+              "enum": [
+                true
+              ]
+            }
+          },
+          "required": [
+            "intendedStartTradingDate"
+          ]
+        },
+        {
+          "properties": {
+            "isNewFulfilmentBusiness": {
+              "enum": [
+                false
+              ]
+            }
+          },
+          "not": {
+            "required": [
+              "intendedStartTradingDate"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "anyOf": [
+        {
+          "properties": {
+            "hasTradingName": {
+              "enum": [
+                true
+              ]
+            }
+          },
+          "required": [
+            "tradingName"
+          ]
+        },
+        {
+          "properties": {
+            "hasTradingName": {
+              "enum": [
+                false
+              ]
+            }
+          },
+          "not": {
+            "required": [
+              "tradingName"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "anyOf": [
+        {
+          "properties": {
+            "hasVatRegistrationNumber": {
+              "enum": [
+                true
+              ]
+            }
+          },
+          "required": [
+            "vatRegistrationNumber"
+          ]
+        },
+        {
+          "properties": {
+            "hasVatRegistrationNumber": {
+              "enum": [
+                false
+              ]
+            }
+          },
+          "not": {
+            "required": [
+              "vatRegistrationNumber"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "anyOf": [
+        {
+          "properties": {
+            "isPrincipalPlaceOfBusinessForLastThreeYears": {
+              "enum": [
+                true
+              ]
+            }
+          },
+          "required": [
+            "numberOfYearsAtPrincipalBusinessAddress"
+          ],
+          "not": {
+            "required": [
+              "previousPrincipalTradingBusinessAddresses"
+            ]
+          }
+        },
+        {
+          "properties": {
+            "isPrincipalPlaceOfBusinessForLastThreeYears": {
+              "enum": [
+                false
+              ]
+            }
+          },
+          "required": [
+            "previousPrincipalTradingBusinessAddresses"
+          ],
+          "not": {
+            "required": [
+              "numberOfYearsAtPrincipalBusinessAddress"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "anyOf": [
+        {
+          "properties": {
+            "hasOtherStorageSites": {
+              "enum": [
+                true
+              ]
+            }
+          },
+          "required": [
+            "otherStorageSites"
+          ]
+        },
+        {
+          "properties": {
+            "hasOtherStorageSites": {
+              "enum": [
+                false
+              ]
+            }
+          },
+          "not": {
+            "required": [
+              "otherStorageSites"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

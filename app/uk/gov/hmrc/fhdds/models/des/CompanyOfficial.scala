@@ -14,25 +14,18 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.fhdds
+package uk.gov.hmrc.fhdds.models.des
 
-import play.api.http.Status
-import play.api.test.FakeRequest
-import uk.gov.hmrc.fhdds.controllers.MicroserviceHelloWorld
-import uk.gov.hmrc.play.test.{UnitSpec, WithFakeApplication}
+import play.api.libs.json.Json
 
+case class CompanyOfficial(
+  firstName: String,
+  lastName: String,
+  hasNino: Boolean,
+  nino: Option[String],
+  role: String
+)
 
-class MicroserviceHelloWorldControllerSpec extends UnitSpec with WithFakeApplication {
-
-  val fakeRequest = FakeRequest("GET", "/")
-
-
-  "GET /" should {
-    "return 200" in {
-      val result = MicroserviceHelloWorld.hello()(fakeRequest)
-      status(result) shouldBe Status.OK
-    }
-  }
-
-
+object CompanyOfficial {
+  implicit val format = Json.format[CompanyOfficial]
 }

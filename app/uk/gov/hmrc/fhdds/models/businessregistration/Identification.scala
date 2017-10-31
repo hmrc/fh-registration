@@ -14,30 +14,13 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.fhdds.models.companyHouse
-
-import java.time.LocalDate
+package uk.gov.hmrc.fhdds.models.businessregistration
 
 import com.github.tototoshi.play.json.JsonNaming
-import play.api.libs.json.{Json, Reads}
+import play.api.libs.json.Json
 
-case class Officer(
-  name       : String,
-  resignedOn : Option[LocalDate],
-  officerRole: String
-) {
+case class Identification(idNumber: String, issuingInstitution: String, issuingCountryCode: String)
 
-  def lastName = name.split(",")(0).trim
-
-  def firstName = {
-    val parts = name.split(",")
-    if (parts.length > 1) parts(1).trim
-    else ""
-  }
-}
-
-
-object Officer {
-  implicit val localDateReads = Reads.localDateReads("yyyy-MM-dd")
-  implicit val officerResultReader = JsonNaming snakecase Json.reads[Officer]
+object Identification {
+  implicit val formats = JsonNaming snakecase Json.format[Identification]
 }

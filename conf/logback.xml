@@ -44,10 +44,14 @@
     </logger>
 
     <logger name="com.google.inject" level="INFO"/>
+    <logger name="javax.management.mbeanserver" level="INFO"/>
 
     <logger name="uk.gov" level="INFO"/>
 
     <logger name="application" level="DEBUG"/>
+    <logger name="org.asynchttpclient.netty.channel.DefaultChannelPool" level="INFO"/>
+
+    <logger name="reactivemongo" level="INFO"/>
 
     <logger name="connector" level="TRACE">
         <appender-ref ref="STDOUT"/>

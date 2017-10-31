@@ -9,7 +9,6 @@ object MicroServiceBuild extends Build with MicroService {
   override lazy val appDependencies: Seq[ModuleID] = compile ++ test()
 
   val compile = Seq(
-    "uk.gov.hmrc" %% "play-reactivemongo" % "5.2.0",
     ws,
     "uk.gov.hmrc" %% "microservice-bootstrap" % "5.16.0",
     "uk.gov.hmrc" %% "play-authorisation" % "4.3.0",
@@ -19,7 +18,12 @@ object MicroServiceBuild extends Build with MicroService {
     "uk.gov.hmrc" %% "logback-json-logger" % "3.1.0",
     "uk.gov.hmrc" %% "domain" % "4.1.0",
     "uk.gov.hmrc" %% "play-auth" % "1.2.0",
-    "com.github.tototoshi" %% "play-json-naming" % "1.1.0"
+    "com.github.tototoshi" %% "play-json-naming" % "1.1.0",
+    "com.eclipsesource" %% "play-json-schema-validator" % "0.8.9",
+    "org.scala-lang.modules" %% "scala-xml" % "1.0.6",
+    "org.typelevel" %% "cats" % "0.9.0",
+    "uk.gov.hmrc" %% "play-reactivemongo" % "6.0.0",
+    "uk.gov.hmrc" %% "simple-reactivemongo" % "6.0.0"
 
   )
 
@@ -29,7 +33,8 @@ object MicroServiceBuild extends Build with MicroService {
     "org.scalatestplus.play" %% "scalatestplus-play" % "1.5.1" % scope,
     "org.mockito" % "mockito-core" % "2.7.22" % scope,
     "org.pegdown" % "pegdown" % "1.6.0" % scope,
-    "com.typesafe.play" %% "play-test" % PlayVersion.current % scope
+    "com.typesafe.play" %% "play-test" % PlayVersion.current % scope,
+    "uk.gov.hmrc" %% "reactivemongo-test" % "3.0.0" % scope
 
   )
 

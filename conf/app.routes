@@ -1,4 +1,6 @@
 # microservice specific routes
 
-GET        /hello-world           uk.gov.hmrc.fhdds.controllers.MicroserviceHelloWorld.hello
-GET        /companyDetails        @uk.gov.hmrc.fhdds.controllers.FhddsController.companyDetails
+GET /companyDetails                                                             @uk.gov.hmrc.fhdds.controllers.FhddsController.companyDetails
+PUT /submission-extra-data/:userId/:formTypeRef/formId                         @uk.gov.hmrc.fhdds.controllers.SubmissionExtraDataController.updateFormId(userId, formTypeRef)
+PUT /submission-extra-data/:userId/:formTypeRef/businessRegistrationDetails     @uk.gov.hmrc.fhdds.controllers.SubmissionExtraDataController.saveBusinessRegistrationDetails(userId, formTypeRef)
+GET /submission-extra-data/:userId/:formTypeRef/businessRegistrationDetails     @uk.gov.hmrc.fhdds.controllers.SubmissionExtraDataController.getBusinessRegistrationDetails(userId, formTypeRef)
