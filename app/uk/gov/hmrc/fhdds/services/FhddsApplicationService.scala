@@ -27,7 +27,7 @@ trait FhddsApplicationService {
 
   val DefaultOrganizationType = "Corporate Body"
   val DefaultCompanyRegistrationNumber = "AB123456"
-  val DefaultIncorporationDate = LocalDate.of(2008, 1, 1)
+  val DefaultIncorporationDate = LocalDate.of(2010, 1, 1)
   val DefaultContactEmail = "email@email.com"
 
   val DefaultFirstName = "John"
@@ -161,6 +161,7 @@ trait FhddsApplicationService {
   }
 
   def businessAddressForFHDDS(xml: generated.Data, brd: BusinessRegistrationDetails) = {
+    val isOnlyPrinicipalPlaceOfBusinessInLastThreeYears = isYes(xml.principalPlaceOfBusiness.isPrincipalPlaceOfBusinessForLastThreeYears)
     BusinessAddressForFHDDS(
       currentAddress = principalBusinessAddress(brd),
       commonDetails = CommonDetails(
@@ -169,17 +170,24 @@ trait FhddsApplicationService {
         email = DefaultContactEmail
       ),
       dateStartedTradingAsFulfilmentHouse = LocalDate.now(),
-      isOnlyPrinicipalPlaceOfBusinessInLastThreeYears =
-        isYes(xml.principalPlaceOfBusiness.isPrincipalPlaceOfBusinessForLastThreeYears),
-      previousOperationalAddress = previousPrincipalPlaceOfBusinessAddresses(xml)
+      isOnlyPrinicipalPlaceOfBusinessInLastThreeYears = isOnlyPrinicipalPlaceOfBusinessInLastThreeYears,
+      previousOperationalAddress = {
+        if (isOnlyPrinicipalPlaceOfBusinessInLastThreeYears) None
+        else previousPrincipalPlaceOfBusinessAddresses(xml)
+      }
     )
   }
 
-  def previousPrincipalPlaceOfBusinessAddresses(xml: Data) = {
-    xml.principalPlaceOfBusiness.panelPreviousPrincipalTradingBusinessAddresses.map(
-      previousPrincipalTradingBusinessAddresses ⇒
-        previousPrincipalTradingBusinessAddresses.repeatingPreviousPrincipalTradingBusinessAddress.blockAddressUKPlus.map(
-          blockAddressUKPlus ⇒ Address(
+  def previousPrincipalPlaceOfBusinessAddresses(xml: Data): Option[List[PreviousOperationalAddress]] = {
+    val principalPlaceOfBusiness = xml.principalPlaceOfBusiness
+    PreviousOperationalAddress(
+      operatingDate = LocalDate.of(2010, 1, 1),
+      previousAddress = {
+        for {
+          previousPrincipalTradingBusinessAddresses ← principalPlaceOfBusiness.panelPreviousPrincipalTradingBusinessAddresses
+          blockAddressUKPlus ← previousPrincipalTradingBusinessAddresses.repeatingPreviousPrincipalTradingBusinessAddress.blockAddressUKPlus
+        } yield {
+          Address(
             blockAddressUKPlus.line1,
             blockAddressUKPlus.line2,
             blockAddressUKPlus.line3,
@@ -187,8 +195,10 @@ trait FhddsApplicationService {
             blockAddressUKPlus.postcode,
             "GB"
           )
-        ).toList
+        }
+      }.get
     )
+
   }
 
   def principalBusinessAddress(brd: BusinessRegistrationDetails) = {
