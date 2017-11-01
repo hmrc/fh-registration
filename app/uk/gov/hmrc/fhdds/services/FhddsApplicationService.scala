@@ -109,9 +109,9 @@ trait FhddsApplicationService {
     companyOfficials.toList.map(
       companyOfficial ⇒ CompanyOfficials(role = {
         companyOfficial.role match {
-          case role if (role.contains("Director") || role.contains("Secretary")) ⇒ "Director and Company Secretary"
-          case role if (role.contains("Director")) ⇒ "Director"
-          case role if (role.contains("Director")) ⇒ "Company Secretary"
+          case role if role.contains("Director") && role.contains("Secretary") ⇒ "Director and Company Secretary"
+          case role if role.contains("Director") ⇒ "Director"
+          case role if role.contains("Secretary") ⇒ "Company Secretary"
           case _ ⇒ "Member"
         }
       },
