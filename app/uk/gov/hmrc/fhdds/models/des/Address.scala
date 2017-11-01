@@ -22,7 +22,7 @@ case class Address(line1: String,
                    line2: Option[String],
                    line3: Option[String],
                    town: Option[String],
-                   postalCode: String,
+                   postalCode: Option[String],
                    countryCode: String)
 
 object Address {

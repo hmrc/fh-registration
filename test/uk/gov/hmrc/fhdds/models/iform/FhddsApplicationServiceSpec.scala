@@ -20,7 +20,7 @@ import com.eclipsesource.schema.{SchemaType, SchemaValidator}
 import play.api.libs.json.Json
 import uk.gov.hmrc.fhdds.models.businessregistration.BusinessRegistrationDetails
 import uk.gov.hmrc.fhdds.models.des.SubScriptionCreate.format
-import uk.gov.hmrc.fhdds.services.FhddsApplicationService
+import uk.gov.hmrc.fhdds.services.{FhddsApplicationService, FhddsApplicationServiceImpl}
 import uk.gov.hmrc.play.test.UnitSpec
 import com.eclipsesource.schema._
 
@@ -31,28 +31,34 @@ class FhddsApplicationServiceSpec extends UnitSpec {
   val schemaAsJson = Json parse getClass.getResourceAsStream("/schemas/des-schema-alpha-v0.1.json")
   val schema = Json.fromJson[SchemaType](schemaAsJson).get
   val validator = new SchemaValidator().validate(schema) _
-  val service = new FhddsApplicationService {}
+  val service = new FhddsApplicationServiceImpl
 
   val brd = Json
     .parse(getClass.getResourceAsStream("/models/business-registration-details.json"))
     .as[BusinessRegistrationDetails]
 
   "Application service" should {
-    "Create a correct json" in {
-      val iform = loadSubmission("fhdds-limited-company-large-uk.xml")
-      val subscrtiptionCreate = service.iformXmlToApplication(iform, brd)
-
-      val json = Json.toJson(subscrtiptionCreate)
-
-      println(s"==== ${json.toString()}");
-      val validationResult = validator(json)
-      validationResult.fold (
-        invalid = { errors =>  println(errors.toJson) },
-        valid = { post => println("ok") }
-      )
-      validationResult.isSuccess shouldEqual true
-
+    "Create a correct json for fhdds-limited-company-large-uk.xml" in {
+      validatesFor("fhdds-limited-company-large-uk.xml")
     }
+
+    "Create a correct json for fhdds-limited-company-minimum.xml" in {
+      validatesFor("fhdds-limited-company-minimum.xml")
+    }
+
+    "Create a correct json for fhdds-limited-company-minimum-international.xml" in {
+      validatesFor("fhdds-limited-company-minimum-international.xml")
+    }
+  }
+
+  def validatesFor(file: String) = {
+    val iform = loadSubmission(file)
+    val subscrtiptionCreate = service.iformXmlToApplication(iform, brd)
+
+    val json = Json.toJson(subscrtiptionCreate)
+
+    val validationResult = validator(json)
+    validationResult.isSuccess shouldEqual true
   }
 
 

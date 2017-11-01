@@ -18,17 +18,25 @@ package uk.gov.hmrc.fhdds.services
 
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
+import javax.inject.Singleton
 
-import generated.{AddressInternationalPlusQuestion, AddressLookUpContactAddress, AddressUKPlusQuestion, Data, PanelNino, PrincipalPlaceOfBusiness, RepeatingCompanyOfficial}
+import com.google.inject.ImplementedBy
+import generated.{AddressInternationalPlusQuestion, AddressLookUpContactAddress, AddressUKPlusQuestion, Data, RepeatingCompanyOfficial}
 import uk.gov.hmrc.fhdds.models.businessregistration.BusinessRegistrationDetails
 import uk.gov.hmrc.fhdds.models.des._
 
+@Singleton
+class FhddsApplicationServiceImpl extends FhddsApplicationService
+
+@ImplementedBy(classOf[FhddsApplicationServiceImpl])
 trait FhddsApplicationService {
 
   val DefaultOrganizationType = "Corporate Body"
   val DefaultCompanyRegistrationNumber = "AB123456"
   val DefaultIncorporationDate = LocalDate.of(2010, 1, 1)
   val DefaultContactEmail = "email@email.com"
+  val DefaultPersonDeclarationStatus = "Director"
+  val DefaultNumberOfCustomers = "01"
 
   val DefaultFirstName = "John"
   val DefaultLastName = "Doe"
@@ -52,18 +60,21 @@ trait FhddsApplicationService {
     val firstName = DefaultFirstName
     val lastName = DefaultLastName
     Declaration(personName = s"$firstName $lastName",
-      personStatus = "",
-      personStatusOther = Some(""),
+      personStatus = DefaultPersonDeclarationStatus,
+      personStatusOther = None,
       isInformationAccurate = true)
   }
 
   private def additionalBusinessInformation(brd: BusinessRegistrationDetails, xml: Data) = {
-    val numberOfCustomersOutsideOfEU = xml.businessActivities.numberOfCustomersOutsideOfEU
-
-
+    //val numberOfCustomersOutsideOfEU = xml.businessActivities.numberOfCustomersOutsideOfEU
+    val numberOfCustomers = DefaultNumberOfCustomers//TODO
     val officials = companyOfficialsDetails(xml)
 
-    val otherStorageSitesDetail = otherStorageSitesDetails(xml)
+    val otherStorageSitesDetail = {
+      if (isYes(xml.otherStorageSites.hasOtherStorageSites)) {
+        otherStorageSitesDetails(xml)
+      } else None
+    }
 
     AdditionalBusinessInformationwithType(
       partnerCorporateBody = Some(
@@ -74,7 +85,7 @@ trait FhddsApplicationService {
       ),
       allOtherInformation = AllOtherInformation(
         fulfilmentOrdersType = OnLineOnly(),
-        numberOfCustomers = numberOfCustomersOutsideOfEU,
+        numberOfCustomers = numberOfCustomers,
         premises = Premises(numberOfpremises = otherStorageSitesDetail.getOrElse(List(principalBusinessAddress(brd))).length.toString,
           address = otherStorageSitesDetail.getOrElse(List(principalBusinessAddress(brd))))
       )
@@ -94,7 +105,7 @@ trait FhddsApplicationService {
                     blockAddressUKPlus.line2,
                     blockAddressUKPlus.line3,
                     blockAddressUKPlus.town,
-                    blockAddressUKPlus.postcode,
+                    Some(blockAddressUKPlus.postcode),
                     "GB"
                   )
                 )
@@ -118,7 +129,7 @@ trait FhddsApplicationService {
         name = Names(firstName = companyOfficial.firstName,
           middleName = None,
           lastName = companyOfficial.lastName),
-        identification = Identification(nino = Some(companyOfficial.panelNino.getOrElse(PanelNino("")).nino))
+        identification = Identification(nino = companyOfficial.panelNino.map(_.nino))
       )
     )
   }
@@ -200,7 +211,7 @@ trait FhddsApplicationService {
               blockAddressUKPlus.line2,
               blockAddressUKPlus.line3,
               blockAddressUKPlus.town,
-              blockAddressUKPlus.postcode,
+              Some(blockAddressUKPlus.postcode),
               "GB"
             )
           }
@@ -214,7 +225,7 @@ trait FhddsApplicationService {
       Some(brd.businessAddress.line2),
       brd.businessAddress.line3,
       brd.businessAddress.line4,
-      brd.businessAddress.postcode.getOrElse(""),
+      brd.businessAddress.postcode,
       brd.businessAddress.country)
   }
 
@@ -225,7 +236,7 @@ trait FhddsApplicationService {
       blockAddressUk.line2,
       blockAddressUk.line3,
       blockAddressUk.town,
-      blockAddressUk.postcode,
+      Some(blockAddressUk.postcode),
       "GB")
 
   def internationalAddressToAddress(blockAddressInternationalPlus: AddressInternationalPlusQuestion) =
@@ -233,8 +244,8 @@ trait FhddsApplicationService {
       blockAddressInternationalPlus.line1,
       Some(blockAddressInternationalPlus.line2),
       blockAddressInternationalPlus.line3,
-      Some(""),
-      "",
+      None,
+      None,
       blockAddressInternationalPlus.country_code.getOrElse("GB"))
 
   def isYes(radioButtonAnswer: String): Boolean = radioButtonAnswer equals "Yes"

@@ -25,7 +25,7 @@ case class OnLineOnly(onlineOnly: Boolean = true,
                       onlineTelephoneAndPhysical: Boolean = false,
                       all: Boolean = false,
                       other: Boolean = false,
-                      typeOfOtherOrder: Option[String] = None) extends FulfilmentOrdersType
+                      typeOfOtherOrder: String = "NA") extends FulfilmentOrdersType
 
 object OnLineOnly {
   implicit val format = Json.format[OnLineOnly]
