@@ -1,6 +1,6 @@
 {
   "subScriptionCreate": {
-    "organizationType": "Limited Liability Partnership",
+    "organizationType": "Corporate Body",
     "businessDetail":{
       "limitedLiabilityPartnershipCorporateBody":{
         "incorporationDetails": {

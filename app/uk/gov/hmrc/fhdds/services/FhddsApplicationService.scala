@@ -19,7 +19,7 @@ package uk.gov.hmrc.fhdds.services
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
-import generated.{AddressUKPlusQuestion, Data, PanelNino, PrincipalPlaceOfBusiness, RepeatingCompanyOfficial}
+import generated.{AddressInternationalPlusQuestion, AddressLookUpContactAddress, AddressUKPlusQuestion, Data, PanelNino, PrincipalPlaceOfBusiness, RepeatingCompanyOfficial}
 import uk.gov.hmrc.fhdds.models.businessregistration.BusinessRegistrationDetails
 import uk.gov.hmrc.fhdds.models.des._
 
@@ -28,11 +28,12 @@ trait FhddsApplicationService {
   val DefaultOrganizationType = "Corporate Body"
   val DefaultCompanyRegistrationNumber = "AB123456"
   val DefaultIncorporationDate = LocalDate.of(2008, 1, 1)
-
-  val businessInformationService: BusinessExtraDataService
-  val dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd")
-
   val DefaultContactEmail = "email@email.com"
+
+  val DefaultFirstName = "John"
+  val DefaultLastName = "Doe"
+
+  val dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd")
 
   def iformXmlToApplication(xml: generated.Data, brd: BusinessRegistrationDetails): SubScriptionCreate = {
     SubScriptionCreate(
@@ -40,7 +41,7 @@ trait FhddsApplicationService {
         organizationType = brd.businessType.getOrElse(DefaultOrganizationType),
         businessDetail = businessDetails(xml, brd),
         businessAddressForFHDDS = businessAddressForFHDDS(xml, brd),
-        contactDetail = contactDetail(xml),
+        contactDetail = contactDetail(xml, brd),
         additionalBusinessInformation = additionalBusinessInformation(brd, xml),
         declaration = declaration(xml),
         FHbusinessDetail = FHbusinessDetail(isNewFulfilmentBusiness = isYes(xml.businessDetails.isNewFulfilmentBusiness)))
@@ -48,8 +49,8 @@ trait FhddsApplicationService {
   }
 
   private def declaration(xml: Data) = {
-    val firstName = ???
-    val lastName = ???
+    val firstName = DefaultFirstName
+    val lastName = DefaultLastName
     Declaration(personName = s"$firstName $lastName",
       personStatus = "",
       personStatusOther = Some(""),
@@ -115,16 +116,8 @@ trait FhddsApplicationService {
     )
   }
 
-  private def contactDetail(xml: Data) = {
-    val contactPersonAddress = xml.contactPerson.addressLookUpContactAddress.flatMap(
-      address ⇒ address.blockAddressInternationalPlus.map(
-        blockAddressInternationalPlus ⇒ Address(
-          blockAddressInternationalPlus.line1,
-          Some(blockAddressInternationalPlus.line2),
-          blockAddressInternationalPlus.line3,
-          Some(""),
-          "",
-          blockAddressInternationalPlus.country_code.getOrElse("GB"))))
+  private def contactDetail(xml: Data, brd: BusinessRegistrationDetails) = {
+    val contactPersonAddress = extractContactPersonAddress(xml, brd)
 
     ContactDetail(
       title = None,
@@ -139,6 +132,21 @@ trait FhddsApplicationService {
         email = DefaultContactEmail),
       roleInOrganization = Some(RoleInOrganization())
     )
+  }
+
+  private def extractContactPersonAddress(xml: Data, brd: BusinessRegistrationDetails): Option[Address] = {
+    if (isYes(xml.contactPerson.contactCorrectAddress)) {
+      Some(principalBusinessAddress(brd))
+    } else {
+      xml.contactPerson.addressLookUpContactAddress.flatMap(addressLookupToAddress)
+    }
+  }
+
+  def addressLookupToAddress(addressLookup: AddressLookUpContactAddress): Option[Address] = {
+    addressLookup.selectLocation.map(isYes).flatMap {
+      case true ⇒ addressLookup.ukPanel.flatMap( _.blockAddressUKPlus).map(ukAddressToAddress)
+      case false ⇒ addressLookup.blockAddressInternationalPlus.map(internationalAddressToAddress)
+    }
   }
 
   def businessDetails(xml: generated.Data, brd: BusinessRegistrationDetails) = {
@@ -167,7 +175,7 @@ trait FhddsApplicationService {
     )
   }
 
-  private def previousPrincipalPlaceOfBusinessAddresses(xml: Data) = {
+  def previousPrincipalPlaceOfBusinessAddresses(xml: Data) = {
     xml.principalPlaceOfBusiness.panelPreviousPrincipalTradingBusinessAddresses.map(
       previousPrincipalTradingBusinessAddresses ⇒
         previousPrincipalTradingBusinessAddresses.repeatingPreviousPrincipalTradingBusinessAddress.blockAddressUKPlus.map(
@@ -183,7 +191,7 @@ trait FhddsApplicationService {
     )
   }
 
-  private def principalBusinessAddress(brd: BusinessRegistrationDetails) = {
+  def principalBusinessAddress(brd: BusinessRegistrationDetails) = {
     Address(brd.businessAddress.line1,
       Some(brd.businessAddress.line2),
       brd.businessAddress.line3,
@@ -192,20 +200,6 @@ trait FhddsApplicationService {
       brd.businessAddress.country)
   }
 
-  def getPreviousPrincipalTradingBusinessAddress(ppob: PrincipalPlaceOfBusiness): Option[List[Address]] = {
-    //    if (isYes(ppob.isPrincipalPlaceOfBusinessForLastThreeYears))
-    //      None
-    //    else {
-    //      for {
-    //        panelPpob ← ppob.panelPreviousPrincipalTradingBusinessAddresses
-    //        ukPanel ← panelPpob.repeatingPreviousPrincipalTradingBusinessAddress.
-    //        blockAddressUk ← ukPanel.block_addressUKPlus
-    //      } yield {
-    //        ukAddressToAddress(blockAddressUk)
-    //      }
-    //    }
-    ???
-  }
 
   def ukAddressToAddress(blockAddressUk: AddressUKPlusQuestion) =
     Address(
@@ -216,16 +210,17 @@ trait FhddsApplicationService {
       blockAddressUk.postcode,
       "GB")
 
-  def mkRegisteredAdderess(brd: BusinessRegistrationDetails): Address = ???
+  def internationalAddressToAddress(blockAddressInternationalPlus: AddressInternationalPlusQuestion) =
+    Address(
+      blockAddressInternationalPlus.line1,
+      Some(blockAddressInternationalPlus.line2),
+      blockAddressInternationalPlus.line3,
+      Some(""),
+      "",
+      blockAddressInternationalPlus.country_code.getOrElse("GB"))
 
   def isYes(radioButtonAnswer: String): Boolean = radioButtonAnswer equals "Yes"
 
 
-  def businessRegistrationDetails(submissionRef: String): Either[String, BusinessRegistrationDetails] = ???
-
-  //    Either fromOption (
-  //      businessInformationService getBusinessRegistrationDetails submissionRef,
-  //      "business registration details not found"
-  //    )
 
 }

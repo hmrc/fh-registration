@@ -27,7 +27,7 @@ class JsonSchemaSpecs extends UnitSpec  {
   val validator = new SchemaValidator().validate(schema) _
 
   "Json Schema" should {
-    validate("IformMin")
+    validate("fhdds-limited-company-min")
   }
 
   def validate(name: String) = {
