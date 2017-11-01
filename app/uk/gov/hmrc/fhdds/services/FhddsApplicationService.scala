@@ -180,25 +180,26 @@ trait FhddsApplicationService {
 
   def previousPrincipalPlaceOfBusinessAddresses(xml: Data): Option[List[PreviousOperationalAddress]] = {
     val principalPlaceOfBusiness = xml.principalPlaceOfBusiness
-    PreviousOperationalAddress(
-      operatingDate = LocalDate.of(2010, 1, 1),
-      previousAddress = {
-        for {
-          previousPrincipalTradingBusinessAddresses ← principalPlaceOfBusiness.panelPreviousPrincipalTradingBusinessAddresses
-          blockAddressUKPlus ← previousPrincipalTradingBusinessAddresses.repeatingPreviousPrincipalTradingBusinessAddress.blockAddressUKPlus
-        } yield {
-          Address(
-            blockAddressUKPlus.line1,
-            blockAddressUKPlus.line2,
-            blockAddressUKPlus.line3,
-            blockAddressUKPlus.town,
-            blockAddressUKPlus.postcode,
-            "GB"
-          )
-        }
-      }.get
-    )
-
+    Some(List(
+      PreviousOperationalAddress(
+        operatingDate = LocalDate.of(2010, 1, 1),
+        previousAddress = {
+          for {
+            previousPrincipalTradingBusinessAddresses ← principalPlaceOfBusiness.panelPreviousPrincipalTradingBusinessAddresses
+            blockAddressUKPlus ← previousPrincipalTradingBusinessAddresses.repeatingPreviousPrincipalTradingBusinessAddress.blockAddressUKPlus
+          } yield {
+            Address(
+              blockAddressUKPlus.line1,
+              blockAddressUKPlus.line2,
+              blockAddressUKPlus.line3,
+              blockAddressUKPlus.town,
+              blockAddressUKPlus.postcode,
+              "GB"
+            )
+          }
+        }.get
+      )
+    ))
   }
 
   def principalBusinessAddress(brd: BusinessRegistrationDetails) = {
