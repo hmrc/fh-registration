@@ -18,7 +18,7 @@ package uk.gov.hmrc.fhdds.models.des
 
 import play.api.libs.json.Json
 
-case class Identification(passportNumber: Option[String] = Some(""), nationalIdNumber: Option[String] = Some(""), nino: Option[String] = Some(""))
+case class Identification(passportNumber: Option[String] = None, nationalIdNumber: Option[String] = None, nino: Option[String] = None)
 
 object Identification {
   implicit val format = Json.format[Identification]
@@ -53,7 +53,7 @@ object CompanyOfficials {
   implicit val format = Json.format[CompanyOfficials]
 }
 
-case class PartnerCorporateBody(numberOfOtherOfficials: Int = 1,
+case class PartnerCorporateBody(numberOfOtherOfficials: String,
                                 companyOfficials: Option[List[CompanyOfficials]])
 
 object PartnerCorporateBody {

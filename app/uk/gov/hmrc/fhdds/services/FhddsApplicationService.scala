@@ -68,7 +68,7 @@ trait FhddsApplicationService {
     AdditionalBusinessInformationwithType(
       partnerCorporateBody = Some(
         PartnerCorporateBody(
-          numberOfOtherOfficials = officials.size,
+          numberOfOtherOfficials = officials.size.toString,
           companyOfficials = Some(officials)
         )
       ),
@@ -107,7 +107,14 @@ trait FhddsApplicationService {
   def companyOfficialsDetails(xml: generated.Data) = {
     val companyOfficials: Seq[RepeatingCompanyOfficial] = xml.companyOfficials.repeatingCompanyOfficial
     companyOfficials.toList.map(
-      companyOfficial ⇒ CompanyOfficials(role = companyOfficial.role,
+      companyOfficial ⇒ CompanyOfficials(role = {
+        companyOfficial.role match {
+          case role if (role.contains("Director") || role.contains("Secretary")) ⇒ "Director and Company Secretary"
+          case role if (role.contains("Director")) ⇒ "Director"
+          case role if (role.contains("Director")) ⇒ "Company Secretary"
+          case _ ⇒ "Member"
+        }
+      },
         name = Names(firstName = companyOfficial.firstName,
           middleName = None,
           lastName = companyOfficial.lastName),
