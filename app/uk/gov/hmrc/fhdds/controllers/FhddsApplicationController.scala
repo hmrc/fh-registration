@@ -23,7 +23,7 @@ import play.api.mvc.Action
 import uk.gov.hmrc.fhdds.connectors.DfsStoreConnector
 import uk.gov.hmrc.fhdds.models.des.SubScriptionCreate.format
 import uk.gov.hmrc.fhdds.models.dfsStore.Submission
-import uk.gov.hmrc.fhdds.repositories.SubmissionExtraDataRepository
+import uk.gov.hmrc.fhdds.repositories.{SubmissionExtraData, SubmissionExtraDataRepository}
 import uk.gov.hmrc.fhdds.services.FhddsApplicationService
 import uk.gov.hmrc.play.http.NotFoundException
 import uk.gov.hmrc.play.microservice.controller.BaseController
@@ -41,13 +41,16 @@ class FhddsApplicationController @Inject() (
     for {
       submission ← dfsStoreConnector.getSubmission(submissionRef)
       extraData ← findSubmissionExtraData(submission)
+      application = createDesSubmission(submission, extraData)
     } yield {
-      val xml = scala.xml.XML.loadString(submission.formData)
-      val data = scalaxb.fromXML[generated.Data](xml)
-
-      val application = applicationService.iformXmlToApplication(data, extraData.businessRegistrationDetails)
       Ok(Json.toJson(application))
     }
+  }
+
+  private def createDesSubmission(submission: Submission, extraData: SubmissionExtraData) = {
+    val xml = scala.xml.XML.loadString(submission.formData)
+    val data = scalaxb.fromXML[generated.Data](xml)
+    applicationService.iformXmlToApplication(data, extraData.businessRegistrationDetails)
   }
 
   private def findSubmissionExtraData(submission: Submission) = {

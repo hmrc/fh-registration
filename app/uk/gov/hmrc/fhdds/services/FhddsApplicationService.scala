@@ -22,6 +22,7 @@ import javax.inject.Singleton
 
 import com.google.inject.ImplementedBy
 import generated.{AddressInternationalPlusQuestion, AddressLookUpContactAddress, AddressUKPlusQuestion, Data, RepeatingCompanyOfficial}
+import org.apache.commons.lang3.text.WordUtils
 import uk.gov.hmrc.fhdds.models.businessregistration.BusinessRegistrationDetails
 import uk.gov.hmrc.fhdds.models.des._
 
@@ -46,7 +47,7 @@ trait FhddsApplicationService {
   def iformXmlToApplication(xml: generated.Data, brd: BusinessRegistrationDetails): SubScriptionCreate = {
     SubScriptionCreate(
       FhddsApplication(
-        organizationType = brd.businessType.getOrElse(DefaultOrganizationType),
+        organizationType = brd.businessType.map(WordUtils.capitalizeFully).getOrElse(DefaultOrganizationType),
         businessDetail = businessDetails(xml, brd),
         businessAddressForFHDDS = businessAddressForFHDDS(xml, brd),
         contactDetail = contactDetail(xml, brd),
