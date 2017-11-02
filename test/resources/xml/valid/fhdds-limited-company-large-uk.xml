@@ -58,7 +58,7 @@
                             <hide_postcode>ZZ11 1ZZ</hide_postcode>
                             <hide_houseNameNumber/>
                             <searchState>manual</searchState>
-                            <blockAddressUKPlus data_type="addressUKLookup" line1="Flat 1A" line2="asfasdf"
+                            <blockAddressUKPlus data_type="addressUKLookup" line1="Flat 1A" line2="some line"
                                                 postcode="ZZ11 1ZZ" town="3333" uprn="manual"/>
                         </ukPanel>
                     </otherTradingPremisesAddressLookup>

@@ -23,18 +23,17 @@ class FhddsJsonParserSpec extends UnitSpec {
 
   "FhddsApplication json parser" should {
     "parse valid jsons" in {
-      canParse("limited-company-example.json")
-      canParse("limited-company-example-minimum.json")
-      canParse("valid-test-data.json")
+      val subscription = canParse("fhdds-limited-company-min.json")
+      subscription.subScriptionCreate.organizationType shouldBe "Corporate Body"
     }
   }
 
-  def canParse(name: String) = {
+  def canParse(name: String): SubScriptionCreate = {
     val json = Json.parse(getJsonInputStream(name))
-    val application = json.as[FhddsApplication]
-    application should not be null
-
-    Json.toJson(application) shouldEqual json
+    val subscription = json.as[SubScriptionCreate]
+    subscription should not be null
+    Json.toJson(subscription) shouldEqual json
+    subscription
   }
 
   def getJsonInputStream(name: String) = {

@@ -1,289 +1,921 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "84EZ - FHDDS - Subscription Create - Request Schema",
   "type": "object",
   "properties": {
-    "isNewFulfilmentBusiness": {
-      "type": "boolean"
-    },
-    "intendedStartTradingDate": {
-      "$ref": "#/definitions/dateString"
-    },
-    "companyName": {
-      "$ref": "#/definitions/companyName"
-    },
-    "companyUTR": {
-      "$ref": "#/definitions/utr"
-    },
-    "hasTradingName": {
-      "type": "boolean"
-    },
-    "tradingName": {
-      "$ref": "#/definitions/tradingName"
-    },
-    "hasVatRegistrationNumber": {
-      "type": "boolean"
-    },
-    "vatRegistrationNumber": {
-      "$ref": "#/definitions/vrn"
-    },
-    "companyRegistrationNumber": {
-      "$ref": "#/definitions/crn"
-    },
-    "numberOfCustomersOutsideOfEU": {
-      "type": "string",
-      "enum": [
-        "0",
-        "1-10",
-        "11-50",
-        "51-100",
-        "101+"
-      ]
-    },
-    "isPrincipalPlaceOfBusinessForLastThreeYears": {
-      "type": "boolean"
-    },
-    "numberOfYearsAtPrincipalBusinessAddress": {
-      "type": "string",
-      "enum": [
-        "Less than 3 years",
-        "3 to 5 years",
-        "5 to 10 years",
-        "10 or more years"
-      ]
-    },
-    "registeredAddress": {
-      "$ref": "#/definitions/addressType"
-    },
-    "principalTradingBusinessAddress": {
-      "$ref": "#/definitions/addressType"
-    },
-    "previousPrincipalTradingBusinessAddresses": {
-      "type": "array",
-      "minItems": 1,
-      "items": {
-        "$ref": "#/definitions/addressType"
-      }
-    },
-    "hasOtherStorageSites": {
-      "type": "boolean"
-    },
-    "otherStorageSites": {
-      "type": "array",
-      "minItems": 1,
-      "items": {
-        "$ref": "#/definitions/addressType"
-      }
-    },
-    "contactAddress": {
-      "$ref": "#/definitions/anyAddress"
-    },
-    "companyOfficials": {
-      "type": "array",
-      "minItems": 1,
-      "items": {
-        "$ref": "#/definitions/companyOfficial"
-      }
-    },
-    "contactPerson": {
-      "type": "object",
-      "properties": {
-        "firstName": {
-          "$ref": "#/definitions/name"
-        },
-        "lastName": {
-          "$ref": "#/definitions/name"
-        },
-        "telephoneNumber": {
-          "$ref": "#/definitions/telephone"
-        }
-      },
-      "required": [
-        "firstName",
-        "lastName",
-        "telephoneNumber"
-      ]
+    "subScriptionCreate": {
+      "$ref": "#/definitions/subscriptionCreateRequestSchema"
     }
   },
+  "required": [
+    "subScriptionCreate"
+  ],
+  "additionalProperties": false,
   "definitions": {
-    "anyAddress": {
-      "oneOf": [
-        {
-          "$ref": "#/definitions/addressType"
-        },
-        {
-          "$ref": "#/definitions/internationalAddressType"
-        }
-      ]
-    },
-    "crn": {
-      "type": "string",
-      "pattern": "^\\d{9}$",
-      "description": "Company Registration Number"
-    },
-    "vrn": {
-      "type": "string",
-      "pattern": "^\\d{9}$",
-      "description": "VAT Registration Number"
-    },
-    "utr": {
-      "type": "string",
-      "pattern": "^\\d{10}$",
-      "description": "Unique Tax Reference"
-    },
-    "telephone": {
-      "type": "string",
-      "pattern": "^(\\+\\d\\d)?\\s?[\\d\\(]?\\d{0,5}[\\d\\)][\\s\\d]{0,15}$",
-      "description": "Telephone number"
-    },
-    "dateString": {
-      "type": "string",
-      "pattern": "^[0-3][0-9]/[0-1][0-9]/[1-9][0-9][0-9][0-9]$",
-      "description": "DD/MM/YYYY"
-    },
-    "nino": {
-      "type": "string",
-      "pattern": "^(?!BG)(?!GB)(?!NK)(?!KN)(?!TN)(?!NT)(?!ZZ)(?:[A-CEGHJ-PR-TW-Z][A-CEGHJ-NPR-TW-Z])(?:\\d){6}([A-D]|\\s)?$",
-      "description": "National Insurance number"
-    },
-    "postcode": {
-      "type": "string",
-      "pattern": "^(([aA-zZ]{1,2}[0-9]{1,2}?[\\s]?[0-9][aA-zZ]{2})|([aA-zZ]{1,2}[0-9]{1,2}?[aA-zZ][\\s]?[0-9][aA-zZ]{2}))$",
-      "description": "UK Postcode"
-    },
-    "companyName": {
-      "type": "string",
-      "pattern": "^[a-zA-Z0-9À-ÿ !#$%&'‘’\"“”«»()*+,./:;=?@\\[\\]£€¥\\u005C—–‐-]{1,140}$"
-    },
-    "tradingName": {
-      "type": "string",
-      "pattern": "^[a-zA-Z0-9À-ÿ !#$%&'‘’\"“”«»()*+,./:;=?@\\[\\]|~£€¥\\u005C—–‐_^`-]{1,120}$"
-    },
-    "name": {
-       "type": "string",
-       "pattern": "^[a-zA-Z\u00C0-\u00FF '‘’\u2014\u2013\u2010\u002d]{1,35}$"
-    },
-    "companyOfficial": {
+    "subscriptionCreateRequestSchema": {
       "type": "object",
       "properties": {
-        "firstName": {
-          "$ref": "#/definitions/name"
-        },
-        "lastName": {
-          "$ref": "#/definitions/name"
-        },
-        "hasNino": {
-          "type": "boolean"
-        },
-        "nino": {
-          "$ref": "#/definitions/nino"
-        },
-        "role": {
+        "organizationType": {
           "type": "string",
           "enum": [
-            "Director",
-            "Secretary",
-            "Director+Secretary"
+            "Sole Proprietor",
+            "Limited Liability Partnership",
+            "Partnership",
+            "Corporate Body",
+            "Unincorporated Body"
           ]
+        },
+        "FHbusinessDetail": {
+          "$ref": "#/definitions/isNewFulfilmentBusiness"
+        },
+        "GroupInformation": {
+          "$ref": "#/definitions/limitedLiabilityOrCorporateBodyWithOutGroup"
+        },
+        "additionalBusinessInformation": {
+          "$ref": "#/definitions/additionalBusinessInformationwithType"
+        },
+        "businessDetail": {
+          "type": "object",
+          "properties": {
+            "soleProprietor": {
+              "$ref": "#/definitions/soleProprietorType"
+            },
+            "nonProprietor": {
+              "$ref": "#/definitions/nonProprietorType"
+            },
+            "limitedLiabilityPartnershipCorporateBody": {
+              "$ref": "#/definitions/llpOrCorporateBodyType"
+            },
+            "partnership": {
+              "$ref": "#/definitions/partnerShipBusinessDetailsType"
+            }
+          },
+          "additionalProperties": false
+        },
+        "businessAddressForFHDDS": {
+          "$ref": "#/definitions/businessAddressForFHDDSType"
+        },
+        "contactDetail": {
+          "$ref": "#/definitions/contactDetailsType"
+        },
+        "declaration": {
+          "$ref": "#/definitions/declarationType"
         }
       },
       "required": [
-        "firstName",
-        "lastName",
-        "role",
-        "hasNino"
+        "organizationType",
+        "FHbusinessDetail",
+        "additionalBusinessInformation",
+        "businessDetail",
+        "businessAddressForFHDDS",
+        "contactDetail",
+        "declaration"
       ],
-      "anyOf": [
-        {
+      "additionalProperties": false
+    },
+    "isNewFulfilmentBusiness": {
+      "type": "object",
+      "properties": {
+        "isNewFulfilmentBusiness": {
+          "type": "boolean"
+        },
+        "proposedStartDate": {
+          "$ref": "#/definitions/dateString"
+        }
+      },
+      "required": [
+        "isNewFulfilmentBusiness"
+      ],
+      "additionalProperties": false
+    },
+    "limitedLiabilityOrCorporateBodyWithGroup": {
+      "type": "object",
+      "properties": {
+        "creatingFHDDSGroup": {
+          "type": "boolean"
+        },
+        "confirmationByRepresentative": {
+          "type": "boolean"
+        },
+        "GroupMemberDetail": {
+          "$ref": "#/definitions/GroupMemberDetailType"
+        }
+      },
+      "required": [
+        "creatingFHDDSGroup",
+        "confirmationByRepresentative",
+        "GroupMemberDetail"
+      ],
+      "additionalProperties": false
+    },
+    "limitedLiabilityOrCorporateBodyWithOutGroup": {
+      "type": "object",
+      "properties": {
+        "creatingFHDDSGroup": {
+          "type": "boolean"
+        },
+        "confirmationByRepresentative": {
+          "type": "boolean"
+        },
+        "GroupMemberDetail": {
+          "$ref": "#/definitions/GroupMemberDetailType"
+        }
+      },
+      "required": [
+        "creatingFHDDSGroup",
+        "confirmationByRepresentative"
+      ],
+      "additionalProperties": false
+    },
+    "GroupMemberDetailType": {
+      "type": "object",
+      "properties": {
+        "numberOfMembersInGroup": {
+          "type": "string",
+          "pattern": "^[0-9]{1,10}$"
+        },
+        "memberDetails": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "properties": {
+              "names": {
+                "type": "object",
+                "properties": {
+                  "companyName": {
+                    "type": "string",
+                    "pattern": "^[a-zA-Z0-9À-ÿ !#$%&amp;'‘’\"“”«»()+,./:;=?@\\[\\]£€¥\\u005C—–‐-]{1,140}$"
+                  },
+                  "tradingName": {
+                    "type": "string",
+                    "pattern": "^[a-zA-Z0-9À-ÿ !#$%&amp;'‘’\"“”«»()+,./:;=?@\\[\\]|~£€¥\\u005C—–‐_^`-]{1,120}$"
+                  }
+                },
+                "additionalProperties": false
+              },
+              "incorporationDetail": {
+                "type": "object",
+                "properties": {
+                  "companyRegistrationNumber": {
+                    "type": "string",
+                    "pattern": "^[A-Z0-9]{8}$"
+                  },
+                  "dateOfIncorporation": {
+                    "$ref": "#/definitions/dateString"
+                  }
+                },
+                "additionalProperties": false
+              },
+              "identification": {
+                "type": "object",
+                "properties": {
+                  "vatRegistrationNumber": {
+                    "type": "string",
+                    "pattern": "^[0-9]{9}$"
+                  },
+                  "uniqueTaxpayerReference": {
+                    "type": "string",
+                    "pattern": "^[0-9]{10}$"
+                  }
+                },
+                "additionalProperties": false
+              },
+              "groupJoiningDate": {
+                "$ref": "#/definitions/dateString"
+              },
+              "address": {
+                "$ref": "#/definitions/addressType"
+              }
+            },
+            "required": [
+              "names",
+              "incorporationDetail",
+              "identification",
+              "groupJoiningDate",
+              "address"
+            ],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": [
+        "numberOfMembersInGroup",
+        "memberDetails"
+      ],
+      "additionalProperties": false
+    },
+    "additionalBusinessInformationwithType": {
+      "type": "object",
+      "properties": {
+        "partnerCorporateBody": {
+          "type": "object",
           "properties": {
-            "hasNino": {
-              "enum": [
-                true
-              ]
+            "numberOfOtherOfficials": {
+              "type": "string",
+              "pattern": "^[0-9]{1,10}$"
+            },
+            "companyOfficials": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "oneOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "role": {
+                        "type": "string",
+                        "enum": [
+                          "Director",
+                          "Company Secretary",
+                          "Director and Company Secretary",
+                          "Member"
+                        ]
+                      },
+                      "name": {
+                        "$ref": "#/definitions/namesType"
+                      },
+                      "identification": {
+                        "type": "object",
+                        "properties": {
+                          "passportNumber": {
+                            "type": "string",
+                            "pattern": "^[a-zA-Z0-9À-ÿ !#$%&amp;'‘’\"“”«»()+,./:;=?@\\[\\]|~£€¥\\u005C—–‐_^`-]{1,20}$"
+                          },
+                          "nationalIdNumber": {
+                            "type": "string",
+                            "pattern": "^[a-zA-Z0-9À-ÿ !#$%&amp;'‘’\"“”«»()+,./:;=?@\\[\\]|~£€¥\\u005C—–‐_^`-]{1,20}$"
+                          },
+                          "nino": {
+                            "type": "string",
+                            "pattern": "^((?!(BG|GB|KN|NK|NT|TN|ZZ)|(D|F|I|Q|U|V)[A-Z]|[A-Z](D|F|I|O|Q|U|V))[A-Z]{2})[0-9]{6}[A-D]?$"
+                          }
+                        },
+                        "additionalProperties": false
+                      }
+                    },
+                    "required": [
+                      "role",
+                      "name",
+                      "identification"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "role": {
+                        "type": "string",
+                        "enum": [
+                          "Director",
+                          "Company Secretary",
+                          "Director and Company Secretary",
+                          "Member"
+                        ]
+                      },
+                      "name": {
+                        "type": "object",
+                        "properties": {
+                          "companyName": {
+                            "type": "string",
+                            "pattern": "^[a-zA-Z0-9À-ÿ !#$%&amp;'‘’\"“”«»()+,./:;=?@\\[\\]£€¥\\u005C—–‐-]{1,140}$"
+                          },
+                          "tradingName": {
+                            "type": "string",
+                            "pattern": "^[a-zA-Z0-9À-ÿ !#$%&amp;'‘’\"“”«»()+,./:;=?@\\[\\]|~£€¥\\u005C—–‐_^`-]{1,120}$"
+                          }
+                        },
+                        "additionalProperties": false
+                      },
+                      "identification": {
+                        "type": "object",
+                        "properties": {
+                          "vatRegistrationNumber": {
+                            "type": "string",
+                            "pattern": "^[0-9]{9}$"
+                          },
+                          "uniqueTaxpayerReference": {
+                            "type": "string",
+                            "pattern": "^[0-9]{10}$"
+                          },
+                          "companyRegistrationNumber": {
+                            "type": "string",
+                            "pattern": "^[A-Z0-9]{8}$"
+                          }
+                        },
+                        "additionalProperties": false
+                      }
+                    },
+                    "required": [
+                      "role",
+                      "name",
+                      "identification"
+                    ],
+                    "additionalProperties": false
+                  }
+                ]
+              }
             }
           },
           "required": [
-            "nino"
-          ]
+            "numberOfOtherOfficials"
+          ],
+          "additionalProperties": false
         },
-        {
+        "allOtherInformation": {
+          "type": "object",
           "properties": {
-            "hasNino": {
+            "fulfilmentOrdersType": {
+              "type": "object",
+              "properties": {
+                "onLine": {
+                  "type": "boolean"
+                },
+                "telephone": {
+                  "type": "boolean"
+                },
+                "physicalPremises": {
+                  "type": "boolean"
+                },
+                "other": {
+                  "type": "boolean"
+                },
+                "typeOfOtherOrder": {
+                  "type": "string",
+                  "pattern": "^[a-zA-Z0-9À-ÿ !#$%&amp;'‘’\"“”«»()+,./:;=?@\\[\\]|~£€¥\\u005C—–‐_^`-]{1,40}$"
+                }
+              },
+              "required": [
+                "onLine",
+                "telephone",
+                "physicalPremises",
+                "other"
+              ],
+              "additionalProperties": false
+            },
+            "numberOfCustomers": {
+              "type": "string",
               "enum": [
-                false
+                "01",
+                "02",
+                "03"
               ]
+            },
+            "premises": {
+              "type": "object",
+              "properties": {
+                "numberOfpremises": {
+                  "type": "string",
+                  "pattern": "^[0-9]{1,10}$"
+                },
+                "address": {
+                  "type": "array",
+                  "minItems": 1,
+                  "items": {
+                    "$ref": "#/definitions/addressType"
+                  }
+                }
+              },
+              "required": [
+                "numberOfpremises",
+                "address"
+              ],
+              "additionalProperties": false
+            },
+            "thirdPartyStorageUsed": {
+              "type": "boolean"
+            },
+            "goodsImportedOutEORI": {
+              "type": "boolean"
             }
           },
-          "not": {
+          "required": [
+            "fulfilmentOrdersType",
+            "numberOfCustomers",
+            "premises",
+            "thirdPartyStorageUsed",
+            "goodsImportedOutEORI"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "allOtherInformation"
+      ],
+      "additionalProperties": false
+    },
+    "businessAddressForFHDDSType": {
+      "type": "object",
+      "properties": {
+        "currentAddress": {
+          "$ref": "#/definitions/addressType"
+        },
+        "commonDetails": {
+          "$ref": "#/definitions/commonDetailsType"
+        },
+        "dateStartedTradingAsFulfilmentHouse": {
+          "$ref": "#/definitions/dateString"
+        },
+        "isOnlyPrinicipalPlaceOfBusinessInLastThreeYears": {
+          "type": "boolean"
+        },
+        "previousOperationalAddress": {
+          "type": "array",
+          "minItems": 0,
+          "items": {
+            "type": "object",
+            "properties": {
+              "previousAddress": {
+                "$ref": "#/definitions/addressType"
+              },
+              "operatingDate": {
+                "$ref": "#/definitions/dateString"
+              }
+            },
             "required": [
-              "nino"
-            ]
+              "previousAddress",
+              "operatingDate"
+            ],
+            "additionalProperties": false
           }
         }
-      ]
+      },
+      "required": [
+        "currentAddress",
+        "commonDetails",
+        "dateStartedTradingAsFulfilmentHouse",
+        "isOnlyPrinicipalPlaceOfBusinessInLastThreeYears"
+      ],
+      "additionalProperties": false
+    },
+    "contactDetailsType": {
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string",
+          "pattern": "^[a-zA-ZÀ-ÿ '‘’—–‐-]{2,30}$"
+        },
+        "names": {
+          "$ref": "#/definitions/namesType"
+        },
+        "usingSameContactAddress": {
+          "type": "boolean"
+        },
+        "address": {
+          "$ref": "#/definitions/addressType"
+        },
+        "commonDetails": {
+          "$ref": "#/definitions/commonDetailsType"
+        },
+        "roleInOrganization": {
+          "type": "object",
+          "properties": {
+            "beneficialShareHolder": {
+              "type": "boolean"
+            },
+            "director": {
+              "type": "boolean"
+            },
+            "partner": {
+              "type": "boolean"
+            },
+            "internalAccountant": {
+              "type": "boolean"
+            },
+            "soleProprietor": {
+              "type": "boolean"
+            },
+            "nominatedOfficer": {
+              "type": "boolean"
+            },
+            "designatedmember": {
+              "type": "boolean"
+            },
+            "otherRoleType": {
+              "type": "boolean"
+            },
+            "otherRoleDescription": {
+              "type": "string",
+              "pattern": "^[a-zA-Z &amp;`\\-\\'^]{1,40}$"
+            }
+          },
+          "required": [
+            "beneficialShareHolder",
+            "director",
+            "partner",
+            "internalAccountant",
+            "soleProprietor",
+            "nominatedOfficer",
+            "designatedmember",
+            "otherRoleType"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "names",
+        "usingSameContactAddress",
+        "commonDetails"
+      ],
+      "additionalProperties": false
+    },
+    "declarationType": {
+      "type": "object",
+      "properties": {
+        "personName": {
+          "type": "string",
+          "pattern": "^[a-zA-ZÀ-ÿ '‘’—–‐-]{1,140}$"
+        },
+        "personStatus": {
+          "type": "string",
+          "enum": [
+            "Director",
+            "Company Secretary",
+            "Director and Company Secretary",
+            "Authorised Signatory",
+            "Other"
+          ]
+        },
+        "personStatusOther": {
+          "type": "string",
+          "pattern": "^[a-zA-Z0-9À-ÿ !#$%&amp;'‘’\"“”«»()+,./:;=?@\\[\\]|~£€¥\\u005C—–‐_^`-]{1,40}$"
+        },
+        "isInformationAccurate": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "personName",
+        "personStatus",
+        "isInformationAccurate"
+      ],
+      "additionalProperties": false
     },
     "addressType": {
+      "description": "Captures address",
       "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "line1",
-        "town",
-        "postalCode",
-        "countryCode"
-      ],
       "properties": {
         "line1": {
-          "$ref": "#/definitions/addressLineType"
+          "$ref": "#/definitions/AddressLineType"
         },
         "line2": {
-          "type": "string"
+          "$ref": "#/definitions/AddressLineType"
         },
         "line3": {
-          "type": "string"
+          "$ref": "#/definitions/AddressLineType"
         },
         "town": {
-          "$ref": "#/definitions/addressLineType"
+          "$ref": "#/definitions/AddressLineType"
         },
         "postalCode": {
-          "$ref": "#/definitions/postcode"
+          "description": "This is populated if the address supplied is a UK address.",
+          "type": "string",
+          "pattern": "^[A-Za-z]{1,2}[0-9][0-9A-Za-z]?\\s?[0-9][A-Za-z]{2}$"
         },
         "countryCode": {
           "$ref": "#/definitions/countryCodes"
         }
-      }
-    },
-    "internationalAddressType": {
-      "type": "object",
-      "additionalProperties": false,
+      },
       "required": [
         "line1",
+        "line2",
         "countryCode"
       ],
-      "properties": {
-        "line1": {
-          "type": "string"
-        },
-        "line2": {
-          "type": "string"
-        },
-        "line3": {
-          "type": "string"
-        },
-        "line4": {
-          "type": "string"
-        },
-        "country": {
-          "type": "string"
-        },
-        "countryCode": {
-          "$ref": "#/definitions/countryCodes"
-        }
-      }
+      "additionalProperties": false
     },
-    "addressLineType": {
+    "AddressLineType": {
       "type": "string",
       "minLength": 1,
       "maxLength": 35,
       "pattern": "^[A-Za-z0-9 !'‘’\"“”(),./—–‐-]{1,35}$"
+    },
+    "commonDetailsType": {
+      "type": "object",
+      "properties": {
+        "telephone": {
+          "type": "string",
+          "pattern": "^[0-9 ()+‐-]{1,24}$"
+        },
+        "mobileNumber": {
+          "type": "string",
+          "pattern": "^[0-9 ()+‐-]{1,24}$"
+        },
+        "email": {
+          "type": "string",
+          "maxLength": 132,
+          "format": "email"
+        }
+      },
+      "required": [
+        "email"
+      ],
+      "additionalProperties": false
+    },
+    "namesType": {
+      "type": "object",
+      "properties": {
+        "firstName": {
+          "type": "string",
+          "pattern": "^[a-zA-ZÀ-ÿ '‘’—–‐-]{1,35}$"
+        },
+        "middleName": {
+          "type": "string",
+          "pattern": "^[a-zA-ZÀ-ÿ '‘’—–‐-]{1,35}$"
+        },
+        "lastName": {
+          "type": "string",
+          "pattern": "^[a-zA-ZÀ-ÿ '‘’—–‐-]{1,35}$"
+        }
+      },
+      "required": [
+        "firstName",
+        "lastName"
+      ],
+      "additionalProperties": false
+    },
+    "soleProprietorType": {
+      "type": "object",
+      "properties": {
+        "tradingName": {
+          "type": "string",
+          "pattern": "^[a-zA-Z0-9À-ÿ !#$%&amp;'‘’\"“”«»()+,./:;=?@\\[\\]|~£€¥\\u005C—–‐_^`-]{1,120}$"
+        },
+        "identification": {
+          "type": "object",
+          "properties": {
+            "nino": {
+              "type": "string",
+              "pattern": "^((?!(BG|GB|KN|NK|NT|TN|ZZ)|(D|F|I|Q|U|V)[A-Z]|[A-Z](D|F|I|O|Q|U|V))[A-Z]{2})[0-9]{6}[A-D]?$"
+            },
+            "vatRegistrationNumber": {
+              "type": "string",
+              "pattern": "^[0-9]{9}$"
+            },
+            "uniqueTaxpayerReference": {
+              "type": "string",
+              "pattern": "^[0-9]{10}$"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "identification"
+      ],
+      "additionalProperties": false
+    },
+    "nonProprietorType": {
+      "type": "object",
+      "properties": {
+        "tradingName": {
+          "type": "string",
+          "pattern": "^[a-zA-Z0-9À-ÿ !#$%&amp;'‘’\"“”«»()+,./:;=?@\\[\\]|~£€¥\\u005C—–‐_^`-]{1,120}$"
+        },
+        "identification": {
+          "type": "object",
+          "properties": {
+            "vatRegistrationNumber": {
+              "type": "string",
+              "pattern": "^[0-9]{9}$"
+            },
+            "uniqueTaxpayerReference": {
+              "type": "string",
+              "pattern": "^[0-9]{10}$"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "identification"
+      ],
+      "additionalProperties": false
+    },
+    "llpOrCorporateBodyType": {
+      "type": "object",
+      "properties": {
+        "groupRepresentativeJoinDate": {
+          "$ref": "#/definitions/dateString"
+        },
+        "incorporationDetails": {
+          "type": "object",
+          "properties": {
+            "companyRegistrationNumber": {
+              "type": "string",
+              "pattern": "^[A-Z0-9]{8}$"
+            },
+            "dateOfIncorporation": {
+              "$ref": "#/definitions/dateString"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "incorporationDetails"
+      ],
+      "additionalProperties": false
+    },
+    "partnerShipBusinessDetailsType": {
+      "type": "object",
+      "properties": {
+        "numbersOfPartners": {
+          "type": "string",
+          "pattern": "^[0-9]{1,5}$"
+        },
+        "partnerDetails": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "properties": {
+              "entityType": {
+                "type": "string",
+                "enum": [
+                  "Sole Proprietor",
+                  "Limited Liability Partnership",
+                  "Partnership",
+                  "Corporate Body",
+                  "Unincorporated Body",
+                  "Individual"
+                ]
+              },
+              "partnerAddress": {
+                "$ref": "#/definitions/addressType"
+              },
+              "partnerTypeDetail": {
+                "oneOf": [
+                  {
+                    "$ref": "#/definitions/soleProprietorOrIndividualType"
+                  },
+                  {
+                    "$ref": "#/definitions/limitedLiabilityPartnershipType"
+                  },
+                  {
+                    "$ref": "#/definitions/partnershipOrUnIncorporatedBodyType"
+                  }
+                ]
+              }
+            },
+            "required": [
+              "entityType",
+              "partnerAddress",
+              "partnerTypeDetail"
+            ],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": [
+        "numbersOfPartners",
+        "partnerDetails"
+      ],
+      "additionalProperties": false
+    },
+    "soleProprietorOrIndividualType": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "nino": {
+              "type": "string",
+              "pattern": "^((?!(BG|GB|KN|NK|NT|TN|ZZ)|(D|F|I|Q|U|V)[A-Z]|[A-Z](D|F|I|O|Q|U|V))[A-Z]{2})[0-9]{6}[A-D]?$"
+            },
+            "name": {
+              "$ref": "#/definitions/namesType"
+            }
+          },
+          "required": [
+            "name"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "tradingName": {
+              "type": "string",
+              "pattern": "^[a-zA-Z0-9À-ÿ !#$%&amp;'‘’\"“”«»()+,./:;=?@\\[\\]|~£€¥\\u005C—–‐_^`-]{1,120}$"
+            },
+            "name": {
+              "$ref": "#/definitions/namesType"
+            },
+            "nino": {
+              "type": "string",
+              "pattern": "^((?!(BG|GB|KN|NK|NT|TN|ZZ)|(D|F|I|Q|U|V)[A-Z]|[A-Z](D|F|I|O|Q|U|V))[A-Z]{2})[0-9]{6}[A-D]?$"
+            },
+            "identification": {
+              "type": "object",
+              "properties": {
+                "vatRegistrationNumber": {
+                  "type": "string",
+                  "pattern": "^[0-9]{9}$"
+                },
+                "uniqueTaxpayerReference": {
+                  "type": "string",
+                  "pattern": "^[0-9]{10}$"
+                }
+              },
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "name",
+            "identification"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "limitedLiabilityPartnershipType": {
+      "type": "object",
+      "properties": {
+        "names": {
+          "type": "object",
+          "properties": {
+            "companyName": {
+              "type": "string",
+              "pattern": "^[a-zA-Z0-9À-ÿ !#$%&amp;'‘’\"“”«»()+,./:;=?@\\[\\]£€¥\\u005C—–‐-]{1,140}$"
+            },
+            "tradingName": {
+              "type": "string",
+              "pattern": "^[a-zA-Z0-9À-ÿ !#$%&amp;'‘’\"“”«»()+,./:;=?@\\[\\]|~£€¥\\u005C—–‐_^`-]{1,120}$"
+            }
+          },
+          "additionalProperties": false
+        },
+        "incorporationDetails": {
+          "type": "object",
+          "properties": {
+            "companyRegistrationNumber": {
+              "type": "string",
+              "pattern": "^[A-Z0-9]{8}$"
+            },
+            "dateOfIncorporation": {
+              "$ref": "#/definitions/dateString"
+            }
+          },
+          "additionalProperties": false
+        },
+        "identification": {
+          "type": "object",
+          "properties": {
+            "vatRegistrationNumber": {
+              "type": "string",
+              "pattern": "^[0-9]{9}$"
+            },
+            "uniqueTaxpayerReference": {
+              "type": "string",
+              "pattern": "^[0-9]{10}$"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "names",
+        "incorporationDetails",
+        "identification"
+      ],
+      "additionalProperties": false
+    },
+    "partnershipOrUnIncorporatedBodyType": {
+      "type": "object",
+      "properties": {
+        "names": {
+          "type": "object",
+          "properties": {
+            "companyName": {
+              "type": "string",
+              "pattern": "^[a-zA-Z0-9À-ÿ !#$%&amp;'‘’\"“”«»()+,./:;=?@\\[\\]£€¥\\u005C—–‐-]{1,140}$"
+            },
+            "tradingName": {
+              "type": "string",
+              "pattern": "^[a-zA-Z0-9À-ÿ !#$%&amp;'‘’\"“”«»()+,./:;=?@\\[\\]|~£€¥\\u005C—–‐_^`-]{1,120}$"
+            }
+          },
+          "additionalProperties": false
+        },
+        "identification": {
+          "type": "object",
+          "properties": {
+            "vatRegistrationNumber": {
+              "type": "string",
+              "pattern": "^[0-9]{9}$"
+            },
+            "uniqueTaxpayerReference": {
+              "type": "string",
+              "pattern": "^[0-9]{10}$"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "names",
+        "identification"
+      ],
+      "additionalProperties": false
     },
     "countryCodes": {
       "type": "string",
@@ -543,183 +1175,11 @@
         "ZM",
         "ZW"
       ]
+    },
+    "dateString": {
+      "description": "YYYY-MM-DD",
+      "type": "string",
+      "pattern": "^[2][0][1-9][0-9][-][0-1][0-9][-][0-3][0-9]$"
     }
-  },
-  "additionalProperties": false,
-  "required": [
-    "isNewFulfilmentBusiness",
-    "hasTradingName",
-    "companyName",
-    "companyUTR",
-    "companyRegistrationNumber",
-    "hasVatRegistrationNumber",
-    "numberOfCustomersOutsideOfEU",
-    "isPrincipalPlaceOfBusinessForLastThreeYears",
-    "registeredAddress",
-    "principalTradingBusinessAddress",
-    "hasOtherStorageSites",
-    "contactAddress",
-    "companyOfficials",
-    "contactPerson"
-  ],
-  "allOf": [
-    {
-      "anyOf": [
-        {
-          "properties": {
-            "isNewFulfilmentBusiness": {
-              "enum": [
-                true
-              ]
-            }
-          },
-          "required": [
-            "intendedStartTradingDate"
-          ]
-        },
-        {
-          "properties": {
-            "isNewFulfilmentBusiness": {
-              "enum": [
-                false
-              ]
-            }
-          },
-          "not": {
-            "required": [
-              "intendedStartTradingDate"
-            ]
-          }
-        }
-      ]
-    },
-    {
-      "anyOf": [
-        {
-          "properties": {
-            "hasTradingName": {
-              "enum": [
-                true
-              ]
-            }
-          },
-          "required": [
-            "tradingName"
-          ]
-        },
-        {
-          "properties": {
-            "hasTradingName": {
-              "enum": [
-                false
-              ]
-            }
-          },
-          "not": {
-            "required": [
-              "tradingName"
-            ]
-          }
-        }
-      ]
-    },
-    {
-      "anyOf": [
-        {
-          "properties": {
-            "hasVatRegistrationNumber": {
-              "enum": [
-                true
-              ]
-            }
-          },
-          "required": [
-            "vatRegistrationNumber"
-          ]
-        },
-        {
-          "properties": {
-            "hasVatRegistrationNumber": {
-              "enum": [
-                false
-              ]
-            }
-          },
-          "not": {
-            "required": [
-              "vatRegistrationNumber"
-            ]
-          }
-        }
-      ]
-    },
-    {
-      "anyOf": [
-        {
-          "properties": {
-            "isPrincipalPlaceOfBusinessForLastThreeYears": {
-              "enum": [
-                true
-              ]
-            }
-          },
-          "required": [
-            "numberOfYearsAtPrincipalBusinessAddress"
-          ],
-          "not": {
-            "required": [
-              "previousPrincipalTradingBusinessAddresses"
-            ]
-          }
-        },
-        {
-          "properties": {
-            "isPrincipalPlaceOfBusinessForLastThreeYears": {
-              "enum": [
-                false
-              ]
-            }
-          },
-          "required": [
-            "previousPrincipalTradingBusinessAddresses"
-          ],
-          "not": {
-            "required": [
-              "numberOfYearsAtPrincipalBusinessAddress"
-            ]
-          }
-        }
-      ]
-    },
-    {
-      "anyOf": [
-        {
-          "properties": {
-            "hasOtherStorageSites": {
-              "enum": [
-                true
-              ]
-            }
-          },
-          "required": [
-            "otherStorageSites"
-          ]
-        },
-        {
-          "properties": {
-            "hasOtherStorageSites": {
-              "enum": [
-                false
-              ]
-            }
-          },
-          "not": {
-            "required": [
-              "otherStorageSites"
-            ]
-          }
-        }
-      ]
-    }
-  ]
+  }
 }

@@ -19,6 +19,7 @@ package uk.gov.hmrc.fhdds.connectors
 import play.api.Logger
 import play.api.libs.json.{JsObject, JsValue, Json}
 import uk.gov.hmrc.fhdds.config.WSHttp
+import uk.gov.hmrc.fhdds.connectors.CompaniesHouseConfig.config
 import uk.gov.hmrc.play.config.ServicesConfig
 import uk.gov.hmrc.play.http.logging.Authorization
 import uk.gov.hmrc.play.http.ws.WSHttp
@@ -28,10 +29,10 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 object DESConnector extends DESConnect {
-  val DEServiceUrl: String = baseUrl("etmp-hod") + config("etmp-hod").getString("basePath").getOrElse("")
+  val DEServiceUrl: String = config("des-service").getString("url").getOrElse("")
   val orgLookupURI: String = "registration/organisation"
-  val urlHeaderEnvironment: String = config("etmp-hod").getString("environment").getOrElse("")
-  val urlHeaderAuthorization: String = s"Bearer ${config("etmp-hod").getString("authorization-token").getOrElse("")}"
+  val urlHeaderEnvironment: String = config("des-service").getString("environment").getOrElse("")
+  val urlHeaderAuthorization: String = s"Bearer ${config("des-service").getString("authorization-token").getOrElse("")}"
   val http = WSHttp
 }
 

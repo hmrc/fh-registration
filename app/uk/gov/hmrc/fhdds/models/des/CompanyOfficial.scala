@@ -17,14 +17,16 @@
 package uk.gov.hmrc.fhdds.models.des
 
 import play.api.libs.json.Json
+import uk.gov.hmrc.fhdds.models.businessregistration.Identification
 
-case class CompanyOfficial(
-  firstName: String,
-  lastName: String,
-  hasNino: Boolean,
-  nino: Option[String],
-  role: String
-)
+case class CompanyOfficial(name: String,
+                           firstName: Option[String],
+                           lastName: Option[String],
+                           hasNino: Boolean,
+                           nino: Option[String],
+                           role: String,
+                           identification: Identification
+                          )
 
 object CompanyOfficial {
   implicit val format = Json.format[CompanyOfficial]

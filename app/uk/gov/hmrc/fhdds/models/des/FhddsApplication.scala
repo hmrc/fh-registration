@@ -16,41 +16,25 @@
 
 package uk.gov.hmrc.fhdds.models.des
 
-import java.time.LocalDate
-import java.time.format.DateTimeFormatter
+import play.api.libs.json.Json
 
-import play.api.libs.json.{JsString, Json, Reads, Writes}
+case class FhddsApplication(organizationType: String = "Corporate Body",
+                            businessDetail: BusinessDetail,
+                            businessAddressForFHDDS: BusinessAddressForFHDDS,
+                            contactDetail: ContactDetail,
+                            additionalBusinessInformation: AdditionalBusinessInformationwithType,
+                            declaration: Declaration,
+                            FHbusinessDetail: FHbusinessDetail)
 
-
-case class FhddsApplication (
-  isNewFulfilmentBusiness: Boolean,
-  intendedStartTradingDate: Option[LocalDate],
-  companyName: String,
-  companyUTR: String,
-  hasTradingName: Boolean,
-  tradingName: Option[String],
-  hasVatRegistrationNumber: Boolean,
-  vatRegistrationNumber: Option[String],
-  companyRegistrationNumber: Option[String],
-  numberOfCustomersOutsideOfEU: String,
-  isPrincipalPlaceOfBusinessForLastThreeYears: Boolean,
-  numberOfYearsAtPrincipalBusinessAddress: Option[String],
-  registeredAddress: Address,
-  principalTradingBusinessAddress: Address,
-  previousPrincipalTradingBusinessAddresses: Option[List[Address]],
-  hasOtherStorageSites: Boolean,
-  otherStorageSites: Option[List[Address]],
-  contactAddress: AnyAddress,
-  companyOfficials: List[CompanyOfficial],
-  contactPerson: ContactPerson
-)
 
 object FhddsApplication {
-  val dateTimeFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")
-  implicit val localDateReads = Reads.localDateReads("dd/MM/yyyy")
-  implicit val localDateWrites = Writes { date: LocalDate ⇒
-    JsString(date.format(dateTimeFormatter))
-  }
-
   implicit val format = Json.format[FhddsApplication]
 }
+
+case class SubScriptionCreate(subScriptionCreate: FhddsApplication)
+
+
+object SubScriptionCreate {
+  implicit val format = Json.format[SubScriptionCreate]
+}
+

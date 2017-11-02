@@ -44,8 +44,8 @@
         </panelOtherStorageSites>
     </otherStorageSites>
     <contactPerson>
-        <firstName>Fname2</firstName>
-        <lastName>LName2</lastName>
+        <firstName>Fname</firstName>
+        <lastName>LName</lastName>
         <telephoneNumber>112313212</telephoneNumber>
         <contactCorrectAddress>Yes</contactCorrectAddress>
         <addressLookUpContactAddress>

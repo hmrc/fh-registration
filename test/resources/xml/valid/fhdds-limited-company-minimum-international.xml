@@ -10,8 +10,8 @@
     </businessActivities>
     <companyOfficials>
         <repeatingCompanyOfficial>
-            <firstName>f1</firstName>
-            <lastName>l1</lastName>
+            <firstName>fnameO</firstName>
+            <lastName>lnameO</lastName>
             <hasNino>No</hasNino>
             <role>Director+Secretary</role>
         </repeatingCompanyOfficial>
@@ -44,8 +44,8 @@
         </panelOtherStorageSites>
     </otherStorageSites>
     <contactPerson>
-        <firstName>f2</firstName>
-        <lastName>l2</lastName>
+        <firstName>fname</firstName>
+        <lastName>lname</lastName>
         <telephoneNumber>12313123</telephoneNumber>
         <contactCorrectAddress>No</contactCorrectAddress>
         <addressLookUpContactAddress>

@@ -18,13 +18,11 @@ package uk.gov.hmrc.fhdds.models.des
 
 import play.api.libs.json.Json
 
-case class Address(line1: String,
-                   line2: Option[String],
-                   line3: Option[String],
-                   town: Option[String],
-                   postalCode: Option[String],
-                   countryCode: String)
+case class Declaration(personName: String = "personName",
+                       personStatus: String,
+                       personStatusOther: Option[String],
+                       isInformationAccurate: Boolean)
 
-object Address {
-  implicit val addressFormat = Json.format[Address]
+object Declaration {
+  implicit val format = Json.format[Declaration]
 }

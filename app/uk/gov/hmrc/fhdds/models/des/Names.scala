@@ -18,12 +18,10 @@ package uk.gov.hmrc.fhdds.models.des
 
 import play.api.libs.json.Json
 
-case class ContactPerson (
-  firstName: String,
-  lastName: String,
-  telephoneNumber: String
-)
+case class Names(firstName: String = "firstName",
+                 middleName: Option[String] = None,
+                 lastName: String = "lastName")
 
-object ContactPerson {
-  implicit val format = Json.format[ContactPerson]
+object Names {
+  implicit val format = Json.format[Names]
 }
