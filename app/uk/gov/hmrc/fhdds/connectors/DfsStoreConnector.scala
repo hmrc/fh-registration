@@ -25,13 +25,15 @@ import uk.gov.hmrc.play.config.ServicesConfig
 import uk.gov.hmrc.play.http.HeaderCarrier
 import uk.gov.hmrc.play.http.ws.WSHttp
 
+import scala.concurrent.Future
+
 @Singleton
 class DfsStoreConnectorImpl extends DfsStoreConnector with ServicesConfig {
   override val dfsStoreBaseUrl = baseUrl("dfs-store")
   val http = WSHttp
 }
 
-@ImplementedBy(classOf[DfsStoreConnector])
+@ImplementedBy(classOf[DfsStoreConnectorImpl])
 trait DfsStoreConnector {
   implicit val hc = new HeaderCarrier()
 
@@ -39,7 +41,7 @@ trait DfsStoreConnector {
   val http: WSHttp
 
 
-  def getSubmission(submissionRef: String) = {
+  def getSubmission(submissionRef: String): Future[Submission] = {
     val url = s"$dfsStoreBaseUrl/dfs-store/submissions/$submissionRef"
     http.GET[Submission](url)
   }

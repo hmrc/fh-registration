@@ -84,7 +84,7 @@ trait FhddsApplicationService {
         )
       ),
       allOtherInformation = AllOtherInformation(
-        fulfilmentOrdersType = OnLineOnly(),
+        fulfilmentOrdersType = NotOnLineOnly(),
         numberOfCustomers = numberOfCustomers,
         premises = Premises(numberOfpremises = otherStorageSitesDetail.getOrElse(List(principalBusinessAddress(brd))).length.toString,
           address = otherStorageSitesDetail.getOrElse(List(principalBusinessAddress(brd))))

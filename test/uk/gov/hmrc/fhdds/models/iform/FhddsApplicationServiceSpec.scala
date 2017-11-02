@@ -33,7 +33,7 @@ class FhddsApplicationServiceSpec extends UnitSpec {
   val validator = new SchemaValidator().validate(schema) _
   val service = new FhddsApplicationServiceImpl
 
-  val brd = Json
+  val brd: BusinessRegistrationDetails = Json
     .parse(getClass.getResourceAsStream("/models/business-registration-details.json"))
     .as[BusinessRegistrationDetails]
 
