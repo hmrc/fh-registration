@@ -2,7 +2,7 @@
 
 [![Build Status](https://travis-ci.org/hmrc/fhdds.svg)](https://travis-ci.org/hmrc/fhdds) [ ![Download](https://api.bintray.com/packages/hmrc/releases/fhdds/images/download.svg) ](https://bintray.com/hmrc/releases/fhdds/_latestVersion)
 
-This is a placeholder README.md for a new repository
+This is a placeholder for README.md
 
 ### License
 
