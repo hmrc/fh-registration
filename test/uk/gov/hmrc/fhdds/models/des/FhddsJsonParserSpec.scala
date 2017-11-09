@@ -21,7 +21,7 @@ import uk.gov.hmrc.play.test.UnitSpec
 
 class FhddsJsonParserSpec extends UnitSpec {
 
-  "FhddsApplication json parser" should {
+  "SubscriptionCreateRequestSchema json parser" should {
     "parse valid jsons" in {
       val subscription = canParse("fhdds-limited-company-min.json")
       subscription.subScriptionCreate.organizationType shouldBe "Corporate Body"

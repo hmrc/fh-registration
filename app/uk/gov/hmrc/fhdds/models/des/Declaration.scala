@@ -18,7 +18,7 @@ package uk.gov.hmrc.fhdds.models.des
 
 import play.api.libs.json.Json
 
-case class Declaration(personName: String = "personName",
+case class Declaration(personName: String,
                        personStatus: String,
                        personStatusOther: Option[String],
                        isInformationAccurate: Boolean)

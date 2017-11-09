@@ -26,7 +26,7 @@ import com.eclipsesource.schema._
 
 import scala.xml.XML
 
-class FhddsApplicationServiceSpec extends UnitSpec {
+class subscriptionCreateRequestSchemaServiceSpec extends UnitSpec {
 
   val schemaAsJson = Json parse getClass.getResourceAsStream("/schemas/des-schema-alpha-v0.1.json")
   val schema = Json.fromJson[SchemaType](schemaAsJson).get
@@ -38,17 +38,17 @@ class FhddsApplicationServiceSpec extends UnitSpec {
     .as[BusinessRegistrationDetails]
 
   "Application service" should {
-    "Create a correct json for fhdds-limited-company-large-uk.xml" in {
-      validatesFor("fhdds-limited-company-large-uk.xml")
-    }
-
+//    "Create a correct json for fhdds-limited-company-large-uk.xml" in {
+//      validatesFor("fhdds-limited-company-large-uk.xml")
+//    }
+//
     "Create a correct json for fhdds-limited-company-minimum.xml" in {
       validatesFor("fhdds-limited-company-minimum.xml")
     }
-
-    "Create a correct json for fhdds-limited-company-minimum-international.xml" in {
-      validatesFor("fhdds-limited-company-minimum-international.xml")
-    }
+//
+//    "Create a correct json for fhdds-limited-company-minimum-international.xml" in {
+//      validatesFor("fhdds-limited-company-minimum-international.xml")
+//    }
   }
 
   def validatesFor(file: String) = {

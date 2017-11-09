@@ -21,8 +21,8 @@ import java.time.format.DateTimeFormatter
 
 import play.api.libs.json.{JsString, Json, Reads, Writes}
 
-case class IncorporationDetails(companyRegistrationNumber: String = "AB123456",
-                                dateOfIncorporation: LocalDate)
+case class IncorporationDetails(companyRegistrationNumber: Option[String] = None,
+                                dateOfIncorporation: Option[LocalDate] = None)
 
 object IncorporationDetails {
   val dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
@@ -33,9 +33,17 @@ object IncorporationDetails {
   implicit val format = Json.format[IncorporationDetails]
 }
 
-case class LimitedLiabilityPartnershipCorporateBody(incorporationDetails: IncorporationDetails)
+case class LimitedLiabilityPartnershipCorporateBody(groupRepresentativeJoinDate: Option[LocalDate] = None,
+                                                    incorporationDetails: IncorporationDetails)
 
 object LimitedLiabilityPartnershipCorporateBody {
+
+  val dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+  implicit val localDateReads = Reads.localDateReads("yyyy-MM-dd")
+  implicit val localDateWrites = Writes { date: LocalDate ⇒
+    JsString(date.format(dateTimeFormatter))
+  }
+
   implicit val format = Json.format[LimitedLiabilityPartnershipCorporateBody]
 }
 
