@@ -30,10 +30,10 @@ import uk.gov.hmrc.play.microservice.controller.BaseController
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
-class FhddsApplicationController @Inject() (
-  val dfsStoreConnector: DfsStoreConnector,
+class FhddsApplicationController @Inject()(
+  val dfsStoreConnector       : DfsStoreConnector,
   val submissionDataRepository: SubmissionExtraDataRepository,
-  val applicationService: FhddsApplicationService
+  val applicationService      : FhddsApplicationService
 )
   extends BaseController {
 
@@ -51,6 +51,16 @@ class FhddsApplicationController @Inject() (
     val xml = scala.xml.XML.loadString(submission.formData)
     val data = scalaxb.fromXML[generated.Data](xml)
     applicationService.iformXmlToApplication(data, extraData.businessRegistrationDetails)
+  }
+
+  def getSafeId(submissionRef: String) = Action.async {
+    for {
+      submission ← dfsStoreConnector.getSubmission(submissionRef)
+      extraData ← findSubmissionExtraData(submission)
+      brd = extraData.businessRegistrationDetails
+    } yield {
+      Ok(Json toJson brd.safeId)
+    }
   }
 
   private def findSubmissionExtraData(submission: Submission) = {

@@ -21,15 +21,20 @@ import javax.inject.Inject
 import play.api.libs.json.Json
 import play.api.mvc.{Action, Result}
 import uk.gov.hmrc.fhdds.models.businessregistration.BusinessRegistrationDetails
+import uk.gov.hmrc.fhdds.repositories.SubmissionExtraData.formats
 import uk.gov.hmrc.fhdds.repositories.SubmissionExtraDataRepository
 import uk.gov.hmrc.play.microservice.controller.BaseController
-import uk.gov.hmrc.fhdds.repositories.SubmissionExtraData.formats
+
 import scala.concurrent.ExecutionContext.Implicits.global
 
 class SubmissionExtraDataController @Inject()(
   val submissionDataRepository: SubmissionExtraDataRepository)
   extends BaseController {
 
+
+  val onRepositoryError: PartialFunction[Throwable, Result] = {
+    case e: Throwable ⇒ BadGateway(Json.toJson(s"Mongo Db error ${e.getMessage}"))
+  }
 
   def saveBusinessRegistrationDetails(userId: String, formTypeRef: String) = Action.async(parse.json[BusinessRegistrationDetails]) {
     request ⇒
@@ -59,8 +64,5 @@ class SubmissionExtraDataController @Inject()(
       }
   }
 
-  val onRepositoryError: PartialFunction[Throwable, Result] = {
-    case e: Throwable ⇒ BadGateway(Json.toJson(s"Mongo Db error ${e.getMessage}"))
-  }
 
 }

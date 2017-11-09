@@ -4,4 +4,5 @@ GET /companyDetails                                                             
 PUT /submission-extra-data/:userId/:formTypeRef/formId                         @uk.gov.hmrc.fhdds.controllers.SubmissionExtraDataController.updateFormId(userId, formTypeRef)
 PUT /submission-extra-data/:userId/:formTypeRef/businessRegistrationDetails     @uk.gov.hmrc.fhdds.controllers.SubmissionExtraDataController.saveBusinessRegistrationDetails(userId, formTypeRef)
 GET /submission-extra-data/:userId/:formTypeRef/businessRegistrationDetails     @uk.gov.hmrc.fhdds.controllers.SubmissionExtraDataController.getBusinessRegistrationDetails(userId, formTypeRef)
+GET /application/safeId/:submissionRef                                          @uk.gov.hmrc.fhdds.controllers.FhddsApplicationController.getSafeId(submissionRef)
 GET /application/:submissionRef                                                 @uk.gov.hmrc.fhdds.controllers.FhddsApplicationController.getApplication(submissionRef)
