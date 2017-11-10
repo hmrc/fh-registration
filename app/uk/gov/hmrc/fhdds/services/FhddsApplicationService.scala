@@ -69,10 +69,8 @@ trait FhddsApplicationService {
   }
 
   private def declaration(xml: Data) = {
-    val firstName = DefaultFirstName
-    val lastName = DefaultLastName
-    Declaration(personName = s"$firstName $lastName",
-      personStatus = DefaultPersonDeclarationStatus,
+    Declaration(personName = xml.declaration.personName,
+      personStatus = xml.declaration.personStatus,
       personStatusOther = None,
       isInformationAccurate = true)
   }
@@ -130,7 +128,14 @@ trait FhddsApplicationService {
   def companyOfficialsDetails(xml: generated.Data) = {
     val companyOfficials: Seq[RepeatingCompanyOfficial] = xml.companyOfficials.repeatingCompanyOfficial
     companyOfficials.toList.map(
-      companyOfficial ⇒ CompanyOfficial(role = companyOfficial.role,
+      companyOfficial ⇒ CompanyOfficial(role = {
+        companyOfficial.role match {
+          case "Secretary" ⇒ "Company Secretary"
+          case "Director+Secretary" ⇒ "Director and Company Secretary"
+          case "Director" ⇒ "Director"
+          case _ ⇒ "Member"
+        }
+      },
 
         name = {
           for {
