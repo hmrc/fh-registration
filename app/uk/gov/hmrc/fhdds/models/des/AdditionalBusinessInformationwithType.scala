@@ -18,43 +18,9 @@ package uk.gov.hmrc.fhdds.models.des
 
 import play.api.libs.json.Json
 
-case class Identification(passportNumber: Option[String] = None, nationalIdNumber: Option[String] = None, nino: Option[String] = None)
-
-object Identification {
-  implicit val format = Json.format[Identification]
-}
-
-case class Premises(numberOfpremises: String = "2",
-                    address: List[Address])
-
-object Premises {
-  implicit val format = Json.format[Premises]
-}
-
-trait CompanyOfficialsRole
-
-case class CompanyOfficialsDirector(role: String = "Director") extends CompanyOfficialsRole
-
-case class CompanyOfficialsSecretary(role: String = "Company Secretary") extends CompanyOfficialsRole
-
-object CompanyOfficialsDirector {
-  implicit val format = Json.format[CompanyOfficialsDirector]
-}
-
-case class CompanyOfficialsDirectorSecretary(role: String = "Director and Company Secretary") extends CompanyOfficialsRole
-
-case class CompanyOfficialsMember(role: String = "Member") extends CompanyOfficialsRole
-
-case class CompanyOfficials(role: String = "Director",
-                            name: Names,
-                            identification: Identification)
-
-object CompanyOfficials {
-  implicit val format = Json.format[CompanyOfficials]
-}
 
 case class PartnerCorporateBody(numberOfOtherOfficials: String,
-                                companyOfficials: Option[List[CompanyOfficials]])
+                                companyOfficials: Option[List[CompanyOfficial]])
 
 object PartnerCorporateBody {
   implicit val format = Json.format[PartnerCorporateBody]

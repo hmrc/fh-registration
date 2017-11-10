@@ -26,7 +26,7 @@ case class RoleInOrganization(beneficialShareHolder: Boolean = true,
                               nominatedOfficer: Boolean = true,
                               designatedmember: Boolean = true,
                               otherRoleType: Boolean = true,
-                              otherRoleDescription: String = "otherRoleDescription")
+                              otherRoleDescription: Option[String] = None)
 
 object RoleInOrganization {
   implicit val format = Json.format[RoleInOrganization]
@@ -41,8 +41,8 @@ object CommonDetails {
 }
 
 case class ContactDetail(title: Option[String],
-                         names: Names,
-                         usingSameContactAddress: Boolean = true,
+                         names: Name,
+                         usingSameContactAddress: Boolean,
                          address: Option[Address],
                          commonDetails: CommonDetails,
                          roleInOrganization: Option[RoleInOrganization])

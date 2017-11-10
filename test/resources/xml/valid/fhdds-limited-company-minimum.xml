@@ -1,26 +1,46 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <data>
+    <businessDetail>
+        <limitedLiabilityPartnershipCorporateBody>
+            <companyRegistrationNumber>12345678</companyRegistrationNumber>
+            <dateOfIncorporation>20/03/2015</dateOfIncorporation>
+        </limitedLiabilityPartnershipCorporateBody>
+    </businessDetail>
     <businessDetails>
         <isNewFulfilmentBusiness>No</isNewFulfilmentBusiness>
         <hasTradingName>No</hasTradingName>
         <hasVatRegistrationNumber>No</hasVatRegistrationNumber>
     </businessDetails>
     <businessActivities>
-        <numberOfCustomersOutsideOfEU>1-10</numberOfCustomersOutsideOfEU>
+        <numberOfCustomersOutsideOfEU>02</numberOfCustomersOutsideOfEU>
+        <fulfilmentOrdersType>
+            <onLine>No</onLine>
+            <telephone>No</telephone>
+            <physicalPremises>No</physicalPremises>
+            <other>No</other>
+        </fulfilmentOrdersType>
+        <goodsImportedOutEORI>No</goodsImportedOutEORI>
     </businessActivities>
     <companyOfficials>
         <repeatingCompanyOfficial>
-            <firstName>Fname</firstName>
-            <lastName>Lname</lastName>
-            <hasNino>No</hasNino>
+            <companyOfficialType>Person</companyOfficialType>
+            <panelPerson>
+                <firstName>george</firstName>
+                <lastName>costanza</lastName>
+                <hasNino>Yes</hasNino>
+                <panelNino>
+                    <nino>AA123456A</nino>
+                </panelNino>
+                <panelNoNino>
+                    <hasPassportNumber/>
+                </panelNoNino>
+            </panelPerson>
             <role>Director</role>
         </repeatingCompanyOfficial>
     </companyOfficials>
     <principalPlaceOfBusiness>
-        <isPrincipalPlaceOfBusinessForLastThreeYears>Yes</isPrincipalPlaceOfBusinessForLastThreeYears>
-        <panelNumberOfYearsAtPrincipalBusinessAddress>
-            <numberOfYearsAtPrincipalBusinessAddress>3 to 5 years</numberOfYearsAtPrincipalBusinessAddress>
-        </panelNumberOfYearsAtPrincipalBusinessAddress>
+        <dateStartedTradingAsFulfilmentHouse>20/03/2015</dateStartedTradingAsFulfilmentHouse>
+        <isOnlyPrinicipalPlaceOfBusinessInLastThreeYears>Yes</isOnlyPrinicipalPlaceOfBusinessInLastThreeYears>
         <panelPreviousPrincipalTradingBusinessAddresses>
             <repeatingPreviousPrincipalTradingBusinessAddress>
                 <searchState>initial</searchState>
@@ -44,9 +64,10 @@
         </panelOtherStorageSites>
     </otherStorageSites>
     <contactPerson>
-        <firstName>Fname</firstName>
-        <lastName>LName</lastName>
-        <telephoneNumber>112313212</telephoneNumber>
+        <firstName>C</firstName>
+        <lastName>M</lastName>
+        <telephoneNumber>113132123</telephoneNumber>
+        <email>a@a.ro</email>
         <contactCorrectAddress>Yes</contactCorrectAddress>
         <addressLookUpContactAddress>
             <ukPanel>
@@ -56,4 +77,8 @@
             <blockAddressInternationalPlus data_type=""/>
         </addressLookUpContactAddress>
     </contactPerson>
+    <declaration>
+        <personName>cas aerwaer</personName>
+        <personStatus>Director</personStatus>
+    </declaration>
 </data>

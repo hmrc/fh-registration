@@ -31,19 +31,19 @@ class IFormXmlParserSpec extends UnitSpec {
 
     }
 
-    "parse without errors short form with international contact address" in {
-      val file = "fhdds-limited-company-minimum-international.xml"
-      val x = XML.load(getXmlInputStream(s"valid/$file"))
-      scalaxb.fromXML[generated.Data](x) should not be null
+//    "parse without errors short form with international contact address" in {
+//      val file = "fhdds-limited-company-minimum-international.xml"
+//      val x = XML.load(getXmlInputStream(s"valid/$file"))
+//      scalaxb.fromXML[generated.Data](x) should not be null
+//
+//    }
 
-    }
-
-    "parse without errors long form with uk contact address" in {
-      val file = "fhdds-limited-company-large-uk.xml"
-      val x = XML.load(getXmlInputStream(s"valid/$file"))
-      scalaxb.fromXML[generated.Data](x) should not be null
-
-    }
+//    "parse without errors long form with uk contact address" in {
+//      val file = "fhdds-limited-company-large-uk.xml"
+//      val x = XML.load(getXmlInputStream(s"valid/$file"))
+//      scalaxb.fromXML[generated.Data](x) should not be null
+//
+//    }
 
   //
   //    "parse without errors example-maximum.xml" in {

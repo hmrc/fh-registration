@@ -21,33 +21,44 @@ import java.time.format.DateTimeFormatter
 
 import play.api.libs.json.{JsString, Json, Reads, Writes}
 
-case class PreviousOperationalAddress(previousAddress: Address,
-                                      operatingDate: LocalDate)
 
-object PreviousOperationalAddress {
+case class GroupJoiningDate(groupJoiningDate: Option[LocalDate] = None)
+
+object GroupJoiningDate {
   val dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
   implicit val localDateReads = Reads.localDateReads("yyyy-MM-dd")
   implicit val localDateWrites = Writes { date: LocalDate ⇒
     JsString(date.format(dateTimeFormatter))
   }
-
-  implicit val format = Json.format[PreviousOperationalAddress]
-
+  implicit val format = Json.format[GroupJoiningDate]
 }
 
-case class BusinessAddressForFHDDS(currentAddress: Address,
-                                   commonDetails: CommonDetails,
-                                   dateStartedTradingAsFulfilmentHouse: LocalDate,
-                                   isOnlyPrinicipalPlaceOfBusinessInLastThreeYears: Boolean,
-                                   previousOperationalAddress: Option[List[PreviousOperationalAddress]] = None)
+case class IdentificationBusiness(vatRegistrationNumber: Option[String] = None,
+                                  uniqueTaxpayerReference: Option[String] = None)
 
-object BusinessAddressForFHDDS {
+object IdentificationBusiness {
+  implicit val format = Json.format[IdentificationBusiness]
+}
+
+case class IncorporationDetail(companyRegistrationNumber: Option[String] = None,
+                               dateOfIncorporation: Option[LocalDate] = None)
+
+object IncorporationDetail {
   val dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
   implicit val localDateReads = Reads.localDateReads("yyyy-MM-dd")
   implicit val localDateWrites = Writes { date: LocalDate ⇒
     JsString(date.format(dateTimeFormatter))
   }
+  implicit val format = Json.format[IncorporationDetail]
+}
 
-  implicit val format = Json.format[BusinessAddressForFHDDS]
+case class MemberDetail(names: Names,
+                        incorporationDetail: IncorporationDetail,
+                        identification: IdentificationBusiness,
+                        groupJoiningDate: GroupJoiningDate,
+                        address: Address)
 
+
+object MemberDetail {
+  implicit val format = Json.format[MemberDetail]
 }

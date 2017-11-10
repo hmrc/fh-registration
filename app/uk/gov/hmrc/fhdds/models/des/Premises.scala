@@ -18,14 +18,9 @@ package uk.gov.hmrc.fhdds.models.des
 
 import play.api.libs.json.Json
 
-case class Name(companyName: String, tradingName: String)
+case class Premises(numberOfpremises: String,
+                    address: List[Address])
 
-object Name {
-  implicit val format = Json.format[Name]
-}
-
-case class MemberDetails(name: Name, tradingName: String)
-
-object MemberDetails {
-  implicit val format = Json.format[MemberDetails]
+object Premises {
+  implicit val format = Json.format[Premises]
 }

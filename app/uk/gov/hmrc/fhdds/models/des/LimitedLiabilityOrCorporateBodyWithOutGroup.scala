@@ -18,8 +18,20 @@ package uk.gov.hmrc.fhdds.models.des
 
 import play.api.libs.json.Json
 
-case class FHbusinessDetail(isNewFulfilmentBusiness: Boolean)
 
-object FHbusinessDetail {
-  implicit val format = Json.format[FHbusinessDetail]
+case class GroupMemberDetail(numberOfMembersInGroup: String, memberDetails: List[MemberDetail])
+
+
+object GroupMemberDetail {
+  implicit val format = Json.format[GroupMemberDetail]
+}
+
+case class LimitedLiabilityOrCorporateBodyWithOutGroup(creatingFHDDSGroup:Boolean,
+                                                       confirmationByRepresentative:Boolean,
+                                                       groupMemberDetail: Option[GroupMemberDetail]
+                                                      )
+
+
+object LimitedLiabilityOrCorporateBodyWithOutGroup {
+  implicit val format = Json.format[LimitedLiabilityOrCorporateBodyWithOutGroup]
 }

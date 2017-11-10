@@ -42,26 +42,35 @@ trait FhddsApplicationService {
   val DefaultFirstName = "John"
   val DefaultLastName = "Doe"
 
-  val dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+  val dtf = DateTimeFormatter.ofPattern("dd/MM/yyyy")
 
   def iformXmlToApplication(xml: generated.Data, brd: BusinessRegistrationDetails): SubScriptionCreate = {
-    SubScriptionCreate(
-      FhddsApplication(
+    SubScriptionCreate( SubscriptionCreateRequestSchema(
         organizationType = brd.businessType.map(WordUtils.capitalizeFully).getOrElse(DefaultOrganizationType),
+        FHbusinessDetail = IsNewFulfilmentBusiness(isNewFulfilmentBusiness = isYes(xml.businessDetails.isNewFulfilmentBusiness),
+                                                   proposedStartDate =  getProposedStartDate(xml)),
+        GroupInformation = Some(LimitedLiabilityOrCorporateBodyWithOutGroup(creatingFHDDSGroup = true,
+                                                                            confirmationByRepresentative = true,
+                                                                            groupMemberDetail = None)),
+        additionalBusinessInformation = additionalBusinessInformation(brd, xml),
         businessDetail = businessDetails(xml, brd),
         businessAddressForFHDDS = businessAddressForFHDDS(xml, brd),
         contactDetail = contactDetail(xml, brd),
-        additionalBusinessInformation = additionalBusinessInformation(brd, xml),
-        declaration = declaration(xml),
-        FHbusinessDetail = FHbusinessDetail(isNewFulfilmentBusiness = isYes(xml.businessDetails.isNewFulfilmentBusiness)))
-    )
+        declaration = declaration(xml)
+    ))
+  }
+
+  private def getProposedStartDate(xml: Data) = {
+    for {
+      panelProposedStartDate <- xml.businessDetails.panelProposedStartDate
+    } yield {
+      LocalDate.parse(panelProposedStartDate.proposedStartDate)
+    }
   }
 
   private def declaration(xml: Data) = {
-    val firstName = DefaultFirstName
-    val lastName = DefaultLastName
-    Declaration(personName = s"$firstName $lastName",
-      personStatus = DefaultPersonDeclarationStatus,
+    Declaration(personName = xml.declaration.personName,
+      personStatus = xml.declaration.personStatus,
       personStatusOther = None,
       isInformationAccurate = true)
   }
@@ -85,7 +94,7 @@ trait FhddsApplicationService {
         )
       ),
       allOtherInformation = AllOtherInformation(
-        fulfilmentOrdersType = NotOnLineOnly(),
+        fulfilmentOrdersType = FulfilmentOrdersType(typeOfOtherOrder= None),
         numberOfCustomers = numberOfCustomers,
         premises = Premises(numberOfpremises = otherStorageSitesDetail.getOrElse(List(principalBusinessAddress(brd))).length.toString,
           address = otherStorageSitesDetail.getOrElse(List(principalBusinessAddress(brd))))
@@ -103,7 +112,7 @@ trait FhddsApplicationService {
                 ukPanel ⇒ ukPanel.blockAddressUKPlus.map(
                   blockAddressUKPlus ⇒ Address(
                     blockAddressUKPlus.line1,
-                    blockAddressUKPlus.line2,
+                    blockAddressUKPlus.line2.getOrElse(""),
                     blockAddressUKPlus.line3,
                     blockAddressUKPlus.town,
                     Some(blockAddressUKPlus.postcode),
@@ -119,18 +128,48 @@ trait FhddsApplicationService {
   def companyOfficialsDetails(xml: generated.Data) = {
     val companyOfficials: Seq[RepeatingCompanyOfficial] = xml.companyOfficials.repeatingCompanyOfficial
     companyOfficials.toList.map(
-      companyOfficial ⇒ CompanyOfficials(role = {
+      companyOfficial ⇒ CompanyOfficial(role = {
         companyOfficial.role match {
-          case role if role.contains("Director") && role.contains("Secretary") ⇒ "Director and Company Secretary"
-          case role if role.contains("Director") ⇒ "Director"
-          case role if role.contains("Secretary") ⇒ "Company Secretary"
+          case "Secretary" ⇒ "Company Secretary"
+          case "Director+Secretary" ⇒ "Director and Company Secretary"
+          case "Director" ⇒ "Director"
           case _ ⇒ "Member"
         }
       },
-        name = Names(firstName = companyOfficial.firstName,
-          middleName = None,
-          lastName = companyOfficial.lastName),
-        identification = Identification(nino = companyOfficial.panelNino.map(_.nino))
+
+        name = {
+          for {
+            panelPerson ← companyOfficial.panelPerson
+          } yield {
+            Name(firstName = panelPerson.firstName,
+                  middleName = None,
+                  lastName = panelPerson.lastName)
+          }
+        }.get,
+
+        identification = {
+          for {
+            panelPerson ← companyOfficial.panelPerson
+          } yield {
+            if (isYes(panelPerson.hasNino)) {
+              Identification(nino = panelPerson.panelNino.map(_.nino))
+            } else {
+              Identification(passportNumber = panelPerson.panelNoNino.flatMap(
+                                                personNoNino ⇒ if (isYes(personNoNino.hasPassportNumber)) {
+                                                  personNoNino.panelPassportNumber.map(
+                                                    passportNumber ⇒ passportNumber.passportNumber
+                                                  )
+                                                } else None
+                                              ),
+                             nationalIdNumber = panelPerson.panelNoNino.flatMap(
+                                                 personNoNino ⇒
+                                                   personNoNino.panelNationalIDNumber.map(_.nationalIdNumber)
+                                               )
+              )
+            }
+          }
+        }.get
+
       )
     )
   }
@@ -140,7 +179,7 @@ trait FhddsApplicationService {
 
     ContactDetail(
       title = None,
-      names = Names(
+      names = Name(
         firstName = xml.contactPerson.firstName,
         lastName = xml.contactPerson.lastName),
       usingSameContactAddress = true,
@@ -162,8 +201,8 @@ trait FhddsApplicationService {
   }
 
   def addressLookupToAddress(addressLookup: AddressLookUpContactAddress): Option[Address] = {
-    addressLookup.selectLocation.map(isYes).flatMap {
-      case true ⇒ addressLookup.ukPanel.flatMap( _.blockAddressUKPlus).map(ukAddressToAddress)
+    isYes(addressLookup.selectLocation.getOrElse("")) match {
+      case true ⇒ addressLookup.ukPanel.flatMap(_.blockAddressUKPlus).map(ukAddressToAddress)
       case false ⇒ addressLookup.blockAddressInternationalPlus.map(internationalAddressToAddress)
     }
   }
@@ -171,45 +210,54 @@ trait FhddsApplicationService {
   def businessDetails(xml: generated.Data, brd: BusinessRegistrationDetails) = {
     BusinessDetail(
       LimitedLiabilityPartnershipCorporateBody(
+        groupRepresentativeJoinDate = Some(DefaultIncorporationDate),
         IncorporationDetails(
-          companyRegistrationNumber = DefaultCompanyRegistrationNumber,
-          dateOfIncorporation = DefaultIncorporationDate
+          companyRegistrationNumber = Some(DefaultCompanyRegistrationNumber),
+          dateOfIncorporation = Some(DefaultIncorporationDate)
         )
       )
     )
   }
 
   def businessAddressForFHDDS(xml: generated.Data, brd: BusinessRegistrationDetails) = {
-    val isOnlyPrinicipalPlaceOfBusinessInLastThreeYears = isYes(xml.principalPlaceOfBusiness.isPrincipalPlaceOfBusinessForLastThreeYears)
+    val isOnlyPrincipalPlaceOfBusinessInLastThreeYears =
+      isYes(xml.principalPlaceOfBusiness match {
+        case Some(principalPlaceOfBusiness) ⇒ principalPlaceOfBusiness.isOnlyPrinicipalPlaceOfBusinessInLastThreeYears
+        case _ ⇒ "no"
+      })
     BusinessAddressForFHDDS(
       currentAddress = principalBusinessAddress(brd),
       commonDetails = CommonDetails(
         telephone = Some(xml.contactPerson.telephoneNumber),
         mobileNumber = None,
-        email = DefaultContactEmail
+        email = xml.contactPerson.email
       ),
-      dateStartedTradingAsFulfilmentHouse = LocalDate.now(),
-      isOnlyPrinicipalPlaceOfBusinessInLastThreeYears = isOnlyPrinicipalPlaceOfBusinessInLastThreeYears,
+      dateStartedTradingAsFulfilmentHouse = xml.principalPlaceOfBusiness match {
+        case Some(principalPlaceOfBusiness) ⇒ LocalDate.parse(principalPlaceOfBusiness.dateStartedTradingAsFulfilmentHouse, dtf)
+        case _ ⇒ LocalDate.now()
+      },
+      isOnlyPrinicipalPlaceOfBusinessInLastThreeYears = isOnlyPrincipalPlaceOfBusinessInLastThreeYears,
       previousOperationalAddress = {
-        if (isOnlyPrinicipalPlaceOfBusinessInLastThreeYears) None
+        if (isOnlyPrincipalPlaceOfBusinessInLastThreeYears) None
         else previousPrincipalPlaceOfBusinessAddresses(xml)
       }
     )
   }
 
   def previousPrincipalPlaceOfBusinessAddresses(xml: Data): Option[List[PreviousOperationalAddress]] = {
-    val principalPlaceOfBusiness = xml.principalPlaceOfBusiness
+    val principalPlaceOfBusinessO = xml.principalPlaceOfBusiness
     Some(List(
       PreviousOperationalAddress(
         operatingDate = LocalDate.of(2010, 1, 1),
         previousAddress = {
           for {
-            previousPrincipalTradingBusinessAddresses ← principalPlaceOfBusiness.panelPreviousPrincipalTradingBusinessAddresses
-            blockAddressUKPlus ← previousPrincipalTradingBusinessAddresses.repeatingPreviousPrincipalTradingBusinessAddress.blockAddressUKPlus
+            principalPlaceOfBusiness ← principalPlaceOfBusinessO
+            panelPreviousPrincipalTradingBusinessAddresses ← principalPlaceOfBusiness.panelPreviousPrincipalTradingBusinessAddresses
+            blockAddressUKPlus ← panelPreviousPrincipalTradingBusinessAddresses.repeatingPreviousPrincipalTradingBusinessAddress.blockAddressUKPlus
           } yield {
             Address(
               blockAddressUKPlus.line1,
-              blockAddressUKPlus.line2,
+              blockAddressUKPlus.line2.getOrElse(""),
               blockAddressUKPlus.line3,
               blockAddressUKPlus.town,
               Some(blockAddressUKPlus.postcode),
@@ -223,18 +271,18 @@ trait FhddsApplicationService {
 
   def principalBusinessAddress(brd: BusinessRegistrationDetails) = {
     Address(brd.businessAddress.line1,
-      Some(brd.businessAddress.line2),
-      brd.businessAddress.line3,
-      brd.businessAddress.line4,
-      brd.businessAddress.postcode,
-      brd.businessAddress.country)
+            brd.businessAddress.line2,
+            brd.businessAddress.line3,
+            brd.businessAddress.line4,
+            brd.businessAddress.postcode,
+            brd.businessAddress.country)
   }
 
 
   def ukAddressToAddress(blockAddressUk: AddressUKPlusQuestion) =
     Address(
       blockAddressUk.line1,
-      blockAddressUk.line2,
+      blockAddressUk.line2.getOrElse(""),
       blockAddressUk.line3,
       blockAddressUk.town,
       Some(blockAddressUk.postcode),
@@ -243,14 +291,12 @@ trait FhddsApplicationService {
   def internationalAddressToAddress(blockAddressInternationalPlus: AddressInternationalPlusQuestion) =
     Address(
       blockAddressInternationalPlus.line1,
-      Some(blockAddressInternationalPlus.line2),
+      blockAddressInternationalPlus.line2,
       blockAddressInternationalPlus.line3,
       None,
       None,
       blockAddressInternationalPlus.country_code.getOrElse("GB"))
 
   def isYes(radioButtonAnswer: String): Boolean = radioButtonAnswer equals "Yes"
-
-
 
 }

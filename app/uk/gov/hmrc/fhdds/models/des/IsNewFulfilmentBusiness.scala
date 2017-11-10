@@ -16,12 +16,18 @@
 
 package uk.gov.hmrc.fhdds.models.des
 
-import play.api.libs.json.Json
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 
-case class Names(firstName: String = "firstName",
-                 middleName: Option[String] = None,
-                 lastName: String = "lastName")
+import play.api.libs.json.{JsString, Json, Reads, Writes}
 
-object Names {
-  implicit val format = Json.format[Names]
+case class IsNewFulfilmentBusiness(isNewFulfilmentBusiness: Boolean, proposedStartDate: Option[LocalDate])
+
+object IsNewFulfilmentBusiness {
+  val dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+  implicit val localDateReads = Reads.localDateReads("yyyy-MM-dd")
+  implicit val localDateWrites = Writes { date: LocalDate ⇒
+    JsString(date.format(dateTimeFormatter))
+  }
+  implicit val format = Json.format[IsNewFulfilmentBusiness]
 }

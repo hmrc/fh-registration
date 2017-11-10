@@ -19,7 +19,7 @@ package uk.gov.hmrc.fhdds.models.des
 import play.api.libs.json.Json
 
 case class Address(line1: String,
-                   line2: Option[String],
+                   line2: String,
                    line3: Option[String],
                    town: Option[String],
                    postalCode: Option[String],
