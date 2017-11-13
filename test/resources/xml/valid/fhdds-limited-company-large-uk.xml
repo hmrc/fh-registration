@@ -44,9 +44,6 @@
                     <nino>AA134567A</nino>
                 </panelNino>
             </panelPerson>
-            <panelCompany>
-                <companyName/>
-            </panelCompany>
             <role>Director</role>
         </repeatingCompanyOfficial>
     </companyOfficials>

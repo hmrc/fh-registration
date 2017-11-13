@@ -46,7 +46,7 @@ trait FhddsApplicationService {
 
   def iformXmlToApplication(xml: generated.Data, brd: BusinessRegistrationDetails): SubScriptionCreate = {
     SubScriptionCreate( SubscriptionCreateRequestSchema(
-        organizationType = brd.businessType.map(WordUtils.capitalizeFully).getOrElse(DefaultOrganizationType),
+        organizationType = brd.businessType.map(translateBusinessType).getOrElse(DefaultOrganizationType),
         FHbusinessDetail = IsNewFulfilmentBusiness(isNewFulfilmentBusiness = isYes(xml.businessDetails.isNewFulfilmentBusiness),
                                                    proposedStartDate =  getProposedStartDate(xml)),
         GroupInformation = Some(LimitedLiabilityOrCorporateBodyWithOutGroup(creatingFHDDSGroup = true,
@@ -60,11 +60,16 @@ trait FhddsApplicationService {
     ))
   }
 
+  private def translateBusinessType(businessType: String) = WordUtils.capitalizeFully(businessType) match {
+    case "Sole Trader" ⇒ "Sole Proprietor"
+    case other         ⇒ other
+  }
+
   private def getProposedStartDate(xml: Data) = {
     for {
       panelProposedStartDate <- xml.businessDetails.panelProposedStartDate
     } yield {
-      LocalDate.parse(panelProposedStartDate.proposedStartDate)
+      LocalDate.parse(panelProposedStartDate.proposedStartDate, dtf)
     }
   }
 
@@ -248,7 +253,7 @@ trait FhddsApplicationService {
     val principalPlaceOfBusinessO = xml.principalPlaceOfBusiness
     Some(List(
       PreviousOperationalAddress(
-        operatingDate = LocalDate.of(2010, 1, 1),
+        operatingDate = DefaultIncorporationDate,
         previousAddress = {
           for {
             principalPlaceOfBusiness ← principalPlaceOfBusinessO
@@ -270,12 +275,12 @@ trait FhddsApplicationService {
   }
 
   def principalBusinessAddress(brd: BusinessRegistrationDetails) = {
-    Address(brd.businessAddress.line1,
-            brd.businessAddress.line2,
-            brd.businessAddress.line3,
-            brd.businessAddress.line4,
-            brd.businessAddress.postcode,
-            brd.businessAddress.country)
+    Address(line1 = brd.businessAddress.line1,
+            line2 = brd.businessAddress.line2,
+            line3 = brd.businessAddress.line3,
+            town = brd.businessAddress.line4,
+            postalCode = brd.businessAddress.postcode,
+            countryCode = brd.businessAddress.country)
   }
 
 

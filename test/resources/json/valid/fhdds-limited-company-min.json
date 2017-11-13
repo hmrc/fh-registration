@@ -11,9 +11,11 @@
     },
     "businessAddressForFHDDS": {
       "currentAddress": {
-        "line1": "line1",
-        "line2": "line2",
-        "postalCode": "AA11 2BB",
+        "line1": "LINE 1",
+        "line2": "LINE 2",
+        "line3": "LINE 3",
+        "town" : "LINE 4",
+        "postalCode": "M46 0PT",
         "countryCode": "GB"
       },
       "commonDetails": {

@@ -16,7 +16,6 @@
 
 package uk.gov.hmrc.fhdds.models.des
 
-
 import com.eclipsesource.schema._
 import play.api.libs.json._
 import uk.gov.hmrc.play.test.UnitSpec
@@ -28,6 +27,8 @@ class JsonSchemaSpecs extends UnitSpec  {
 
   "Json Schema" should {
     validate("fhdds-limited-company-min")
+    validate("des-ist-example")
+    validate("sole-trader")
   }
 
   def validate(name: String) = {
@@ -44,7 +45,10 @@ class JsonSchemaSpecs extends UnitSpec  {
   def isValid(jsFile: String): Boolean = {
     val json = Json.parse(getJsonInputStream(jsFile))
     val validationResult = validator(json)
-
+    validationResult.fold(
+      { errors ⇒ println(errors.toJson) },
+      { x ⇒ () }
+    )
     validationResult.isSuccess
   }
 

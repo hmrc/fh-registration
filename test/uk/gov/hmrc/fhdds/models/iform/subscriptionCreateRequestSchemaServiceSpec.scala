@@ -38,14 +38,14 @@ class subscriptionCreateRequestSchemaServiceSpec extends UnitSpec {
     .as[BusinessRegistrationDetails]
 
   "Application service" should {
-//    "Create a correct json for fhdds-limited-company-large-uk.xml" in {
-//      validatesFor("fhdds-limited-company-large-uk.xml")
-//    }
-//
+    "Create a correct json for fhdds-limited-company-large-uk.xml" in {
+      validatesFor("fhdds-limited-company-large-uk.xml")
+    }
+
     "Create a correct json for fhdds-limited-company-minimum.xml" in {
       validatesFor("fhdds-limited-company-minimum.xml")
     }
-//
+
 //    "Create a correct json for fhdds-limited-company-minimum-international.xml" in {
 //      validatesFor("fhdds-limited-company-minimum-international.xml")
 //    }
