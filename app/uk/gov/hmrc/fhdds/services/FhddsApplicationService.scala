@@ -34,7 +34,7 @@ trait FhddsApplicationService {
 
   val DefaultOrganizationType = "Corporate Body"
   val DefaultCompanyRegistrationNumber = "AB123456"
-  val DefaultIncorporationDate = LocalDate.of(2010, 1, 1)
+  val DefaultIncorporationDate: LocalDate = LocalDate.of(2010, 1, 1)
   val DefaultContactEmail = "email@email.com"
   val DefaultPersonDeclarationStatus = "Director"
   val DefaultNumberOfCustomers = "01"
@@ -42,7 +42,7 @@ trait FhddsApplicationService {
   val DefaultFirstName = "John"
   val DefaultLastName = "Doe"
 
-  val dtf = DateTimeFormatter.ofPattern("dd/MM/yyyy")
+  val dtf: DateTimeFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")
 
   def iformXmlToApplication(xml: generated.Data, brd: BusinessRegistrationDetails): SubScriptionCreate = {
     SubScriptionCreate( SubscriptionCreateRequestSchema(
@@ -117,7 +117,7 @@ trait FhddsApplicationService {
                 ukPanel ⇒ ukPanel.blockAddressUKPlus.map(
                   blockAddressUKPlus ⇒ Address(
                     blockAddressUKPlus.line1,
-                    blockAddressUKPlus.line2.getOrElse(""),
+                    blockAddressUKPlus.line2.getOrElse(" "),
                     blockAddressUKPlus.line3,
                     blockAddressUKPlus.town,
                     Some(blockAddressUKPlus.postcode),
@@ -130,7 +130,7 @@ trait FhddsApplicationService {
     )
   }
 
-  def companyOfficialsDetails(xml: generated.Data) = {
+  def companyOfficialsDetails(xml: generated.Data): List[CompanyOfficial] = {
     val companyOfficials: Seq[RepeatingCompanyOfficial] = xml.companyOfficials.repeatingCompanyOfficial
     companyOfficials.toList.map(
       companyOfficial ⇒ CompanyOfficial(role = {
@@ -206,13 +206,14 @@ trait FhddsApplicationService {
   }
 
   def addressLookupToAddress(addressLookup: AddressLookUpContactAddress): Option[Address] = {
-    isYes(addressLookup.selectLocation.getOrElse("")) match {
-      case true ⇒ addressLookup.ukPanel.flatMap(_.blockAddressUKPlus).map(ukAddressToAddress)
-      case false ⇒ addressLookup.blockAddressInternationalPlus.map(internationalAddressToAddress)
+    if (isYes(addressLookup.selectLocation.getOrElse(""))) {
+      addressLookup.ukPanel.flatMap(_.blockAddressUKPlus).map(ukAddressToAddress)
+    } else {
+      addressLookup.blockAddressInternationalPlus.map(internationalAddressToAddress)
     }
   }
 
-  def businessDetails(xml: generated.Data, brd: BusinessRegistrationDetails) = {
+  def businessDetails(xml: generated.Data, brd: BusinessRegistrationDetails): BusinessDetail = {
     BusinessDetail(
       LimitedLiabilityPartnershipCorporateBody(
         groupRepresentativeJoinDate = Some(DefaultIncorporationDate),
@@ -224,7 +225,7 @@ trait FhddsApplicationService {
     )
   }
 
-  def businessAddressForFHDDS(xml: generated.Data, brd: BusinessRegistrationDetails) = {
+  def businessAddressForFHDDS(xml: generated.Data, brd: BusinessRegistrationDetails): BusinessAddressForFHDDS = {
     val isOnlyPrincipalPlaceOfBusinessInLastThreeYears =
       isYes(xml.principalPlaceOfBusiness match {
         case Some(principalPlaceOfBusiness) ⇒ principalPlaceOfBusiness.isOnlyPrinicipalPlaceOfBusinessInLastThreeYears
@@ -262,7 +263,7 @@ trait FhddsApplicationService {
           } yield {
             Address(
               blockAddressUKPlus.line1,
-              blockAddressUKPlus.line2.getOrElse(""),
+              blockAddressUKPlus.line2.getOrElse(" "),
               blockAddressUKPlus.line3,
               blockAddressUKPlus.town,
               Some(blockAddressUKPlus.postcode),
@@ -274,20 +275,19 @@ trait FhddsApplicationService {
     ))
   }
 
-  def principalBusinessAddress(brd: BusinessRegistrationDetails) = {
+  def principalBusinessAddress(brd: BusinessRegistrationDetails): Address = {
     Address(line1 = brd.businessAddress.line1,
-            line2 = brd.businessAddress.line2,
+            line2 = checkEmptyAddressLine(brd.businessAddress.line2),
             line3 = brd.businessAddress.line3,
             town = brd.businessAddress.line4,
             postalCode = brd.businessAddress.postcode,
             countryCode = brd.businessAddress.country)
   }
 
-
   def ukAddressToAddress(blockAddressUk: AddressUKPlusQuestion) =
     Address(
       blockAddressUk.line1,
-      blockAddressUk.line2.getOrElse(""),
+      blockAddressUk.line2.getOrElse(" "),
       blockAddressUk.line3,
       blockAddressUk.town,
       Some(blockAddressUk.postcode),
@@ -296,12 +296,17 @@ trait FhddsApplicationService {
   def internationalAddressToAddress(blockAddressInternationalPlus: AddressInternationalPlusQuestion) =
     Address(
       blockAddressInternationalPlus.line1,
-      blockAddressInternationalPlus.line2,
+      checkEmptyAddressLine(blockAddressInternationalPlus.line2),
       blockAddressInternationalPlus.line3,
       None,
       None,
       blockAddressInternationalPlus.country_code.getOrElse("GB"))
 
   def isYes(radioButtonAnswer: String): Boolean = radioButtonAnswer equals "Yes"
+
+  private def checkEmptyAddressLine(addressLine: String): String = {
+    if (addressLine.isEmpty) {" "}
+    else addressLine
+  }
 
 }
