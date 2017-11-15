@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<data>
+    <businessDetail>
+        <limitedLiabilityPartnershipCorporateBody>
+            <companyRegistrationNumber>12345678</companyRegistrationNumber>
+            <dateOfIncorporation>20/03/2015</dateOfIncorporation>
+        </limitedLiabilityPartnershipCorporateBody>
+    </businessDetail>
+    <businessDetails>
+        <isNewFulfilmentBusiness>Yes</isNewFulfilmentBusiness>
+        <panelProposedStartDate>
+            <proposedStartDate>31/07/2018</proposedStartDate>
+        </panelProposedStartDate>
+        <hasTradingName>Yes</hasTradingName>
+        <panelTradingName>
+            <tradingName>Dogyco</tradingName>
+        </panelTradingName>
+        <hasVatRegistrationNumber>Yes</hasVatRegistrationNumber>
+        <panelVatRegistrationNumber>
+            <vatRegistrationNumber>123456789</vatRegistrationNumber>
+        </panelVatRegistrationNumber>
+    </businessDetails>
+    <businessActivities>
+        <numberOfCustomersOutsideOfEU>03</numberOfCustomersOutsideOfEU>
+        <fulfilmentOrdersType>
+            <onLine>Yes</onLine>
+            <telephone>Yes</telephone>
+            <physicalPremises>Yes</physicalPremises>
+            <other>Yes</other>
+            <panelTypeOfOtherOrder>
+                <typeOfOtherOrder>email</typeOfOtherOrder>
+            </panelTypeOfOtherOrder>
+        </fulfilmentOrdersType>
+        <goodsImportedOutEORI>Yes</goodsImportedOutEORI>
+    </businessActivities>
+    <companyOfficials>
+        <repeatingCompanyOfficial>
+            <companyOfficialType>Person</companyOfficialType>
+            <panelPerson>
+                <firstName>A</firstName>
+                <lastName>A</lastName>
+                <hasNino>Yes</hasNino>
+                <panelNino>
+                    <nino>AA134567A</nino>
+                </panelNino>
+            </panelPerson>
+            <role>Director</role>
+        </repeatingCompanyOfficial>
+    </companyOfficials>
+    <principalPlaceOfBusiness>
+        <dateStartedTradingAsFulfilmentHouse>20/03/2015</dateStartedTradingAsFulfilmentHouse>
+        <isOnlyPrinicipalPlaceOfBusinessInLastThreeYears>No</isOnlyPrinicipalPlaceOfBusinessInLastThreeYears>
+        <panelPreviousPrincipalTradingBusinessAddresses>
+            <repeatingPreviousPrincipalTradingBusinessAddress>
+                <hide_postcode>AA1 1AA</hide_postcode>
+                <hide_houseNameNumber/>
+                <searchState>manual</searchState>
+                <blockAddressUKPlus data_type="addressUKLookup" line1="line1" postcode="AA1 1AA"
+                  town="WOrthing" uprn="manual"/>
+            </repeatingPreviousPrincipalTradingBusinessAddress>
+            <operatingDate>20/03/2015</operatingDate>
+        </panelPreviousPrincipalTradingBusinessAddresses>
+    </principalPlaceOfBusiness>
+    <otherStorageSites>
+        <hasOtherStorageSites>Yes</hasOtherStorageSites>
+        <panelOtherStorageSites>
+            <repeatingSectionOtherTradingPremises>
+                <repeatingPanel>
+                    <otherTradingPremisesAddressLookup>
+                        <ukPanel>
+                            <hide_postcode>AA11 2AA</hide_postcode>
+                            <searchState>manual</searchState>
+                            <blockAddressUKPlus data_type="addressUKLookup" line1="ll1" postcode="AA11 2AA"
+                              town="Goring" uprn="manual"/>
+                        </ukPanel>
+                    </otherTradingPremisesAddressLookup>
+                </repeatingPanel>
+            </repeatingSectionOtherTradingPremises>
+            <thirdPartyStorageUsed>Yes</thirdPartyStorageUsed>
+        </panelOtherStorageSites>
+    </otherStorageSites>
+    <contactPerson>
+        <firstName>Alex</firstName>
+        <lastName>Grit</lastName>
+        <telephoneNumber>123123</telephoneNumber>
+        <email>a@a.ro</email>
+        <contactCorrectAddress>No</contactCorrectAddress>
+        <addressLookUpContactAddress>
+            <selectLocation>No</selectLocation>
+            <ukPanel>
+                <searchState>initial</searchState>
+                <blockAddressUKPlus data_type="" uprn=""/>
+            </ukPanel>
+            <blockAddressInternationalPlus country="FR" data_type="addressInternational" line1="dom" line2="bom"/>
+        </addressLookUpContactAddress>
+    </contactPerson>
+    <declaration>
+        <personName>asdf asdf</personName>
+        <personStatus>Director</personStatus>
+    </declaration>
+</data>
