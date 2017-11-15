@@ -34,7 +34,7 @@ class subscriptionCreateRequestSchemaServiceSpec extends UnitSpec {
   val service = new FhddsApplicationServiceImpl
 
   val brd: BusinessRegistrationDetails = Json
-    .parse(getClass.getResourceAsStream("/models/business-registration-details.json"))
+    .parse(getClass.getResourceAsStream("/models/business-registration-details-sole-trader.json"))
     .as[BusinessRegistrationDetails]
 
   "Application service" should {
@@ -61,6 +61,8 @@ class subscriptionCreateRequestSchemaServiceSpec extends UnitSpec {
 
     val json = Json.toJson(subscrtiptionCreate)
 
+    println("====")
+    println(json)
     val validationResult = validator(json)
     validationResult.isSuccess shouldEqual true
   }

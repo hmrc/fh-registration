@@ -16,50 +16,40 @@
 
 package uk.gov.hmrc.fhdds.connectors
 
+import com.google.inject.ImplementedBy
 import play.api.Logger
-import play.api.libs.json.{JsObject, JsValue, Json}
 import uk.gov.hmrc.fhdds.config.WSHttp
-import uk.gov.hmrc.fhdds.connectors.CompaniesHouseConfig.config
+import uk.gov.hmrc.fhdds.models.des.{SubScriptionCreate, DesSubmissionResponse}
 import uk.gov.hmrc.play.config.ServicesConfig
 import uk.gov.hmrc.play.http.logging.Authorization
 import uk.gov.hmrc.play.http.ws.WSHttp
-import uk.gov.hmrc.play.http.{HeaderCarrier, HttpResponse}
+import uk.gov.hmrc.play.http.{HeaderCarrier, HttpReads, HttpResponse}
 
-import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-object DESConnector extends DESConnect {
-  val DEServiceUrl: String = config("des-service").getString("url").getOrElse("")
-  val orgLookupURI: String = "registration/organisation"
-  val urlHeaderEnvironment: String = config("des-service").getString("environment").getOrElse("")
-  val urlHeaderAuthorization: String = s"Bearer ${config("des-service").getString("authorization-token").getOrElse("")}"
-  val http = WSHttp
+class DesConnectorImpl extends DesConnector with ServicesConfig {
+
+  def desServiceUri() = config("des-service").getString("uri").getOrElse("")
+  def desSubmissionUrl(safeId: String) =s"${baseUrl("des-service")}${desServiceUri()}/$safeId"
+
+  lazy val http: WSHttp = WSHttp
+
+  override val desToken = config("des-service").getString("authorization-token").getOrElse("")
+  override val environment = config("des-service").getString("environment").getOrElse("")
 }
 
-trait DESConnect extends ServicesConfig {
+@ImplementedBy(classOf[DesConnectorImpl])
+trait DesConnector {
 
-  val DEServiceUrl: String
-  val orgLookupURI: String
-  val urlHeaderEnvironment: String
-  val urlHeaderAuthorization: String
   val http: WSHttp
+  val environment: String
+  val desToken: String
 
-  val lookupData: JsObject = Json.obj(
-    "regime" -> "ITSA",
-    "requiresNameMatch" -> false,
-    "isAnAgent" -> false
-  )
+  def desSubmissionUrl(safeId: String): String
+  def sendSubmission(safeId: String, application: SubScriptionCreate)(hc: HeaderCarrier): Future[DesSubmissionResponse] = {
+    Logger.debug(s"Sending fhdds registration data to DES with payload $application")
 
-  def lookup(utr: String): Future[HttpResponse] = {
-    implicit val hc: HeaderCarrier = createHeaderCarrier
-    http.POST[JsValue, HttpResponse](s"$DEServiceUrl/$orgLookupURI/utr/$utr", Json.toJson(lookupData)).map { response =>
-      if (response.status != 200) {
-        Logger.warn(s"[DESConnect][lookup] - status: ${response.status}")
-      }
-      response
-    }
+    implicit val desHeaders = hc.copy(authorization = Some(Authorization(s"Bearer $desToken"))).withExtraHeaders("Environment" -> environment)
+    http.POST[SubScriptionCreate, DesSubmissionResponse](desSubmissionUrl(safeId), application)
   }
-
-  def createHeaderCarrier: HeaderCarrier =
-    HeaderCarrier(extraHeaders = Seq("Environment" -> urlHeaderEnvironment), authorization = Some(Authorization(urlHeaderAuthorization)))
 }
