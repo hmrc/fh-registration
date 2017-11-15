@@ -305,7 +305,7 @@ trait FhddsApplicationService {
   def isYes(radioButtonAnswer: String): Boolean = radioButtonAnswer equals "Yes"
 
   private def checkEmptyAddressLine(addressLine: String): String = {
-    if (addressLine.isEmpty) {" "}
+    if (addressLine.isEmpty) " "
     else addressLine
   }
 
