@@ -25,7 +25,7 @@ class ControllerServicesSpec extends UnitSpec {
   "createSubmissionRef" should {
     "Generates a submission reference number" in {
 
-      val theDigitsSubmissionRefRegex: Regex = "([A-Z,0-9]{3})-([A-Z,0-9]{4})-([A-Z,0-9]{3})".r
+      val theDigitsSubmissionRefRegex: Regex = "([A-Z0-9]{3})-([A-Z,-9]{4})-([A-Z0-9]{3})".r
 
       val submissionRef = ControllerServices.createSubmissionRef()
 

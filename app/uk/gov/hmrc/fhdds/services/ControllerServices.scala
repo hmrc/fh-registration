@@ -22,7 +22,7 @@ object ControllerServices {
     import scala.util.Random._
 
     val len: Int = {
-      if (length % 2 == 1 && length > 10) length + 1 else length
+      if (length < 10) 10 else if (length % 2 == 1) length + 1 else length
     }
     val first: Int = (len - 4) / 2
 
