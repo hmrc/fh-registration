@@ -18,7 +18,7 @@ package uk.gov.hmrc.fhdds.controllers
 
 import javax.inject.Inject
 
-import play.api.libs.json.{JsString, Json}
+import play.api.libs.json.Json
 import play.api.mvc.{Action, Result}
 import uk.gov.hmrc.fhdds.models.businessregistration.BusinessRegistrationDetails
 import uk.gov.hmrc.fhdds.repositories.SubmissionExtraData.formats
@@ -35,7 +35,7 @@ class SubmissionExtraDataController @Inject()(
     request ⇒
       submissionDataRepository
         .saveBusinessRegistrationDetails(userId, formTypeRef, request.body)
-        .map(_ ⇒ Ok(JsString("Updated")))
+        .map(_ ⇒ Accepted)
         .recover(onRepositoryError)
   }
 
@@ -71,7 +71,7 @@ class SubmissionExtraDataController @Inject()(
   }
 
   val onUpdated: Boolean ⇒ Result = {found ⇒
-    if (found) Ok(Json.toJson("Updated"))
+    if (found) Accepted
     else NotFound
   }
 
