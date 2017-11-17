@@ -57,11 +57,11 @@ class FhddsApplicationController @Inject()(
       extraData ← findSubmissionExtraData(request.formId)
       application = createDesSubmission(request.formData, extraData)
       safeId = extraData.businessRegistrationDetails.safeId
-      _ ← desConnector.sendSubmission(safeId, application)(hc)
+      desResponse ← desConnector.sendSubmission(safeId, application)(hc)
       response = SubmissionResponse(ControllerServices.createSubmissionRef())
     } yield {
       subscribeToTaxEnrolment(
-        response.registrationNumber,
+        desResponse.registrationNumberFHDDS,
         extraData.businessRegistrationDetails.safeId,
         extraData.authorization)
       Ok(Json toJson response)
