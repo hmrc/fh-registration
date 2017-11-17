@@ -1,8 +1,11 @@
 # microservice specific routes
 
-PUT /submission-extra-data/:userId/:formTypeRef/formId                         @uk.gov.hmrc.fhdds.controllers.SubmissionExtraDataController.updateFormId(userId, formTypeRef)
+PUT /submission-extra-data/:userId/:formTypeRef/authorization                   @uk.gov.hmrc.fhdds.controllers.SubmissionExtraDataController.updateAuthorization(userId, formTypeRef)
+PUT /submission-extra-data/:userId/:formTypeRef/formId                          @uk.gov.hmrc.fhdds.controllers.SubmissionExtraDataController.updateFormId(userId, formTypeRef)
 PUT /submission-extra-data/:userId/:formTypeRef/businessRegistrationDetails     @uk.gov.hmrc.fhdds.controllers.SubmissionExtraDataController.saveBusinessRegistrationDetails(userId, formTypeRef)
 GET /submission-extra-data/:userId/:formTypeRef/businessRegistrationDetails     @uk.gov.hmrc.fhdds.controllers.SubmissionExtraDataController.getBusinessRegistrationDetails(userId, formTypeRef)
 GET /application/safeId/:submissionRef                                          @uk.gov.hmrc.fhdds.controllers.FhddsApplicationController.getSafeId(submissionRef)
 GET /application/:submissionRef                                                 @uk.gov.hmrc.fhdds.controllers.FhddsApplicationController.getApplication(submissionRef)
 POST /application/submit                                                        @uk.gov.hmrc.fhdds.controllers.FhddsApplicationController.submit()
+GET /tax-enrolment/callback/subscriptions                                       @uk.gov.hmrc.fhdds.controllers.FhddsApplicationController.subscriptionCallback()
+POST /tax-enrolment/callback/subscriptions                                       @uk.gov.hmrc.fhdds.controllers.FhddsApplicationController.subscriptionCallback()

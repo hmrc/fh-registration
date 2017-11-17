@@ -18,7 +18,7 @@ package uk.gov.hmrc.fhdds.controllers
 
 import javax.inject.Inject
 
-import play.api.libs.json.Json
+import play.api.libs.json.{JsString, Json}
 import play.api.mvc.{Action, Result}
 import uk.gov.hmrc.fhdds.models.businessregistration.BusinessRegistrationDetails
 import uk.gov.hmrc.fhdds.repositories.SubmissionExtraData.formats
@@ -31,16 +31,11 @@ class SubmissionExtraDataController @Inject()(
   val submissionDataRepository: SubmissionExtraDataRepository)
   extends BaseController {
 
-
-  val onRepositoryError: PartialFunction[Throwable, Result] = {
-    case e: Throwable ⇒ BadGateway(Json.toJson(s"Mongo Db error ${e.getMessage}"))
-  }
-
   def saveBusinessRegistrationDetails(userId: String, formTypeRef: String) = Action.async(parse.json[BusinessRegistrationDetails]) {
     request ⇒
       submissionDataRepository
         .saveBusinessRegistrationDetails(userId, formTypeRef, request.body)
-        .map(_ ⇒ Ok)
+        .map(_ ⇒ Ok(JsString("Updated")))
         .recover(onRepositoryError)
   }
 
@@ -49,9 +44,16 @@ class SubmissionExtraDataController @Inject()(
       val formId = request.body
       submissionDataRepository
         .updateFormId(userId, formTypeRef, formId)
-        .map(found ⇒
-          if (found) Ok(Json.toJson("Updated"))
-          else NotFound)
+        .map(onUpdated)
+        .recover(onRepositoryError)
+  }
+
+  def updateAuthorization(userId: String, formTypeRef: String) = Action.async(parse.json[String]) {
+    request ⇒
+      val authorization = request.body
+      submissionDataRepository
+        .updateAuthorization(userId, formTypeRef, authorization)
+        .map(onUpdated)
         .recover(onRepositoryError)
   }
 
@@ -62,6 +64,15 @@ class SubmissionExtraDataController @Inject()(
         case Some(data) ⇒ Ok(Json.toJson(data.businessRegistrationDetails))
         case None       ⇒ NotFound
       }
+  }
+
+  val onRepositoryError: PartialFunction[Throwable, Result] = {
+    case e: Throwable ⇒ BadGateway(Json.toJson(s"Mongo Db error ${e.getMessage}"))
+  }
+
+  val onUpdated: Boolean ⇒ Result = {found ⇒
+    if (found) Ok(Json.toJson("Updated"))
+    else NotFound
   }
 
 
