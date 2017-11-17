@@ -24,7 +24,7 @@ import uk.gov.hmrc.fhdds.connectors.{DesConnector, DfsStoreConnector}
 import uk.gov.hmrc.fhdds.models.des.SubScriptionCreate.format
 import uk.gov.hmrc.fhdds.models.fhdds.{SubmissionRequest, SubmissionResponse}
 import uk.gov.hmrc.fhdds.repositories.{SubmissionExtraData, SubmissionExtraDataRepository}
-import uk.gov.hmrc.fhdds.services.FhddsApplicationService
+import uk.gov.hmrc.fhdds.services.{ControllerServices, FhddsApplicationService}
 import uk.gov.hmrc.play.http.NotFoundException
 import uk.gov.hmrc.play.microservice.controller.BaseController
 
@@ -54,12 +54,11 @@ class FhddsApplicationController @Inject()(
       extraData ← findSubmissionExtraData(request.formId)
       application = createDesSubmission(request.formData, extraData)
       safeId = extraData.businessRegistrationDetails.safeId
-      desResponse ← desConnector.sendSubmission(safeId, application)(hc)
-      response = SubmissionResponse(desResponse.registrationNumberFHDDS)
+      _ ← desConnector.sendSubmission(safeId, application)(hc)
+      response = SubmissionResponse(ControllerServices.createSubmissionRef())
     } yield {
       Ok(Json toJson response)
     }
-
   }
 
   private def createDesSubmission(formData: String, extraData: SubmissionExtraData) = {
