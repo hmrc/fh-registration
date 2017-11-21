@@ -16,10 +16,9 @@
 
 package uk.gov.hmrc.fhdds.models.des
 
-import org.joda.time.DateTime
 import play.api.libs.json.Json
 
-case class DesSubmissionResponse(processingDate: DateTime, registrationNumberFHDDS: String)
+case class DesSubmissionResponse(processingDate: String, registrationNumberFHDDS: String)
 
 object DesSubmissionResponse {
   implicit val submissionResponseFormat = Json.format[DesSubmissionResponse]
