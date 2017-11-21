@@ -20,8 +20,8 @@ import javax.inject.Inject
 
 import play.api.Logger
 import play.api.libs.json.Json
-import play.api.mvc.Action
 import uk.gov.hmrc.fhdds.connectors.{DesConnector, DfsStoreConnector, TaxEnrolmentConnector}
+import play.api.mvc.{Action, AnyContent}
 import uk.gov.hmrc.fhdds.models.des.SubScriptionCreate.format
 import uk.gov.hmrc.fhdds.models.fhdds.{SubmissionRequest, SubmissionResponse}
 import uk.gov.hmrc.fhdds.repositories.{SubmissionExtraData, SubmissionExtraDataRepository}
@@ -35,13 +35,13 @@ import scala.util.{Failure, Success}
 class FhddsApplicationController @Inject()(
   val dfsStoreConnector       : DfsStoreConnector,
   val desConnector            : DesConnector,
-  val taxEnrolmentConnector: TaxEnrolmentConnector,
+  val taxEnrolmentConnector   : TaxEnrolmentConnector,
   val submissionDataRepository: SubmissionExtraDataRepository,
   val applicationService      : FhddsApplicationService
 )
   extends BaseController {
 
-  def getApplication(submissionRef: String) = Action.async {
+  def getApplication(submissionRef: String): Action[AnyContent] = Action.async {
     for {
       submission ← dfsStoreConnector.getSubmission(submissionRef)
       extraData ← findSubmissionExtraData(submission.formId)
