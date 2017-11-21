@@ -21,16 +21,13 @@ import play.api.libs.json.Json
 
 case class GroupMemberDetail(numberOfMembersInGroup: String, memberDetails: List[MemberDetail])
 
-
 object GroupMemberDetail {
   implicit val format = Json.format[GroupMemberDetail]
 }
 
 case class LimitedLiabilityOrCorporateBodyWithOutGroup(creatingFHDDSGroup:Boolean,
                                                        confirmationByRepresentative:Boolean,
-                                                       groupMemberDetail: Option[GroupMemberDetail]
-                                                      )
-
+                                                       groupMemberDetail: Option[GroupMemberDetail])
 
 object LimitedLiabilityOrCorporateBodyWithOutGroup {
   implicit val format = Json.format[LimitedLiabilityOrCorporateBodyWithOutGroup]
