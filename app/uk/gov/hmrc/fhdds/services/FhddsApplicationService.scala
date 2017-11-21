@@ -33,22 +33,17 @@ class FhddsApplicationServiceImpl extends FhddsApplicationService
 trait FhddsApplicationService {
 
   val DefaultOrganizationType = "Corporate Body"
-  val DefaultCompanyRegistrationNumber = "AB123456"
+  //todo replace with right date
   val DefaultIncorporationDate: LocalDate = LocalDate.of(2010, 1, 1)
-  val DefaultContactEmail = "email@email.com"
-  val DefaultPersonDeclarationStatus = "Director"
-  val DefaultNumberOfCustomers = "01"
-
-  val DefaultFirstName = "John"
-  val DefaultLastName = "Doe"
 
   val dtf: DateTimeFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")
 
   def iformXmlToApplication(xml: generated.Data, brd: BusinessRegistrationDetails): SubScriptionCreate = {
     SubScriptionCreate( SubscriptionCreateRequestSchema(
         organizationType = brd.businessType.map(translateBusinessType).getOrElse(DefaultOrganizationType),
-        FHbusinessDetail = IsNewFulfilmentBusiness(isNewFulfilmentBusiness = isYes(xml.businessDetails.isNewFulfilmentBusiness),
+        FHbusinessDetail = IsNewFulfilmentBusiness(isNewFulfilmentBusiness = isYes(xml.isNewFulfilmentBusiness.isNewFulfilmentBusiness),
                                                    proposedStartDate =  getProposedStartDate(xml)),
+        //todo can not find groupInformation
         GroupInformation = Some(LimitedLiabilityOrCorporateBodyWithOutGroup(creatingFHDDSGroup = true,
                                                                             confirmationByRepresentative = true,
                                                                             groupMemberDetail = None)),
@@ -67,22 +62,22 @@ trait FhddsApplicationService {
 
   private def getProposedStartDate(xml: Data) = {
     for {
-      panelProposedStartDate <- xml.businessDetails.panelProposedStartDate
+      panelProposedStartDate <- xml.isNewFulfilmentBusiness.panelProposedStartDate
     } yield {
       LocalDate.parse(panelProposedStartDate.proposedStartDate, dtf)
     }
   }
 
   private def declaration(xml: Data) = {
-    Declaration(personName = xml.declaration.personName,
-      personStatus = xml.declaration.personStatus,
+    Declaration(personName = xml.declaration.hide_personName,
+      personStatus = xml.declaration.hide_personStatus,
       personStatusOther = None,
       isInformationAccurate = true)
   }
 
   private def additionalBusinessInformation(brd: BusinessRegistrationDetails, xml: Data) = {
     //val numberOfCustomersOutsideOfEU = xml.businessActivities.numberOfCustomersOutsideOfEU
-    val numberOfCustomers = DefaultNumberOfCustomers//TODO
+    val numberOfCustomers = xml.numberOfCustomers.numberOfCustomers
     val officials = companyOfficialsDetails(xml)
 
     val otherStorageSitesDetail = {
@@ -187,12 +182,12 @@ trait FhddsApplicationService {
       names = Name(
         firstName = xml.contactPerson.firstName,
         lastName = xml.contactPerson.lastName),
-      usingSameContactAddress = true,
+      usingSameContactAddress = isYes(xml.contactPerson.contactCorrectAddress),
       address = contactPersonAddress,
       commonDetails = CommonDetails(
         telephone = Some(xml.contactPerson.telephoneNumber),
         mobileNumber = None,
-        email = DefaultContactEmail),
+        email = xml.contactPerson.email),
       roleInOrganization = Some(RoleInOrganization())
     )
   }
@@ -206,7 +201,7 @@ trait FhddsApplicationService {
   }
 
   def addressLookupToAddress(addressLookup: AddressLookUpContactAddress): Option[Address] = {
-    if (isYes(addressLookup.selectLocation.getOrElse(""))) {
+    if (isYes(addressLookup.selectLocation)) {
       addressLookup.ukPanel.flatMap(_.blockAddressUKPlus).map(ukAddressToAddress)
     } else {
       addressLookup.blockAddressInternationalPlus.map(internationalAddressToAddress)
@@ -218,8 +213,8 @@ trait FhddsApplicationService {
       LimitedLiabilityPartnershipCorporateBody(
         groupRepresentativeJoinDate = Some(DefaultIncorporationDate),
         IncorporationDetails(
-          companyRegistrationNumber = Some(DefaultCompanyRegistrationNumber),
-          dateOfIncorporation = Some(DefaultIncorporationDate)
+          companyRegistrationNumber = Some(xml.businessDetail.limitedLiabilityPartnershipCorporateBody.companyRegistrationNumber),
+          dateOfIncorporation = Some(LocalDate.parse(xml.dateOfIncorporation.dateOfIncorporation, dtf))
         )
       )
     )
@@ -227,10 +222,7 @@ trait FhddsApplicationService {
 
   def businessAddressForFHDDS(xml: generated.Data, brd: BusinessRegistrationDetails): BusinessAddressForFHDDS = {
     val isOnlyPrincipalPlaceOfBusinessInLastThreeYears =
-      isYes(xml.principalPlaceOfBusiness match {
-        case Some(principalPlaceOfBusiness) ⇒ principalPlaceOfBusiness.isOnlyPrinicipalPlaceOfBusinessInLastThreeYears
-        case _ ⇒ "no"
-      })
+      isYes(xml.timeAtCurrentAddress.isOnlyPrinicipalPlaceOfBusinessInLastThreeYears)
     BusinessAddressForFHDDS(
       currentAddress = principalBusinessAddress(brd),
       commonDetails = CommonDetails(
@@ -251,15 +243,15 @@ trait FhddsApplicationService {
   }
 
   def previousPrincipalPlaceOfBusinessAddresses(xml: Data): Option[List[PreviousOperationalAddress]] = {
-    val principalPlaceOfBusinessO = xml.principalPlaceOfBusiness
+    val principalBusinessPreviousAddress = xml.timeAtCurrentAddress.panelPreviousAddress
     Some(List(
       PreviousOperationalAddress(
         operatingDate = DefaultIncorporationDate,
         previousAddress = {
           for {
-            principalPlaceOfBusiness ← principalPlaceOfBusinessO
-            panelPreviousPrincipalTradingBusinessAddresses ← principalPlaceOfBusiness.panelPreviousPrincipalTradingBusinessAddresses
-            blockAddressUKPlus ← panelPreviousPrincipalTradingBusinessAddresses.repeatingPreviousPrincipalTradingBusinessAddress.blockAddressUKPlus
+            previousAddress ← principalBusinessPreviousAddress
+            panelPreviousPrincipalTradingBusinessAddresses ← previousAddress.ukPanel
+            blockAddressUKPlus ← panelPreviousPrincipalTradingBusinessAddresses.block_addressUKPlus
           } yield {
             Address(
               blockAddressUKPlus.line1,
