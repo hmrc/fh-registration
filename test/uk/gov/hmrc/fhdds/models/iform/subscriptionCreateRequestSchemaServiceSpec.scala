@@ -42,9 +42,9 @@ class subscriptionCreateRequestSchemaServiceSpec extends UnitSpec {
       validatesFor("fhdds-limited-company-large-uk.xml")
     }
 
-    "Create a correct json for fhdds-limited-company-large-uk-without-addressLine2.xml" in {
-      validatesFor("fhdds-limited-company-large-uk-without-addressLine2.xml")
-    }
+//    "Create a correct json for fhdds-limited-company-large-uk-without-addressLine2.xml" in {
+//      validatesFor("fhdds-limited-company-large-uk-without-addressLine2.xml")
+//    }
 
     "Create a correct json for fhdds-limited-company-minimum.xml" in {
       validatesFor("fhdds-limited-company-minimum.xml")

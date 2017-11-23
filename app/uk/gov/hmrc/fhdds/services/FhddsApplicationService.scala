@@ -108,7 +108,7 @@ trait FhddsApplicationService {
         otherStorageSites.repeatingSectionOtherTradingPremises.flatMap(
           blockAddressUKPlus ⇒
             blockAddressUKPlus.repeatingPanel.flatMap(
-              repeatingPanel ⇒ repeatingPanel.otherTradingPremisesAddressLookup.ukPanel.flatMap(
+              repeatingPanel ⇒ repeatingPanel.otherTradingPremisesAddressLookup.get.ukPanel.flatMap(
                 ukPanel ⇒ ukPanel.blockAddressUKPlus.map(
                   blockAddressUKPlus ⇒ Address(
                     blockAddressUKPlus.line1,
@@ -130,9 +130,9 @@ trait FhddsApplicationService {
     companyOfficials.toList.map(
       companyOfficial ⇒ CompanyOfficial(role = {
         companyOfficial.companyOfficialType match {
-          case "Secretary" ⇒ "Company Secretary"
-          case "Director+Secretary" ⇒ "Director and Company Secretary"
-          case "Director" ⇒ "Director"
+          case Some("Secretary") ⇒ "Company Secretary"
+          case Some("Director+Secretary") ⇒ "Director and Company Secretary"
+          case Some("Director") ⇒ "Director"
           case _ ⇒ "Member"
         }
       },
@@ -141,9 +141,9 @@ trait FhddsApplicationService {
           for {
             panelPerson ← companyOfficial.panelPerson
           } yield {
-            Name(firstName = panelPerson.firstName,
+            Name(firstName = panelPerson.firstName.getOrElse(""),
                   middleName = None,
-                  lastName = panelPerson.lastName)
+                  lastName = panelPerson.lastName.getOrElse(""))
           }
         }.get,
 
@@ -151,8 +151,8 @@ trait FhddsApplicationService {
           for {
             panelPerson ← companyOfficial.panelPerson
           } yield {
-            if (isYes(panelPerson.hasNino)) {
-              Identification(nino = panelPerson.panelNino.map(_.nino))
+            if (isYes(panelPerson.hasNino.getOrElse("No"))) {
+              Identification(nino = panelPerson.panelNino.flatMap(_.nino))
             } else {
               Identification(passportNumber = panelPerson.panelNoNino.flatMap(
                                                 personNoNino ⇒ if (isYes(personNoNino.hasPassportNumber)) {

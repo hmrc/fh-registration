@@ -289,17 +289,17 @@
                   <xs:element maxOccurs="25" minOccurs="1" name="repeatingPanel">
                     <xs:complexType>
                       <xs:sequence>
-                        <xs:element name="companyOfficialType" type="RadioQuestion"/>
+                        <xs:element minOccurs="0" name="companyOfficialType" type="RadioQuestion"/>
                         <xs:element minOccurs="0" name="panelPerson">
                           <xs:complexType>
                             <xs:sequence>
-                              <xs:element name="firstName" type="TextQuestion"/>
-                              <xs:element name="lastName" type="TextQuestion"/>
-                              <xs:element name="hasNino" type="RadioQuestion"/>
+                              <xs:element minOccurs="0" name="firstName" type="TextQuestion"/>
+                              <xs:element minOccurs="0" name="lastName" type="TextQuestion"/>
+                              <xs:element minOccurs="0" name="hasNino" type="RadioQuestion"/>
                               <xs:element minOccurs="0" name="panelNino">
                                 <xs:complexType>
                                   <xs:sequence>
-                                    <xs:element name="nino" type="TextQuestion"/>
+                                    <xs:element minOccurs="0" name="nino" type="TextQuestion"/>
                                   </xs:sequence>
                                 </xs:complexType>
                               </xs:element>
@@ -324,7 +324,7 @@
                                   </xs:sequence>
                                 </xs:complexType>
                               </xs:element>
-                              <xs:element name="role" type="RadioQuestion"/>
+                              <xs:element minOccurs="0" name="role" type="RadioQuestion"/>
                             </xs:sequence>
                           </xs:complexType>
                         </xs:element>
@@ -431,7 +431,7 @@
                         <xs:element maxOccurs="5" minOccurs="1" name="repeatingPanel">
                           <xs:complexType>
                             <xs:sequence>
-                              <xs:element name="otherTradingPremisesAddressLookup">
+                              <xs:element minOccurs="0" name="otherTradingPremisesAddressLookup">
                                 <xs:complexType>
                                   <xs:sequence>
                                     <xs:element minOccurs="0" name="ukPanel">
@@ -440,8 +440,8 @@
                                           <xs:element minOccurs="0" name="hide_postcode" type="TextQuestion"/>
                                           <xs:element minOccurs="0" name="hide_houseNameNumber" type="TextQuestion"/>
                                           <xs:element minOccurs="0" name="radiobutton_results" type="RadioQuestion"/>
-                                          <xs:element name="searchState" type="TextQuestion"/>
-                                          <xs:element name="searchResults" type="TextQuestion"/>
+                                          <xs:element minOccurs="0" name="searchState" type="TextQuestion"/>
+                                          <xs:element minOccurs="0" name="searchResults" type="TextQuestion"/>
                                           <xs:element minOccurs="0" name="blockAddressUKPlus" type="AddressUKPlusQuestion"/>
                                         </xs:sequence>
                                       </xs:complexType>
