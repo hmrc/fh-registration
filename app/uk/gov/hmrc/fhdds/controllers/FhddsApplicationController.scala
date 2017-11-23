@@ -18,21 +18,24 @@ package uk.gov.hmrc.fhdds.controllers
 
 import javax.inject.Inject
 
+import play.api.Logger
 import play.api.libs.json.Json
 import play.api.mvc.Action
-import uk.gov.hmrc.fhdds.connectors.{DesConnector, DfsStoreConnector}
+import uk.gov.hmrc.fhdds.connectors.{DesConnector, DfsStoreConnector, TaxEnrolmentConnector}
 import uk.gov.hmrc.fhdds.models.des.SubScriptionCreate.format
 import uk.gov.hmrc.fhdds.models.fhdds.{SubmissionRequest, SubmissionResponse}
 import uk.gov.hmrc.fhdds.repositories.{SubmissionExtraData, SubmissionExtraDataRepository}
-import uk.gov.hmrc.fhdds.services.FhddsApplicationService
-import uk.gov.hmrc.play.http.NotFoundException
+import uk.gov.hmrc.fhdds.services.{ControllerServices, FhddsApplicationService}
+import uk.gov.hmrc.play.http.{HeaderCarrier, NotFoundException}
 import uk.gov.hmrc.play.microservice.controller.BaseController
 
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.util.{Failure, Success}
 
 class FhddsApplicationController @Inject()(
   val dfsStoreConnector       : DfsStoreConnector,
   val desConnector            : DesConnector,
+  val taxEnrolmentConnector: TaxEnrolmentConnector,
   val submissionDataRepository: SubmissionExtraDataRepository,
   val applicationService      : FhddsApplicationService
 )
@@ -55,11 +58,29 @@ class FhddsApplicationController @Inject()(
       application = createDesSubmission(request.formData, extraData)
       safeId = extraData.businessRegistrationDetails.safeId
       desResponse ← desConnector.sendSubmission(safeId, application)(hc)
-      response = SubmissionResponse(desResponse.registrationNumberFHDDS)
+      response = SubmissionResponse(ControllerServices.createSubmissionRef())
     } yield {
+      subscribeToTaxEnrolment(
+        desResponse.registrationNumberFHDDS,
+        extraData.businessRegistrationDetails.safeId,
+        extraData.authorization)
       Ok(Json toJson response)
     }
+  }
 
+  private def subscribeToTaxEnrolment(subscriptionId: String, safeId: String, authorization: Option[String])(implicit hc: HeaderCarrier) = {
+   taxEnrolmentConnector
+     .subscribe(subscriptionId, safeId, authorization)(hc)
+     .onComplete({
+       case Success(r) ⇒ Logger.info(s"Tax enrolments for subscription $subscriptionId and safeId $safeId returned $r")
+       case Failure(e) ⇒ Logger.error(s"Tax enrolments for subscription $subscriptionId and safeId $safeId failed", e)
+     })
+  }
+
+  def subscriptionCallback = Action { request ⇒
+    val subscriptionId = request.getQueryString("subscriptionId").getOrElse("N/A")
+    Logger.info(s"Received subscription callback for subscriptionId: $subscriptionId with response" )
+    Ok("")
   }
 
   private def createDesSubmission(formData: String, extraData: SubmissionExtraData) = {

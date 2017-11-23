@@ -55,6 +55,13 @@ class SubmissionExtraDataRepository @Inject() (implicit rmc: ReactiveMongoCompon
       .map(_.isDefined)
   }
 
+  def updateAuthorization(userId: String, formTypeRef: String, authorization: String): Future[Boolean] = {
+    atomicUpdate(
+      finder = findSubmissionDataBSON(userId, formTypeRef),
+      set(BSONDocument("authorization" → authorization)))
+      .map(_.isDefined)
+  }
+
   private def findSubmissionDataBSON(userId: String, formTypeRef: String): BSONDocument = {
     and(BSONDocument("encUserId" -> userId), BSONDocument("formTypeRef"-> formTypeRef))
   }

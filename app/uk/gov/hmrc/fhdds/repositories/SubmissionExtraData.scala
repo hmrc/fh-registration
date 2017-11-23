@@ -28,6 +28,7 @@ case class SubmissionExtraData(
   submissionRef: Option[String],
   businessRegistrationDetails: BusinessRegistrationDetails,
   companyRegistrationNumber: Option[String],
+  authorization: Option[String],
   id: BSONObjectID = BSONObjectID.generate
 )
 

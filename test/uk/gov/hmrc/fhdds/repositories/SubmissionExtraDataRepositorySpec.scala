@@ -79,6 +79,7 @@ class SubmissionExtraDataRepositorySpec
     SubmissionExtraData(
       encUserId = "====",
       formTypeRef = "fhdds-limited-company",
+      authorization = Some("Bearer som-bearer"),
       formId = None,
       submissionRef = None,
       businessRegistrationDetails = mkBusinessRegistrationDetails(companyName),
