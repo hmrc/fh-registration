@@ -5,13 +5,26 @@
     </principalPlaceOfBusiness>
     <timeAtCurrentAddress>
         <isOnlyPrinicipalPlaceOfBusinessInLastThreeYears>Yes</isOnlyPrinicipalPlaceOfBusinessInLastThreeYears>
+        <panelPreviousAddress>
+            <ukPanel>
+                <searchState>initial</searchState>
+                <block_addressUKPlus data_type="" uprn=""/>
+            </ukPanel>
+        </panelPreviousAddress>
     </timeAtCurrentAddress>
     <contactPerson>
-        <firstName>C</firstName>
-        <lastName>M</lastName>
-        <telephoneNumber>113132123</telephoneNumber>
+        <firstName>Alex</firstName>
+        <lastName>Grit</lastName>
+        <telephoneNumber>123123</telephoneNumber>
         <email>a@a.ro</email>
         <contactCorrectAddress>Yes</contactCorrectAddress>
+        <addressLookUpContactAddress>
+            <ukPanel>
+                <searchState>initial</searchState>
+                <blockAddressUKPlus data_type="" uprn=""/>
+            </ukPanel>
+            <blockAddressInternationalPlus data_type=""/>
+        </addressLookUpContactAddress>
     </contactPerson>
     <businessDetail>
         <limitedLiabilityPartnershipCorporateBody>
@@ -28,33 +41,35 @@
         <hasVatRegistrationNumber>No</hasVatRegistrationNumber>
     </vatRegistration>
     <companyOfficials>
+        <panelRepeatingCompanyOfficial>
+            <companyOfficerType>Individual</companyOfficerType>
+        </panelRepeatingCompanyOfficial>
         <repeatingCompanyOfficer>
             <repeatingPanel>
-                <companyOfficialType>Person</companyOfficialType>
                 <panelPerson>
-                    <firstName>george</firstName>
-                    <lastName>costanza</lastName>
+                    <firstName>gf</firstName>
+                    <lastName>ghg</lastName>
                     <hasNino>Yes</hasNino>
                     <panelNino>
-                        <nino>AA123456A</nino>
+                        <nino>AA123456C</nino>
                     </panelNino>
                     <role>Director</role>
                 </panelPerson>
-            </repeatingPanel>>
+            </repeatingPanel>
         </repeatingCompanyOfficer>
     </companyOfficials>
     <isNewFulfilmentBusiness>
         <isNewFulfilmentBusiness>No</isNewFulfilmentBusiness>
     </isNewFulfilmentBusiness>
     <eoriStatus>
-        <goodsImportedOutEORI>No</goodsImportedOutEORI>
+        <goodsImportedOutEORI>Yes</goodsImportedOutEORI>
     </eoriStatus>
     <numberOfCustomers>
-        <numberOfCustomers>02</numberOfCustomers>
+        <numberOfCustomers>01</numberOfCustomers>
     </numberOfCustomers>
     <fulfilmentOrdersType>
         <fulfilmentOrdersType>
-            <onLine>No</onLine>
+            <onLine>Yes</onLine>
             <telephone>No</telephone>
             <physicalPremises>No</physicalPremises>
             <other>No</other>
@@ -62,12 +77,24 @@
     </fulfilmentOrdersType>
     <otherStorageSites>
         <hasOtherStorageSites>No</hasOtherStorageSites>
+        <panelOtherStorageSites>
+            <repeatingSectionOtherTradingPremises>
+                <repeatingPanel>
+                    <otherTradingPremisesAddressLookup>
+                        <ukPanel>
+                            <searchState>initial</searchState>
+                            <blockAddressUKPlus data_type="" uprn=""/>
+                        </ukPanel>
+                    </otherTradingPremisesAddressLookup>
+                </repeatingPanel>
+            </repeatingSectionOtherTradingPremises>
+        </panelOtherStorageSites>
     </otherStorageSites>
     <thirdPartyStorageUsed>
         <thirdPartyStorageUsed>No</thirdPartyStorageUsed>
     </thirdPartyStorageUsed>
     <declaration>
-        <hide_personName>cas aerwaer</hide_personName>
+        <hide_personName>dfg</hide_personName>
         <hide_personStatus>Director</hide_personStatus>
     </declaration>
 </data>

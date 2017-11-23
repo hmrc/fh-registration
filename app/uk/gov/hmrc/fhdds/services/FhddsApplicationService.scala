@@ -201,7 +201,7 @@ trait FhddsApplicationService {
   }
 
   def addressLookupToAddress(addressLookup: AddressLookUpContactAddress): Option[Address] = {
-    if (isYes(addressLookup.selectLocation)) {
+    if (isYes(addressLookup.selectLocation.getOrElse("No"))) {
       addressLookup.ukPanel.flatMap(_.blockAddressUKPlus).map(ukAddressToAddress)
     } else {
       addressLookup.blockAddressInternationalPlus.map(internationalAddressToAddress)
