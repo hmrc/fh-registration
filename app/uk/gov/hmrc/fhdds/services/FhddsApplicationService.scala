@@ -21,7 +21,7 @@ import java.time.format.DateTimeFormatter
 import javax.inject.Singleton
 
 import com.google.inject.ImplementedBy
-import generated.{AddressInternationalPlusQuestion, AddressLookUpContactAddress, AddressUKPlusQuestion, Data, RepeatingCompanyOfficial}
+import generated.{AddressInternationalPlusQuestion, AddressLookUpContactAddress, AddressUKPlusQuestion, Data}
 import org.apache.commons.lang3.text.WordUtils
 import uk.gov.hmrc.fhdds.models.businessregistration.BusinessRegistrationDetails
 import uk.gov.hmrc.fhdds.models.des._
@@ -126,10 +126,10 @@ trait FhddsApplicationService {
   }
 
   def companyOfficialsDetails(xml: generated.Data): List[CompanyOfficial] = {
-    val companyOfficials: Seq[RepeatingCompanyOfficial] = xml.companyOfficials.repeatingCompanyOfficial
+    val companyOfficials = xml.companyOfficials.repeatingCompanyOfficer.repeatingPanel
     companyOfficials.toList.map(
       companyOfficial ⇒ CompanyOfficial(role = {
-        companyOfficial.role match {
+        companyOfficial.companyOfficialType match {
           case "Secretary" ⇒ "Company Secretary"
           case "Director+Secretary" ⇒ "Director and Company Secretary"
           case "Director" ⇒ "Director"

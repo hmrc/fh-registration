@@ -194,6 +194,7 @@
                       </xs:sequence>
                     </xs:complexType>
                   </xs:element>
+                  <xs:element name="operatingDate" type="TextQuestion"/>
                 </xs:sequence>
               </xs:complexType>
             </xs:element>
@@ -282,41 +283,48 @@
       <xs:element name="companyOfficials">
         <xs:complexType>
           <xs:sequence>
-            <xs:element maxOccurs="25" minOccurs="1" name="repeatingCompanyOfficial">
+            <xs:element name="repeatingCompanyOfficer">
               <xs:complexType>
                 <xs:sequence>
-                  <xs:element name="companyOfficialType" type="RadioQuestion"/>
-                  <xs:element minOccurs="0" name="panelPerson">
+                  <xs:element maxOccurs="25" minOccurs="1" name="repeatingPanel">
                     <xs:complexType>
                       <xs:sequence>
-                        <xs:element name="firstName" type="TextQuestion"/>
-                        <xs:element name="lastName" type="TextQuestion"/>
-                        <xs:element name="hasNino" type="RadioQuestion"/>
-                        <xs:element minOccurs="0" name="panelNino">
+                        <xs:element name="companyOfficialType" type="RadioQuestion"/>
+                        <xs:element minOccurs="0" name="panelPerson">
                           <xs:complexType>
                             <xs:sequence>
-                              <xs:element name="nino" type="TextQuestion"/>
-                            </xs:sequence>
-                          </xs:complexType>
-                        </xs:element>
-                        <xs:element minOccurs="0" name="panelNoNino">
-                          <xs:complexType>
-                            <xs:sequence>
-                              <xs:element name="hasPassportNumber" type="RadioQuestion"/>
-                              <xs:element minOccurs="0" name="panelPassportNumber">
+                              <xs:element name="firstName" type="TextQuestion"/>
+                              <xs:element name="lastName" type="TextQuestion"/>
+                              <xs:element name="hasNino" type="RadioQuestion"/>
+                              <xs:element minOccurs="0" name="panelNino">
                                 <xs:complexType>
                                   <xs:sequence>
-                                    <xs:element name="passportNumber" type="TextQuestion"/>
+                                    <xs:element name="nino" type="TextQuestion"/>
                                   </xs:sequence>
                                 </xs:complexType>
                               </xs:element>
-                              <xs:element minOccurs="0" name="panelNationalIDNumber">
+                              <xs:element minOccurs="0" name="panelNoNino">
                                 <xs:complexType>
                                   <xs:sequence>
-                                    <xs:element name="nationalIdNumber" type="TextQuestion"/>
+                                    <xs:element name="hasPassportNumber" type="RadioQuestion"/>
+                                    <xs:element minOccurs="0" name="panelPassportNumber">
+                                      <xs:complexType>
+                                        <xs:sequence>
+                                          <xs:element name="passportNumber" type="TextQuestion"/>
+                                        </xs:sequence>
+                                      </xs:complexType>
+                                    </xs:element>
+                                    <xs:element minOccurs="0" name="panelNationalIDNumber">
+                                      <xs:complexType>
+                                        <xs:sequence>
+                                          <xs:element name="nationalIdNumber" type="TextQuestion"/>
+                                        </xs:sequence>
+                                      </xs:complexType>
+                                    </xs:element>
                                   </xs:sequence>
                                 </xs:complexType>
                               </xs:element>
+                              <xs:element name="role" type="RadioQuestion"/>
                             </xs:sequence>
                           </xs:complexType>
                         </xs:element>
@@ -327,13 +335,32 @@
                     <xs:complexType>
                       <xs:sequence>
                         <xs:element name="companyName" type="TextQuestion"/>
-                        <xs:element name="vatRegistrationNumber" type="TextQuestion"/>
-                        <xs:element name="uniqueTaxpayerReference" type="TextQuestion"/>
-                        <xs:element name="companyRegistrationNumber" type="TextQuestion"/>
+                        <xs:element name="hasVat" type="RadioQuestion"/>
+                        <xs:element minOccurs="0" name="panelHasVat">
+                          <xs:complexType>
+                            <xs:sequence>
+                              <xs:element name="vatRegistrationNumber" type="TextQuestion"/>
+                            </xs:sequence>
+                          </xs:complexType>
+                        </xs:element>
+                        <xs:element minOccurs="0" name="panelCrn">
+                          <xs:complexType>
+                            <xs:sequence>
+                              <xs:element name="companyRegistrationNumber" type="TextQuestion"/>
+                            </xs:sequence>
+                          </xs:complexType>
+                        </xs:element>
+                        <xs:element name="role" type="RadioQuestion"/>
                       </xs:sequence>
                     </xs:complexType>
                   </xs:element>
-                  <xs:element name="role" type="RadioQuestion"/>
+                </xs:sequence>
+              </xs:complexType>
+            </xs:element>
+            <xs:element maxOccurs="25" minOccurs="1" name="panelRepeatingCompanyOfficial">
+              <xs:complexType>
+                <xs:sequence>
+                  <xs:element name="companyOfficerType" type="RadioQuestion"/>
                 </xs:sequence>
               </xs:complexType>
             </xs:element>
