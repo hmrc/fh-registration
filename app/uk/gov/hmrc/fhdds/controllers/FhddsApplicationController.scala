@@ -60,6 +60,7 @@ class FhddsApplicationController @Inject()(
       desResponse ← desConnector.sendSubmission(safeId, application)(hc)
       response = SubmissionResponse(ControllerServices.createSubmissionRef())
     } yield {
+      Logger.info(s"Received subscription id ${desResponse.registrationNumberFHDDS} for safeId $safeId")
       subscribeToTaxEnrolment(
         desResponse.registrationNumberFHDDS,
         extraData.businessRegistrationDetails.safeId,
@@ -69,7 +70,8 @@ class FhddsApplicationController @Inject()(
   }
 
   private def subscribeToTaxEnrolment(subscriptionId: String, safeId: String, authorization: Option[String])(implicit hc: HeaderCarrier) = {
-   taxEnrolmentConnector
+    Logger.info(s"Sending subscription $subscriptionId for $safeId to tax enrolments")
+    taxEnrolmentConnector
      .subscribe(subscriptionId, safeId, authorization)(hc)
      .onComplete({
        case Success(r) ⇒ Logger.info(s"Tax enrolments for subscription $subscriptionId and safeId $safeId returned $r")

@@ -47,6 +47,7 @@ trait DesConnector {
 
   def desSubmissionUrl(safeId: String): String
   def sendSubmission(safeId: String, application: SubScriptionCreate)(hc: HeaderCarrier): Future[DesSubmissionResponse] = {
+    Logger.info(s"Sending fhdds registration data to DES for safeId $safeId")
     Logger.debug(s"Sending fhdds registration data to DES with payload $application")
 
     implicit val desHeaders = hc.copy(authorization = Some(Authorization(s"Bearer $desToken"))).withExtraHeaders("Environment" -> environment)
