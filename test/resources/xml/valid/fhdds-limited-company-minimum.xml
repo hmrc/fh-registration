@@ -1,53 +1,80 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <data>
+    <principalPlaceOfBusiness>
+        <dateStartedTradingAsFulfilmentHouse>20/03/2015</dateStartedTradingAsFulfilmentHouse>
+    </principalPlaceOfBusiness>
+    <timeAtCurrentAddress>
+        <isOnlyPrinicipalPlaceOfBusinessInLastThreeYears>Yes</isOnlyPrinicipalPlaceOfBusinessInLastThreeYears>
+        <panelPreviousAddress>
+            <ukPanel>
+                <searchState>initial</searchState>
+                <block_addressUKPlus data_type="" uprn=""/>
+            </ukPanel>
+        </panelPreviousAddress>
+    </timeAtCurrentAddress>
+    <contactPerson>
+        <firstName>Alex</firstName>
+        <lastName>Grit</lastName>
+        <telephoneNumber>123123</telephoneNumber>
+        <email>a@a.ro</email>
+        <contactCorrectAddress>Yes</contactCorrectAddress>
+        <addressLookUpContactAddress>
+            <ukPanel>
+                <searchState>initial</searchState>
+                <blockAddressUKPlus data_type="" uprn=""/>
+            </ukPanel>
+            <blockAddressInternationalPlus data_type=""/>
+        </addressLookUpContactAddress>
+    </contactPerson>
     <businessDetail>
         <limitedLiabilityPartnershipCorporateBody>
             <companyRegistrationNumber>12345678</companyRegistrationNumber>
-            <dateOfIncorporation>20/03/2015</dateOfIncorporation>
         </limitedLiabilityPartnershipCorporateBody>
     </businessDetail>
-    <businessDetails>
-        <isNewFulfilmentBusiness>No</isNewFulfilmentBusiness>
+    <dateOfIncorporation>
+        <dateOfIncorporation>20/03/2015</dateOfIncorporation>
+    </dateOfIncorporation>
+    <tradingName>
         <hasTradingName>No</hasTradingName>
+    </tradingName>
+    <vatRegistration>
         <hasVatRegistrationNumber>No</hasVatRegistrationNumber>
-    </businessDetails>
-    <businessActivities>
-        <numberOfCustomersOutsideOfEU>02</numberOfCustomersOutsideOfEU>
+    </vatRegistration>
+    <companyOfficials>
+        <panelRepeatingCompanyOfficial>
+            <companyOfficerType>Individual</companyOfficerType>
+        </panelRepeatingCompanyOfficial>
+        <repeatingCompanyOfficer>
+            <repeatingPanel>
+                <panelPerson>
+                    <firstName>gf</firstName>
+                    <lastName>ghg</lastName>
+                    <hasNino>Yes</hasNino>
+                    <panelNino>
+                        <nino>AA123456C</nino>
+                    </panelNino>
+                    <role>Director</role>
+                </panelPerson>
+            </repeatingPanel>
+        </repeatingCompanyOfficer>
+    </companyOfficials>
+    <isNewFulfilmentBusiness>
+        <isNewFulfilmentBusiness>No</isNewFulfilmentBusiness>
+    </isNewFulfilmentBusiness>
+    <eoriStatus>
+        <goodsImportedOutEORI>Yes</goodsImportedOutEORI>
+    </eoriStatus>
+    <numberOfCustomers>
+        <numberOfCustomers>01</numberOfCustomers>
+    </numberOfCustomers>
+    <fulfilmentOrdersType>
         <fulfilmentOrdersType>
-            <onLine>No</onLine>
+            <onLine>Yes</onLine>
             <telephone>No</telephone>
             <physicalPremises>No</physicalPremises>
             <other>No</other>
         </fulfilmentOrdersType>
-        <goodsImportedOutEORI>No</goodsImportedOutEORI>
-    </businessActivities>
-    <companyOfficials>
-        <repeatingCompanyOfficial>
-            <companyOfficialType>Person</companyOfficialType>
-            <panelPerson>
-                <firstName>george</firstName>
-                <lastName>costanza</lastName>
-                <hasNino>Yes</hasNino>
-                <panelNino>
-                    <nino>AA123456A</nino>
-                </panelNino>
-                <panelNoNino>
-                    <hasPassportNumber/>
-                </panelNoNino>
-            </panelPerson>
-            <role>Director</role>
-        </repeatingCompanyOfficial>
-    </companyOfficials>
-    <principalPlaceOfBusiness>
-        <dateStartedTradingAsFulfilmentHouse>20/03/2015</dateStartedTradingAsFulfilmentHouse>
-        <isOnlyPrinicipalPlaceOfBusinessInLastThreeYears>Yes</isOnlyPrinicipalPlaceOfBusinessInLastThreeYears>
-        <panelPreviousPrincipalTradingBusinessAddresses>
-            <repeatingPreviousPrincipalTradingBusinessAddress>
-                <searchState>initial</searchState>
-                <blockAddressUKPlus data_type="" uprn=""/>
-            </repeatingPreviousPrincipalTradingBusinessAddress>
-        </panelPreviousPrincipalTradingBusinessAddresses>
-    </principalPlaceOfBusiness>
+    </fulfilmentOrdersType>
     <otherStorageSites>
         <hasOtherStorageSites>No</hasOtherStorageSites>
         <panelOtherStorageSites>
@@ -63,22 +90,11 @@
             </repeatingSectionOtherTradingPremises>
         </panelOtherStorageSites>
     </otherStorageSites>
-    <contactPerson>
-        <firstName>C</firstName>
-        <lastName>M</lastName>
-        <telephoneNumber>113132123</telephoneNumber>
-        <email>a@a.ro</email>
-        <contactCorrectAddress>Yes</contactCorrectAddress>
-        <addressLookUpContactAddress>
-            <ukPanel>
-                <searchState>initial</searchState>
-                <blockAddressUKPlus data_type="" uprn=""/>
-            </ukPanel>
-            <blockAddressInternationalPlus data_type=""/>
-        </addressLookUpContactAddress>
-    </contactPerson>
+    <thirdPartyStorageUsed>
+        <thirdPartyStorageUsed>No</thirdPartyStorageUsed>
+    </thirdPartyStorageUsed>
     <declaration>
-        <personName>cas aerwaer</personName>
-        <personStatus>Director</personStatus>
+        <hide_personName>dfg</hide_personName>
+        <hide_personStatus>Director</hide_personStatus>
     </declaration>
 </data>
