@@ -22,6 +22,7 @@ import javax.inject.Singleton
 
 import com.google.inject.ImplementedBy
 import generated.{AddressInternationalPlusQuestion, AddressLookUpContactAddress, AddressUKPlusQuestion, Data}
+import uk.gov.hmrc.fhdds.services.ApplicationUtils.AddressLineUtils
 import org.apache.commons.lang3.text.WordUtils
 import uk.gov.hmrc.fhdds.models.businessregistration.BusinessRegistrationDetails
 import uk.gov.hmrc.fhdds.models.des._
@@ -39,21 +40,166 @@ trait FhddsApplicationService {
   val dtf: DateTimeFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")
 
   def iformXmlToApplication(xml: generated.Data, brd: BusinessRegistrationDetails): SubScriptionCreate = {
-    SubScriptionCreate( SubscriptionCreateRequestSchema(
-        organizationType = brd.businessType.map(translateBusinessType).getOrElse(DefaultOrganizationType),
-        FHbusinessDetail = IsNewFulfilmentBusiness(isNewFulfilmentBusiness = isYes(xml.isNewFulfilmentBusiness.isNewFulfilmentBusiness),
-                                                   proposedStartDate =  getProposedStartDate(xml)),
-        //todo can not find groupInformation
-        GroupInformation = Some(LimitedLiabilityOrCorporateBodyWithOutGroup(creatingFHDDSGroup = true,
-                                                                            confirmationByRepresentative = true,
-                                                                            groupMemberDetail = None)),
-        additionalBusinessInformation = additionalBusinessInformation(brd, xml),
-        businessDetail = businessDetails(xml, brd),
-        businessAddressForFHDDS = businessAddressForFHDDS(xml, brd),
-        contactDetail = contactDetail(xml, brd),
-        declaration = declaration(xml)
+    SubScriptionCreate(SubscriptionCreateRequestSchema(
+      organizationType = brd.businessType.map(translateBusinessType).getOrElse(DefaultOrganizationType),
+      FHbusinessDetail = IsNewFulfilmentBusiness(isNewFulfilmentBusiness = isYes(xml.isNewFulfilmentBusiness.isNewFulfilmentBusiness),
+        proposedStartDate = getProposedStartDate(xml)),
+      //todo can not find groupInformation
+      GroupInformation = Some(LimitedLiabilityOrCorporateBodyWithOutGroup(creatingFHDDSGroup = true,
+        confirmationByRepresentative = true,
+        groupMemberDetail = None)),
+      additionalBusinessInformation = additionalBusinessInformation(brd, xml),
+      businessDetail = businessDetails(xml, brd),
+      businessAddressForFHDDS = businessAddressForFHDDS(xml, brd),
+      contactDetail = contactDetail(xml, brd),
+      declaration = declaration(xml)
     ))
   }
+
+  def companyOfficialsDetails(xml: generated.Data): List[CompanyOfficial] = {
+    val companyOfficials = xml.companyOfficials.repeatingCompanyOfficer.repeatingPanel
+    companyOfficials.toList.map(
+      companyOfficial ⇒ CompanyOfficial(role = {
+        companyOfficial.companyOfficialType match {
+          case Some("Secretary")          ⇒ "Company Secretary"
+          case Some("Director+Secretary") ⇒ "Director and Company Secretary"
+          case Some("Director")           ⇒ "Director"
+          case _                          ⇒ "Member"
+        }
+      },
+
+        name = {
+          for {
+            panelPerson ← companyOfficial.panelPerson
+          } yield {
+            Name(firstName = panelPerson.firstName.getOrElse(""),
+              middleName = None,
+              lastName = panelPerson.lastName.getOrElse(""))
+          }
+        }.get,
+
+        identification = {
+          for {
+            panelPerson ← companyOfficial.panelPerson
+          } yield {
+            if (isYes(panelPerson.hasNino.getOrElse("No"))) {
+              Identification(nino = panelPerson.panelNino.flatMap(_.nino))
+            } else {
+              Identification(passportNumber = panelPerson.panelNoNino.flatMap(
+                personNoNino ⇒ if (isYes(personNoNino.hasPassportNumber)) {
+                  personNoNino.panelPassportNumber.map(
+                    passportNumber ⇒ passportNumber.passportNumber
+                  )
+                } else None
+              ),
+                nationalIdNumber = panelPerson.panelNoNino.flatMap(
+                  personNoNino ⇒
+                    personNoNino.panelNationalIDNumber.map(_.nationalIdNumber)
+                )
+              )
+            }
+          }
+        }.get
+
+      )
+    )
+  }
+
+  def addressLookupToAddress(addressLookup: AddressLookUpContactAddress): Option[Address] = {
+    if (isYes(addressLookup.selectLocation.getOrElse("No"))) {
+      addressLookup.ukPanel.flatMap(_.blockAddressUKPlus).map(ukAddressToAddress)
+    } else {
+      addressLookup.blockAddressInternationalPlus.map(internationalAddressToAddress)
+    }
+  }
+
+  def businessDetails(xml: generated.Data, brd: BusinessRegistrationDetails): BusinessDetail = {
+    BusinessDetail(
+      LimitedLiabilityPartnershipCorporateBody(
+        groupRepresentativeJoinDate = Some(DefaultIncorporationDate),
+        IncorporationDetails(
+          companyRegistrationNumber = Some(xml.businessDetail.limitedLiabilityPartnershipCorporateBody.companyRegistrationNumber),
+          dateOfIncorporation = Some(LocalDate.parse(xml.dateOfIncorporation.dateOfIncorporation, dtf))
+        )
+      )
+    )
+  }
+
+  def businessAddressForFHDDS(xml: generated.Data, brd: BusinessRegistrationDetails): BusinessAddressForFHDDS = {
+    val isOnlyPrincipalPlaceOfBusinessInLastThreeYears =
+      isYes(xml.timeAtCurrentAddress.isOnlyPrinicipalPlaceOfBusinessInLastThreeYears)
+    BusinessAddressForFHDDS(
+      currentAddress = principalBusinessAddress(brd),
+      commonDetails = CommonDetails(
+        telephone = Some(xml.contactPerson.telephoneNumber),
+        mobileNumber = None,
+        email = xml.contactPerson.email
+      ),
+      dateStartedTradingAsFulfilmentHouse = xml.principalPlaceOfBusiness match {
+        case Some(principalPlaceOfBusiness) ⇒ LocalDate.parse(principalPlaceOfBusiness.dateStartedTradingAsFulfilmentHouse, dtf)
+        case _                              ⇒ LocalDate.now()
+      },
+      isOnlyPrinicipalPlaceOfBusinessInLastThreeYears = isOnlyPrincipalPlaceOfBusinessInLastThreeYears,
+      previousOperationalAddress = {
+        if (isOnlyPrincipalPlaceOfBusinessInLastThreeYears) None
+        else previousPrincipalPlaceOfBusinessAddresses(xml)
+      }
+    )
+  }
+
+  def previousPrincipalPlaceOfBusinessAddresses(xml: Data): Option[List[PreviousOperationalAddress]] = {
+    val principalBusinessPreviousAddress = xml.timeAtCurrentAddress.panelPreviousAddress
+    Some(List(
+      PreviousOperationalAddress(
+        operatingDate = DefaultIncorporationDate,
+        previousAddress = {
+          for {
+            previousAddress ← principalBusinessPreviousAddress
+            panelPreviousPrincipalTradingBusinessAddresses ← previousAddress.ukPanel
+            blockAddressUKPlus ← panelPreviousPrincipalTradingBusinessAddresses.block_addressUKPlus
+          } yield {
+            Address(
+              blockAddressUKPlus.line1,
+              blockAddressUKPlus.line2.nonEmptyString,
+              blockAddressUKPlus.line3.noneIfBlank,
+              blockAddressUKPlus.town,
+              Some(blockAddressUKPlus.postcode),
+              "GB"
+            )
+          }
+        }.get
+      )
+    ))
+  }
+
+  def principalBusinessAddress(brd: BusinessRegistrationDetails): Address = {
+    Address(line1 = brd.businessAddress.line1,
+      line2 = checkEmptyAddressLine(brd.businessAddress.line2),
+      line3 = brd.businessAddress.line3.noneIfBlank,
+      town = brd.businessAddress.line4,
+      postalCode = brd.businessAddress.postcode,
+      countryCode = brd.businessAddress.country)
+  }
+
+  def ukAddressToAddress(blockAddressUk: AddressUKPlusQuestion) =
+    Address(
+      blockAddressUk.line1,
+      blockAddressUk.line2.nonEmptyString,
+      blockAddressUk.line3.noneIfBlank,
+      blockAddressUk.town,
+      Some(blockAddressUk.postcode),
+      "GB")
+
+  def internationalAddressToAddress(blockAddressInternationalPlus: AddressInternationalPlusQuestion) =
+    Address(
+      blockAddressInternationalPlus.line1,
+      checkEmptyAddressLine(blockAddressInternationalPlus.line2),
+      blockAddressInternationalPlus.line3.noneIfBlank,
+      None,
+      None,
+      blockAddressInternationalPlus.country_code.getOrElse("GB"))
+
+  def isYes(radioButtonAnswer: String): Boolean = radioButtonAnswer equals "Yes"
 
   private def translateBusinessType(businessType: String) = WordUtils.capitalizeFully(businessType) match {
     case "Sole Trader" ⇒ "Sole Proprietor"
@@ -94,7 +240,7 @@ trait FhddsApplicationService {
         )
       ),
       allOtherInformation = AllOtherInformation(
-        fulfilmentOrdersType = FulfilmentOrdersType(typeOfOtherOrder= None),
+        fulfilmentOrdersType = FulfilmentOrdersType(typeOfOtherOrder = None),
         numberOfCustomers = numberOfCustomers,
         premises = Premises(numberOfpremises = otherStorageSitesDetail.getOrElse(List(principalBusinessAddress(brd))).length.toString,
           address = otherStorageSitesDetail.getOrElse(List(principalBusinessAddress(brd))))
@@ -112,8 +258,8 @@ trait FhddsApplicationService {
                 ukPanel ⇒ ukPanel.blockAddressUKPlus.map(
                   blockAddressUKPlus ⇒ Address(
                     blockAddressUKPlus.line1,
-                    blockAddressUKPlus.line2.getOrElse(" "),
-                    blockAddressUKPlus.line3,
+                    blockAddressUKPlus.line2.nonEmptyString,
+                    blockAddressUKPlus.line3.noneIfBlank,
                     blockAddressUKPlus.town,
                     Some(blockAddressUKPlus.postcode),
                     "GB"
@@ -122,55 +268,6 @@ trait FhddsApplicationService {
               )
             )
         ).toList
-    )
-  }
-
-  def companyOfficialsDetails(xml: generated.Data): List[CompanyOfficial] = {
-    val companyOfficials = xml.companyOfficials.repeatingCompanyOfficer.repeatingPanel
-    companyOfficials.toList.map(
-      companyOfficial ⇒ CompanyOfficial(role = {
-        companyOfficial.companyOfficialType match {
-          case Some("Secretary") ⇒ "Company Secretary"
-          case Some("Director+Secretary") ⇒ "Director and Company Secretary"
-          case Some("Director") ⇒ "Director"
-          case _ ⇒ "Member"
-        }
-      },
-
-        name = {
-          for {
-            panelPerson ← companyOfficial.panelPerson
-          } yield {
-            Name(firstName = panelPerson.firstName.getOrElse(""),
-                  middleName = None,
-                  lastName = panelPerson.lastName.getOrElse(""))
-          }
-        }.get,
-
-        identification = {
-          for {
-            panelPerson ← companyOfficial.panelPerson
-          } yield {
-            if (isYes(panelPerson.hasNino.getOrElse("No"))) {
-              Identification(nino = panelPerson.panelNino.flatMap(_.nino))
-            } else {
-              Identification(passportNumber = panelPerson.panelNoNino.flatMap(
-                                                personNoNino ⇒ if (isYes(personNoNino.hasPassportNumber)) {
-                                                  personNoNino.panelPassportNumber.map(
-                                                    passportNumber ⇒ passportNumber.passportNumber
-                                                  )
-                                                } else None
-                                              ),
-                             nationalIdNumber = panelPerson.panelNoNino.flatMap(
-                                                 personNoNino ⇒
-                                                   personNoNino.panelNationalIDNumber.map(_.nationalIdNumber)
-                                               )
-              )
-            }
-          }
-        }.get
-
-      )
     )
   }
 
@@ -200,101 +297,6 @@ trait FhddsApplicationService {
     }
   }
 
-  def addressLookupToAddress(addressLookup: AddressLookUpContactAddress): Option[Address] = {
-    if (isYes(addressLookup.selectLocation.getOrElse("No"))) {
-      addressLookup.ukPanel.flatMap(_.blockAddressUKPlus).map(ukAddressToAddress)
-    } else {
-      addressLookup.blockAddressInternationalPlus.map(internationalAddressToAddress)
-    }
-  }
-
-  def businessDetails(xml: generated.Data, brd: BusinessRegistrationDetails): BusinessDetail = {
-    BusinessDetail(
-      LimitedLiabilityPartnershipCorporateBody(
-        groupRepresentativeJoinDate = Some(DefaultIncorporationDate),
-        IncorporationDetails(
-          companyRegistrationNumber = Some(xml.businessDetail.limitedLiabilityPartnershipCorporateBody.companyRegistrationNumber),
-          dateOfIncorporation = Some(LocalDate.parse(xml.dateOfIncorporation.dateOfIncorporation, dtf))
-        )
-      )
-    )
-  }
-
-  def businessAddressForFHDDS(xml: generated.Data, brd: BusinessRegistrationDetails): BusinessAddressForFHDDS = {
-    val isOnlyPrincipalPlaceOfBusinessInLastThreeYears =
-      isYes(xml.timeAtCurrentAddress.isOnlyPrinicipalPlaceOfBusinessInLastThreeYears)
-    BusinessAddressForFHDDS(
-      currentAddress = principalBusinessAddress(brd),
-      commonDetails = CommonDetails(
-        telephone = Some(xml.contactPerson.telephoneNumber),
-        mobileNumber = None,
-        email = xml.contactPerson.email
-      ),
-      dateStartedTradingAsFulfilmentHouse = xml.principalPlaceOfBusiness match {
-        case Some(principalPlaceOfBusiness) ⇒ LocalDate.parse(principalPlaceOfBusiness.dateStartedTradingAsFulfilmentHouse, dtf)
-        case _ ⇒ LocalDate.now()
-      },
-      isOnlyPrinicipalPlaceOfBusinessInLastThreeYears = isOnlyPrincipalPlaceOfBusinessInLastThreeYears,
-      previousOperationalAddress = {
-        if (isOnlyPrincipalPlaceOfBusinessInLastThreeYears) None
-        else previousPrincipalPlaceOfBusinessAddresses(xml)
-      }
-    )
-  }
-
-  def previousPrincipalPlaceOfBusinessAddresses(xml: Data): Option[List[PreviousOperationalAddress]] = {
-    val principalBusinessPreviousAddress = xml.timeAtCurrentAddress.panelPreviousAddress
-    Some(List(
-      PreviousOperationalAddress(
-        operatingDate = DefaultIncorporationDate,
-        previousAddress = {
-          for {
-            previousAddress ← principalBusinessPreviousAddress
-            panelPreviousPrincipalTradingBusinessAddresses ← previousAddress.ukPanel
-            blockAddressUKPlus ← panelPreviousPrincipalTradingBusinessAddresses.block_addressUKPlus
-          } yield {
-            Address(
-              blockAddressUKPlus.line1,
-              blockAddressUKPlus.line2.getOrElse(" "),
-              blockAddressUKPlus.line3,
-              blockAddressUKPlus.town,
-              Some(blockAddressUKPlus.postcode),
-              "GB"
-            )
-          }
-        }.get
-      )
-    ))
-  }
-
-  def principalBusinessAddress(brd: BusinessRegistrationDetails): Address = {
-    Address(line1 = brd.businessAddress.line1,
-            line2 = checkEmptyAddressLine(brd.businessAddress.line2),
-            line3 = brd.businessAddress.line3,
-            town = brd.businessAddress.line4,
-            postalCode = brd.businessAddress.postcode,
-            countryCode = brd.businessAddress.country)
-  }
-
-  def ukAddressToAddress(blockAddressUk: AddressUKPlusQuestion) =
-    Address(
-      blockAddressUk.line1,
-      blockAddressUk.line2.getOrElse(" "),
-      blockAddressUk.line3,
-      blockAddressUk.town,
-      Some(blockAddressUk.postcode),
-      "GB")
-
-  def internationalAddressToAddress(blockAddressInternationalPlus: AddressInternationalPlusQuestion) =
-    Address(
-      blockAddressInternationalPlus.line1,
-      checkEmptyAddressLine(blockAddressInternationalPlus.line2),
-      blockAddressInternationalPlus.line3,
-      None,
-      None,
-      blockAddressInternationalPlus.country_code.getOrElse("GB"))
-
-  def isYes(radioButtonAnswer: String): Boolean = radioButtonAnswer equals "Yes"
 
   private def checkEmptyAddressLine(addressLine: String): String = {
     if (addressLine.isEmpty) " "
