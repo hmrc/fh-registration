@@ -57,6 +57,7 @@ trait MicroService {
       ignoreUnknown in(Compile, scalaxb) := true) // to ignore unknown XML elements, as well as order in which they are arrived
     .settings(
       Keys.fork in IntegrationTest := false,
+      resourceDirectory in IntegrationTest := baseDirectory.value / "it/resources",
       unmanagedSourceDirectories in IntegrationTest <<= (baseDirectory in IntegrationTest)(base => Seq(base / "it")),
       addTestReportOption(IntegrationTest, "int-test-reports"),
       testGrouping in IntegrationTest := oneForkedJvmPerTest((definedTests in IntegrationTest).value),

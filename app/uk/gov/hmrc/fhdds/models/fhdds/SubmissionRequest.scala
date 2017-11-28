@@ -19,7 +19,7 @@ package uk.gov.hmrc.fhdds.models.fhdds
 import play.api.libs.json.Json
 
 
-case class SubmissionRequest(formId: String, formTypeRef: String, formData: String )
+case class SubmissionRequest(formId: String, formTypeRef: String, formData: String)
 
 object SubmissionRequest {
   implicit val submissionRequestFormat = Json.format[SubmissionRequest]

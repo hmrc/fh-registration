@@ -23,6 +23,8 @@ import uk.gov.hmrc.play.config.ServicesConfig
 import uk.gov.hmrc.play.http.HeaderCarrier
 import uk.gov.hmrc.play.http.ws.WSHttp
 
+import scala.concurrent.Future
+
 class TaxEnrolmentConnectorImpl extends TaxEnrolmentConnector with ServicesConfig {
   lazy val http: WSHttp = WSHttp
 
@@ -41,7 +43,7 @@ trait TaxEnrolmentConnector {
   def subscriberUrl(subscriptionId: String): String
 
 
-  def subscribe(subscriptionId: String, safeId: String, authorization: Option[String])(hc: HeaderCarrier) = {
+  def subscribe(subscriptionId: String, safeId: String, authorization: Option[String])(hc: HeaderCarrier): Future[Option[JsObject]] = {
     val extraHeaders = authorization map ("Authorization" -> _)
     implicit val hcWithAuthorization = hc.withExtraHeaders(extraHeaders.toSeq: _*)
     http.PUT[JsObject, Option[JsObject]](

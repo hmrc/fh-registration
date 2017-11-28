@@ -25,7 +25,7 @@ import reactivemongo.bson.{BSONDocument, BSONObjectID}
 import reactivemongo.play.json._
 import uk.gov.hmrc.fhdds.models.businessregistration.BusinessRegistrationDetails
 import uk.gov.hmrc.mongo.json.ReactiveMongoFormats
-import uk.gov.hmrc.mongo.{AtomicUpdate, MongoConnector, ReactiveRepository}
+import uk.gov.hmrc.mongo.{AtomicUpdate, ReactiveRepository}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -70,7 +70,7 @@ class SubmissionExtraDataRepository @Inject() (implicit rmc: ReactiveMongoCompon
     BSONDocument("formId" -> formId)
   }
 
-  def findSubmissionExtraData(formId: String) = {
+  def findSubmissionExtraData(formId: String): Future[Option[SubmissionExtraData]] = {
     collection.find(findSubmissionDataBSON(formId)).one[SubmissionExtraData]
   }
 

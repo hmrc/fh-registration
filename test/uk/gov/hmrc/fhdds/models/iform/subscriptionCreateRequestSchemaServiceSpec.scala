@@ -61,8 +61,6 @@ class subscriptionCreateRequestSchemaServiceSpec extends UnitSpec {
 
     val json = Json.toJson(subscrtiptionCreate)
 
-    println("====")
-    println(json)
     val validationResult = validator(json)
     validationResult.isSuccess shouldEqual true
   }
