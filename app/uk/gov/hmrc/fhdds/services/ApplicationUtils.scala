@@ -16,7 +16,9 @@
 
 package uk.gov.hmrc.fhdds.services
 
+import generated.{PanelCompany, PanelPerson}
 import org.apache.commons.lang3.StringUtils
+import uk.gov.hmrc.fhdds.models.des._
 
 object ApplicationUtils {
 
@@ -34,4 +36,74 @@ object ApplicationUtils {
     def nonEmptyString = value.noneIfBlank getOrElse " "
   }
 
+  def isYes(radioButtonAnswer: String): Boolean = radioButtonAnswer equals "Yes"
+
+  def getCompanyOfficialAsPerson(person: Option[PanelPerson]): CompanyOfficial = {
+    person.map(
+      personPanel ⇒
+        CompanyOfficial(
+          role = {
+            personPanel.role match {
+              case "Secretary" ⇒ "Company Secretary"
+              case "Director+Secretary" ⇒ "Director and Company Secretary"
+              case "Director" ⇒ "Director"
+              case _ ⇒ "Member"
+            }
+          },
+          name = {
+            Name(firstName = personPanel.firstName,
+                 middleName = None,
+                 lastName = personPanel.lastName)
+          },
+          identification = {
+            if (isYes(personPanel.hasNino)) {
+              IndividualIdentification(nino = personPanel.panelNino.map(_.nino))
+            } else {
+              IndividualIdentification(
+                passportNumber = personPanel.panelNoNino.flatMap(
+                  personNoNino ⇒ if (isYes(personNoNino.hasPassportNumber)) {
+                    personNoNino.panelPassportNumber.map(
+                      passportNumber ⇒ passportNumber.passportNumber
+                    )
+                  } else None
+                ),
+                nationalIdNumber = personPanel.panelNoNino.flatMap(
+                  personNoNino ⇒
+                    personNoNino.panelNationalIDNumber.map(_.nationalIdNumber)
+                )
+              )
+            }
+          }
+        )
+    ).get
+  }
+
+  def getCompanyOfficialAsCompany(company: Option[PanelCompany]): CompanyOfficial = {
+    company.map(
+      companyPanel ⇒
+        CompanyOfficial(
+          role = {
+            companyPanel.role match {
+              case "Secretary" ⇒ "Company Secretary"
+              case "Director+Secretary" ⇒ "Director and Company Secretary"
+              case "Director" ⇒ "Director"
+              case _ ⇒ "Member"
+            }
+          },
+          name = {
+            Names(companyName = Some(companyPanel.companyName))
+          },
+          identification = {
+            if (isYes(companyPanel.hasVat)) {
+              CompanyIdentification(vatRegistrationNumber = companyPanel.panelHasVat.map(_.vatRegistrationNumber))
+            } else {
+              CompanyIdentification(
+                companyRegistrationNumber = companyPanel.panelCrn.map(_.companyRegistrationNumber)
+              )
+            }
+          }
+        )
+    ).get
+
+  }
 }

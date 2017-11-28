@@ -18,16 +18,45 @@ package uk.gov.hmrc.fhdds.models.des
 
 import play.api.libs.json._
 
+sealed trait IdentificationType
 
-case class Identification(passportNumber: Option[String] = None, nationalIdNumber: Option[String] = None, nino: Option[String] = None)
+case class IndividualIdentification(passportNumber: Option[String] = None,
+                                    nationalIdNumber: Option[String] = None,
+                                    nino: Option[String] = None) extends IdentificationType
 
-object Identification {
-  implicit val format = Json.format[Identification]
+object IndividualIdentification {
+  implicit val format = Json.format[IndividualIdentification]
+}
+
+case class CompanyIdentification(vatRegistrationNumber: Option[String] = None,
+                                 uniqueTaxpayerReference: Option[String] = None,
+                                 companyRegistrationNumber: Option[String] = None) extends IdentificationType
+
+object CompanyIdentification {
+  implicit val format = Json.format[CompanyIdentification]
+}
+
+object IdentificationType {
+
+  val reads: Reads[IdentificationType] = new Reads[IdentificationType] {
+    override def reads(json: JsValue): JsResult[IdentificationType] = json.validate[JsObject].flatMap{ o ⇒
+      if (o.keys.contains("passportNumber")) json.validate[IndividualIdentification]
+      else json.validate[CompanyIdentification]
+    }
+  }
+
+  val writes: Writes[IdentificationType] = new Writes[IdentificationType]{
+    override def writes(o: IdentificationType) = o match {
+      case individualIdentification: IndividualIdentification ⇒ IndividualIdentification.format.writes(individualIdentification)
+      case companyIdentification: CompanyIdentification ⇒ CompanyIdentification.format.writes(companyIdentification)
+    }
+  }
+  implicit  val format: Format[IdentificationType] = Format(reads, writes)
 }
 
 case class CompanyOfficial(role: String,
                            name: NameType,
-                           identification: Identification)
+                           identification: IdentificationType)
 
 object CompanyOfficial {
   implicit val format = Json.format[CompanyOfficial]
