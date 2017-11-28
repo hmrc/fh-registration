@@ -86,6 +86,7 @@ object FakeData {
                                                      formTypeRef = testFormTypeRef,
                                                      formId = Some(testFormId),
                                                      submissionRef = None,
+                                                     registrationNumber = None,
                                                      businessRegistrationDetails = aFakeBusinessRegistrationDetails,
                                                      companyRegistrationNumber = None,
                                                      authorization = None)

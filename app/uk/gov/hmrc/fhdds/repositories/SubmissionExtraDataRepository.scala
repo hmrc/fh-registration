@@ -55,6 +55,13 @@ class SubmissionExtraDataRepository @Inject() (implicit rmc: ReactiveMongoCompon
       .map(_.isDefined)
   }
 
+  def updateRegistrationNumber(formId: String, submissionRef: String, registrationNumber: String): Future[Boolean] = {
+    atomicUpdate(
+      finder = findSubmissionDataBSONByFormId(formId),
+      set(BSONDocument("submissionRef" → submissionRef, "registrationNumber" → registrationNumber)))
+      .map(_.isDefined)
+  }
+
   def updateAuthorization(userId: String, formTypeRef: String, authorization: String): Future[Boolean] = {
     atomicUpdate(
       finder = findSubmissionDataBSON(userId, formTypeRef),
@@ -62,20 +69,28 @@ class SubmissionExtraDataRepository @Inject() (implicit rmc: ReactiveMongoCompon
       .map(_.isDefined)
   }
 
-  private def findSubmissionDataBSON(userId: String, formTypeRef: String): BSONDocument = {
-    and(BSONDocument("encUserId" -> userId), BSONDocument("formTypeRef"-> formTypeRef))
+  def findSubmissionExtraDataByFormId(formId: String) = {
+    collection.find(findSubmissionDataBSONByFormId(formId)).one[SubmissionExtraData]
   }
 
-  private def findSubmissionDataBSON(formId: String): BSONDocument = {
-    BSONDocument("formId" -> formId)
-  }
-
-  def findSubmissionExtraData(formId: String): Future[Option[SubmissionExtraData]] = {
-    collection.find(findSubmissionDataBSON(formId)).one[SubmissionExtraData]
+  def findSubmissionExtraDataBySubmissionRef(submissionRef: String) = {
+    collection.find(findSubmissionDataBSONBySubmissionRef(submissionRef)).one[SubmissionExtraData]
   }
 
   def findSubmissionExtraData(userId: String, formTypeRef: String) = {
     collection.find(findSubmissionDataBSON(userId, formTypeRef)).one[SubmissionExtraData]
+  }
+
+  private def findSubmissionDataBSON(userId: String, formTypeRef: String): BSONDocument = {
+    and(BSONDocument("encUserId" -> userId), BSONDocument("formTypeRef"-> formTypeRef))
+  }
+
+  private def findSubmissionDataBSONByFormId(formId: String): BSONDocument = {
+    BSONDocument("formId" -> formId)
+  }
+
+  private def findSubmissionDataBSONBySubmissionRef(submissionRef: String): BSONDocument = {
+    BSONDocument("submissionRef" -> submissionRef)
   }
 
   override def isInsertion(newRecordId: BSONObjectID, oldRecord: SubmissionExtraData): Boolean = oldRecord.id match {
@@ -85,7 +100,11 @@ class SubmissionExtraDataRepository @Inject() (implicit rmc: ReactiveMongoCompon
 
   override def ensureIndexes(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Seq[scala.Boolean]] = {
     Future.sequence(Seq(
-      collection.indexesManager.ensure(Index(Seq("userId" -> IndexType.Ascending), name = Some("userIdIdx"), unique = false, sparse = true)),
-      collection.indexesManager.ensure(Index(Seq("formId" -> IndexType.Ascending), name = Some("formIdIdx"), unique = false, sparse = true))))
+      collection.indexesManager.ensure(
+        Index(Seq("userId" -> IndexType.Ascending), name = Some("userIdIdx"), unique = false, sparse = true)),
+      collection.indexesManager.ensure(
+        Index(Seq("formId" -> IndexType.Ascending), name = Some("formIdIdx"), unique = false, sparse = true)),
+      collection.indexesManager.ensure(
+        Index(Seq("submissionRef" -> IndexType.Ascending), name = Some("submissionRefIdx"), unique = false, sparse = true))))
   }
 }

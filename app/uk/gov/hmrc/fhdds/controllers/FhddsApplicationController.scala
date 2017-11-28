@@ -61,12 +61,26 @@ class FhddsApplicationController @Inject()(
       response = SubmissionResponse(ControllerServices.createSubmissionRef())
     } yield {
       Logger.info(s"Received subscription id ${desResponse.registrationNumberFHDDS} for safeId $safeId")
+      storeRegistrationNumber(
+        request.formId,
+        response.registrationNumber,
+        desResponse.registrationNumberFHDDS
+      )
       subscribeToTaxEnrolment(
         desResponse.registrationNumberFHDDS,
         extraData.businessRegistrationDetails.safeId,
         extraData.authorization)
       Ok(Json toJson response)
     }
+  }
+
+  private def storeRegistrationNumber(formId: String, submissionRef: String, registrationNumberFHDDS: String) = {
+    submissionDataRepository
+      .updateRegistrationNumber(formId, submissionRef, registrationNumberFHDDS)
+      .map(v ⇒ Logger.info(s"Saving registration number yield $v"))
+      .recover {
+        case t: Throwable ⇒ Logger.error("Saving registration number failed", t)
+      }
   }
 
   private def subscribeToTaxEnrolment(subscriptionId: String, safeId: String, authorization: Option[String])(implicit hc: HeaderCarrier) = {
@@ -103,7 +117,7 @@ class FhddsApplicationController @Inject()(
 
   private def findSubmissionExtraData(formId: String) = {
     submissionDataRepository
-      .findSubmissionExtraData(formId)
+      .findSubmissionExtraDataByFormId(formId)
       .map(_ getOrElse (throw new NotFoundException("extra data not found for formId")))
   }
 

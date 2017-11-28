@@ -44,6 +44,8 @@ class SubmissionExtraDataRepositorySpec
   val aCompanyName = "Some company"
   val anotherCompanyName = "Other company"
   val aFormId = "111-333-444"
+  val aSubmissionRef = "YYY-ZZZ1-TTTT"
+  val aRegistrationNumber = "XDFH00000100054"
 
   override protected def beforeEach(): Unit = {
     await(repository.drop)
@@ -51,7 +53,7 @@ class SubmissionExtraDataRepositorySpec
   }
 
   "Updating a bpr" should {
-    "should write the value to mongo" in {
+    "write the value to mongo" in {
       val brd = mkBusinessRegistrationDetails(aCompanyName)
       repository.saveBusinessRegistrationDetails(anUserId, formTypeRef, brd)
       val updated = await(repository.findSubmissionExtraData(anUserId, formTypeRef))
@@ -72,7 +74,27 @@ class SubmissionExtraDataRepositorySpec
       val result = repository.updateFormId(unknownUserId, formTypeRef, aFormId)
       await(result) shouldBe false
     }
+  }
 
+  "Updating submissionRef and registration number" should {
+    "save to mongo" in {
+      await(repository.saveBusinessRegistrationDetails(anUserId, formTypeRef, mkBusinessRegistrationDetails(aCompanyName)))
+
+      val result = repository.updateFormId(anUserId, formTypeRef, aFormId)
+      await(result) shouldBe true
+
+      val initially = await(repository.findSubmissionExtraData(anUserId, formTypeRef))
+      initially should not be None
+      initially.flatMap(_.submissionRef) should be(None)
+      initially.flatMap(_.registrationNumber) should be(None)
+
+      val result2 = repository.updateRegistrationNumber(aFormId, aSubmissionRef, aRegistrationNumber)
+      await(result2) shouldBe true
+      val updated = await(repository.findSubmissionExtraDataBySubmissionRef(aSubmissionRef))
+
+      updated.flatMap(_.submissionRef) shouldEqual  Some(aSubmissionRef)
+      updated.flatMap(_.registrationNumber) shouldEqual Some(aRegistrationNumber)
+    }
   }
 
   def mkExtraData(companyName: String) =
@@ -82,6 +104,7 @@ class SubmissionExtraDataRepositorySpec
       authorization = Some("Bearer som-bearer"),
       formId = None,
       submissionRef = None,
+      registrationNumber = None,
       businessRegistrationDetails = mkBusinessRegistrationDetails(companyName),
       companyRegistrationNumber = None
     )

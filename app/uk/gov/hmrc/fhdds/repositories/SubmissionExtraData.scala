@@ -26,6 +26,7 @@ case class SubmissionExtraData(
   formTypeRef: String,
   formId: Option[String],
   submissionRef: Option[String],
+  registrationNumber: Option[String],
   businessRegistrationDetails: BusinessRegistrationDetails,
   companyRegistrationNumber: Option[String],
   authorization: Option[String],

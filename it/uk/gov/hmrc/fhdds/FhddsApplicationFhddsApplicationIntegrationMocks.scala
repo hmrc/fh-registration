@@ -26,7 +26,7 @@ class FhddsApplicationFhddsApplicationIntegrationMocks extends FhddsApplicationI
 
       info("Get the extra data from fhdds database")
       Mockito
-        .when(mockSubmissionExtraDataRepository.findSubmissionExtraData(aFakeSubmission.formId))
+        .when(mockSubmissionExtraDataRepository.findSubmissionExtraDataByFormId(aFakeSubmission.formId))
         .thenReturn(Future successful Option(aFakeSubmissionExtraData))
 
       Then("Get the safe id")
@@ -55,7 +55,7 @@ class FhddsApplicationFhddsApplicationIntegrationMocks extends FhddsApplicationI
 
       info("Get the extra data from fhdds database")
       Mockito
-        .when(mockSubmissionExtraDataRepository.findSubmissionExtraData(aFakeSubmission.formId))
+        .when(mockSubmissionExtraDataRepository.findSubmissionExtraDataByFormId(aFakeSubmission.formId))
         .thenReturn(Future successful Option(aFakeSubmissionExtraData))
 
       Then("Get the application data")
@@ -109,8 +109,12 @@ class FhddsApplicationFhddsApplicationIntegrationMocks extends FhddsApplicationI
 
       info("Get the extra data from fhdds database")
       Mockito
-        .when(mockSubmissionExtraDataRepository.findSubmissionExtraData(formId = fakePostRequest.body.formId))
+        .when(mockSubmissionExtraDataRepository.findSubmissionExtraDataByFormId(formId = fakePostRequest.body.formId))
         .thenReturn(Future successful Option(aFakeSubmissionExtraData))
+
+      Mockito
+        .when(mockSubmissionExtraDataRepository.updateRegistrationNumber(any[String](), any[String](), any[String]()))
+        .thenReturn(Future successful true)
 
       Then("Creates an application for DES")
       val application = createDesSubmission(validFormData, aFakeSubmissionExtraData)
