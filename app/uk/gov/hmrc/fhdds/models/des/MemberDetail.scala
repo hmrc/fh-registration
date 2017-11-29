@@ -52,7 +52,7 @@ object IncorporationDetail {
   implicit val format = Json.format[IncorporationDetail]
 }
 
-case class MemberDetail(names: Names,
+case class MemberDetail(names: CompanyName,
                         incorporationDetail: IncorporationDetail,
                         identification: IdentificationBusiness,
                         groupJoiningDate: GroupJoiningDate,

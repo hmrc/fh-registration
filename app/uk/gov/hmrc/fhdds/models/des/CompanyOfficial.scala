@@ -19,16 +19,64 @@ package uk.gov.hmrc.fhdds.models.des
 import play.api.libs.json._
 
 
-case class Identification(passportNumber: Option[String] = None, nationalIdNumber: Option[String] = None, nino: Option[String] = None)
+sealed trait CompanyOfficial
 
-object Identification {
-  implicit val format = Json.format[Identification]
+case class IndividualAsOfficial(
+  role: String,
+  name: Name,
+  identification: IndividualIdentification
+) extends CompanyOfficial
+
+case class CompanyAsOfficial(
+  role: String,
+  name: CompanyName,
+  identification: CompanyIdentification
+) extends CompanyOfficial
+
+
+case class IndividualIdentification(passportNumber: Option[String] = None,
+                                    nationalIdNumber: Option[String] = None,
+                                    nino: Option[String] = None)
+
+case class CompanyIdentification(vatRegistrationNumber: Option[String] = None,
+                                 uniqueTaxpayerReference: Option[String] = None,
+                                 companyRegistrationNumber: Option[String] = None)
+
+object CompanyIdentification {
+  implicit val format = Json.format[CompanyIdentification]
 }
 
-case class CompanyOfficial(role: String,
-                           name: NameType,
-                           identification: Identification)
+object IndividualIdentification {
+  implicit val format = Json.format[IndividualIdentification]
+}
+
+object IndividualAsOfficial {
+  implicit val format = Json.format[IndividualAsOfficial]
+}
+
+object CompanyAsOfficial {
+  implicit val format = Json.format[CompanyAsOfficial]
+}
+
 
 object CompanyOfficial {
-  implicit val format = Json.format[CompanyOfficial]
+  val reads: Reads[CompanyOfficial] = new Reads[CompanyOfficial] {
+    override def reads(json: JsValue) = json.validate[JsObject].flatMap { o ⇒
+      (o \ "name" \ "firstName") match {
+        case JsDefined(_) ⇒ o.validate[IndividualAsOfficial]
+        case _               ⇒ o.validate[CompanyAsOfficial]
+      }
+    }
+
+  }
+
+  val writes: Writes[CompanyOfficial] = new Writes[CompanyOfficial] {
+    override def writes(o: CompanyOfficial) = o match {
+      case individual: IndividualAsOfficial ⇒ IndividualAsOfficial.format.writes(individual)
+      case company: CompanyAsOfficial ⇒ CompanyAsOfficial.format.writes(company)
+    }
+  }
+
+  implicit val format = Format(reads, writes)
+
 }

@@ -18,37 +18,16 @@ package uk.gov.hmrc.fhdds.models.des
 
 import play.api.libs.json._
 
-sealed trait NameType
-
 case class Name(firstName: String = "firstName",
                 middleName: Option[String] = None,
-                lastName: String = "lastName") extends NameType
+                lastName: String = "lastName")
 
 object Name {
   implicit val format = Json.format[Name]
 }
 
-case class Names(companyName: Option[String] = None, tradingName: Option[String] = None) extends NameType
+case class CompanyName(companyName: Option[String] = None, tradingName: Option[String] = None)
 
-object Names{
-  implicit val format = Json.format[Names]
-}
-
-
-object NameType {
-
-  val reads: Reads[NameType] = new Reads[NameType] {
-    override def reads(json: JsValue): JsResult[NameType] = json.validate[JsObject].flatMap{ o ⇒
-      if (o.keys.contains("firstName")) json.validate[Name]
-      else json.validate[Names]
-    }
-  }
-
-  val writes: Writes[NameType] = new Writes[NameType]{
-    override def writes(o: NameType) = o match {
-      case name: Name ⇒ Name.format.writes(name)
-      case names: Names ⇒ Names.format.writes(names)
-    }
-  }
-  implicit  val format: Format[NameType] = Format(reads, writes)
+object CompanyName {
+  implicit val format = Json.format[CompanyName]
 }

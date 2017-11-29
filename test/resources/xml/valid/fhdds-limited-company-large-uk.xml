@@ -55,20 +55,16 @@
     <companyOfficials>
         <panelRepeatingCompanyOfficial>
             <companyOfficerType>Individual</companyOfficerType>
+            <panelPerson>
+                <firstName>T</firstName>
+                <lastName>Y</lastName>
+                <hasNino>Yes</hasNino>
+                <panelNino>
+                    <nino>AA123456A</nino>
+                </panelNino>
+                <role>Secretary</role>
+            </panelPerson>
         </panelRepeatingCompanyOfficial>
-        <repeatingCompanyOfficer>
-            <repeatingPanel>
-                <panelPerson>
-                    <firstName>T</firstName>
-                    <lastName>Y</lastName>
-                    <hasNino>Yes</hasNino>
-                    <panelNino>
-                        <nino>AA123456A</nino>
-                    </panelNino>
-                    <role>Secretary</role>
-                </panelPerson>
-            </repeatingPanel>
-        </repeatingCompanyOfficer>
     </companyOfficials>
     <isNewFulfilmentBusiness>
         <isNewFulfilmentBusiness>Yes</isNewFulfilmentBusiness>

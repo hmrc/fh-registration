@@ -22,7 +22,7 @@ import javax.inject.Singleton
 
 import com.google.inject.ImplementedBy
 import generated.{AddressInternationalPlusQuestion, AddressLookUpContactAddress, AddressUKPlusQuestion, Data}
-import uk.gov.hmrc.fhdds.services.ApplicationUtils.AddressLineUtils
+import uk.gov.hmrc.fhdds.services.ApplicationUtils._
 import org.apache.commons.lang3.text.WordUtils
 import uk.gov.hmrc.fhdds.models.businessregistration.BusinessRegistrationDetails
 import uk.gov.hmrc.fhdds.models.des._
@@ -57,51 +57,13 @@ trait FhddsApplicationService {
   }
 
   def companyOfficialsDetails(xml: generated.Data): List[CompanyOfficial] = {
-    val companyOfficials = xml.companyOfficials.repeatingCompanyOfficer.repeatingPanel
+    val companyOfficials = xml.companyOfficials.panelRepeatingCompanyOfficial
     companyOfficials.toList.map(
-      companyOfficial ⇒ CompanyOfficial(role = {
-        companyOfficial.companyOfficialType match {
-          case Some("Secretary")          ⇒ "Company Secretary"
-          case Some("Director+Secretary") ⇒ "Director and Company Secretary"
-          case Some("Director")           ⇒ "Director"
-          case _                          ⇒ "Member"
+      companyOfficial ⇒
+        companyOfficial.companyOfficerType match {
+          case "Individual" ⇒ getCompanyOfficialAsPerson(companyOfficial.panelPerson)
+          case "Company" ⇒ getCompanyOfficialAsCompany(companyOfficial.panelCompany)
         }
-      },
-
-        name = {
-          for {
-            panelPerson ← companyOfficial.panelPerson
-          } yield {
-            Name(firstName = panelPerson.firstName.getOrElse(""),
-              middleName = None,
-              lastName = panelPerson.lastName.getOrElse(""))
-          }
-        }.get,
-
-        identification = {
-          for {
-            panelPerson ← companyOfficial.panelPerson
-          } yield {
-            if (isYes(panelPerson.hasNino.getOrElse("No"))) {
-              Identification(nino = panelPerson.panelNino.flatMap(_.nino))
-            } else {
-              Identification(passportNumber = panelPerson.panelNoNino.flatMap(
-                personNoNino ⇒ if (isYes(personNoNino.hasPassportNumber)) {
-                  personNoNino.panelPassportNumber.map(
-                    passportNumber ⇒ passportNumber.passportNumber
-                  )
-                } else None
-              ),
-                nationalIdNumber = panelPerson.panelNoNino.flatMap(
-                  personNoNino ⇒
-                    personNoNino.panelNationalIDNumber.map(_.nationalIdNumber)
-                )
-              )
-            }
-          }
-        }.get
-
-      )
     )
   }
 
@@ -199,8 +161,6 @@ trait FhddsApplicationService {
       None,
       blockAddressInternationalPlus.country_code.getOrElse("GB"))
 
-  def isYes(radioButtonAnswer: String): Boolean = radioButtonAnswer equals "Yes"
-
   private def translateBusinessType(businessType: String) = WordUtils.capitalizeFully(businessType) match {
     case "Sole Trader" ⇒ "Sole Proprietor"
     case other         ⇒ other
@@ -243,7 +203,7 @@ trait FhddsApplicationService {
         fulfilmentOrdersType = FulfilmentOrdersType(typeOfOtherOrder = None),
         numberOfCustomers = numberOfCustomers,
         premises = Premises(numberOfpremises = otherStorageSitesDetail.getOrElse(List(principalBusinessAddress(brd))).length.toString,
-          address = otherStorageSitesDetail.getOrElse(List(principalBusinessAddress(brd))))
+                            address = otherStorageSitesDetail.getOrElse(List(principalBusinessAddress(brd))))
       )
     )
   }

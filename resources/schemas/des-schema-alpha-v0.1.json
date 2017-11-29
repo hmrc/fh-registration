@@ -145,11 +145,11 @@
                 "properties": {
                   "companyName": {
                     "type": "string",
-                    "pattern": "^[a-zA-Z0-9À-ÿ !#$%&'‘’\"“”«»()+,./:;=?@\\[\\]£€¥\\u005C—–‐-]{1,140}$"
+                    "pattern": "^[a-zA-Z0-9\u00C0-\u00FF !#$%&'‘’\"“”«»()*+,./:;=?@\\[\\]£€¥\\u005C\u2014\u2013\u2010\u002d]{1,140}$"
                   },
                   "tradingName": {
                     "type": "string",
-                    "pattern": "^[a-zA-Z0-9À-ÿ !#$%&'‘’\"“”«»()+,./:;=?@\\[\\]|~£€¥\\u005C—–‐_^`-]{1,120}$"
+                    "pattern": "^[a-zA-Z0-9\u00C0-\u00FF !#$%&'‘’\"“”«»()*+,./:;=?@\\[\\]|~£€¥\\u005C\u2014\u2013\u2010\u005F\u005E\u0060\u002d]{1,120}$"
                   }
                 },
                 "additionalProperties": false
@@ -240,11 +240,11 @@
                         "properties": {
                           "passportNumber": {
                             "type": "string",
-                            "pattern": "^[a-zA-Z0-9À-ÿ !#$%&'‘’\"“”«»()+,./:;=?@\\[\\]|~£€¥\\u005C—–‐_^`-]{1,20}$"
+                            "pattern": "^[a-zA-Z0-9\u00C0-\u00FF !#$%&'‘’\"“”«»()*+,./:;=?@\\[\\]|~£€¥\\u005C\u2014\u2013\u2010\u005F\u005E\u0060\u002d]{1,20}$"
                           },
                           "nationalIdNumber": {
                             "type": "string",
-                            "pattern": "^[a-zA-Z0-9À-ÿ !#$%&'‘’\"“”«»()+,./:;=?@\\[\\]|~£€¥\\u005C—–‐_^`-]{1,20}$"
+                            "pattern": "^[a-zA-Z0-9\u00C0-\u00FF !#$%&'‘’\"“”«»()*+,./:;=?@\\[\\]|~£€¥\\u005C\u2014\u2013\u2010\u005F\u005E\u0060\u002d]{1,20}$"
                           },
                           "nino": {
                             "type": "string",
@@ -278,11 +278,11 @@
                         "properties": {
                           "companyName": {
                             "type": "string",
-                            "pattern": "^[a-zA-Z0-9À-ÿ !#$%&'‘’\"“”«»()+,./:;=?@\\[\\]£€¥\\u005C—–‐-]{1,140}$"
+                            "pattern": "^[a-zA-Z0-9\u00C0-\u00FF !#$%&'‘’\"“”«»()*+,./:;=?@\\[\\]£€¥\\u005C\u2014\u2013\u2010\u002d]{1,140}$"
                           },
                           "tradingName": {
                             "type": "string",
-                            "pattern": "^[a-zA-Z0-9À-ÿ !#$%&'‘’\"“”«»()+,./:;=?@\\[\\]|~£€¥\\u005C—–‐_^`-]{1,120}$"
+                            "pattern": "^[a-zA-Z0-9\u00C0-\u00FF !#$%&'‘’\"“”«»()*+,./:;=?@\\[\\]|~£€¥\\u005C\u2014\u2013\u2010\u005F\u005E\u0060\u002d]{1,120}$"
                           }
                         },
                         "additionalProperties": false
@@ -342,7 +342,7 @@
                 },
                 "typeOfOtherOrder": {
                   "type": "string",
-                  "pattern": "^[a-zA-Z0-9À-ÿ !#$%&'‘’\"“”«»()+,./:;=?@\\[\\]|~£€¥\\u005C—–‐_^`-]{1,40}$"
+                  "pattern": "^[a-zA-Z0-9\u00C0-\u00FF !#$%&'‘’\"“”«»()*+,./:;=?@\\[\\]|~£€¥\\u005C\u2014\u2013\u2010\u005F\u005E\u0060\u002d]{1,40}$"
                 }
               },
               "required": [
@@ -453,7 +453,7 @@
       "properties": {
         "title": {
           "type": "string",
-          "pattern": "^[a-zA-ZÀ-ÿ '‘’—–‐-]{2,30}$"
+          "pattern": "^[a-zA-Z\u00C0-\u00FF '‘’\u2014\u2013\u2010\u002d]{2,30}$"
         },
         "names": {
           "$ref": "#/definitions/namesType"
@@ -524,7 +524,7 @@
       "properties": {
         "personName": {
           "type": "string",
-          "pattern": "^[a-zA-ZÀ-ÿ '‘’—–‐-]{1,140}$"
+          "pattern": "^[a-zA-Z\u00C0-\u00FF '‘’\u2014\u2013\u2010\u002d]{1,140}$"
         },
         "personStatus": {
           "type": "string",
@@ -538,7 +538,7 @@
         },
         "personStatusOther": {
           "type": "string",
-          "pattern": "^[a-zA-Z0-9À-ÿ !#$%&'‘’\"“”«»()+,./:;=?@\\[\\]|~£€¥\\u005C—–‐_^`-]{1,40}$"
+          "pattern": "^[a-zA-Z0-9\u00C0-\u00FF !#$%&'‘’\"“”«»()*+,./:;=?@\\[\\]|~£€¥\\u005C\u2014\u2013\u2010\u005F\u005E\u0060\u002d]{1,40}$"
         },
         "isInformationAccurate": {
           "type": "boolean"
@@ -587,18 +587,18 @@
       "type": "string",
       "minLength": 1,
       "maxLength": 35,
-      "pattern": "^[A-Za-z0-9 !'‘’\"“”(),./—–‐-]{1,35}$"
+      "pattern": "^[A-Za-z0-9 !'‘’\"“”(),./\u2014\u2013\u2010\u002d]{1,35}$"
     },
     "commonDetailsType": {
       "type": "object",
       "properties": {
         "telephone": {
           "type": "string",
-          "pattern": "^[0-9 ()+‐-]{1,24}$"
+          "pattern": "^[0-9 ()+\u2010\u002d]{1,24}$"
         },
         "mobileNumber": {
           "type": "string",
-          "pattern": "^[0-9 ()+‐-]{1,24}$"
+          "pattern": "^[0-9 ()+\u2010\u002d]{1,24}$"
         },
         "email": {
           "type": "string",
@@ -616,15 +616,15 @@
       "properties": {
         "firstName": {
           "type": "string",
-          "pattern": "^[a-zA-ZÀ-ÿ '‘’—–‐-]{1,35}$"
+          "pattern": "^[a-zA-Z\u00C0-\u00FF '‘’\u2014\u2013\u2010\u002d]{1,35}$"
         },
         "middleName": {
           "type": "string",
-          "pattern": "^[a-zA-ZÀ-ÿ '‘’—–‐-]{1,35}$"
+          "pattern": "^[a-zA-Z\u00C0-\u00FF '‘’\u2014\u2013\u2010\u002d]{1,35}$"
         },
         "lastName": {
           "type": "string",
-          "pattern": "^[a-zA-ZÀ-ÿ '‘’—–‐-]{1,35}$"
+          "pattern": "^[a-zA-Z\u00C0-\u00FF '‘’\u2014\u2013\u2010\u002d]{1,35}$"
         }
       },
       "required": [
@@ -638,7 +638,7 @@
       "properties": {
         "tradingName": {
           "type": "string",
-          "pattern": "^[a-zA-Z0-9À-ÿ !#$%&'‘’\"“”«»()+,./:;=?@\\[\\]|~£€¥\\u005C—–‐_^`-]{1,120}$"
+          "pattern": "^[a-zA-Z0-9\u00C0-\u00FF !#$%&'‘’\"“”«»()*+,./:;=?@\\[\\]|~£€¥\\u005C\u2014\u2013\u2010\u005F\u005E\u0060\u002d]{1,120}$"
         },
         "identification": {
           "type": "object",
@@ -669,7 +669,7 @@
       "properties": {
         "tradingName": {
           "type": "string",
-          "pattern": "^[a-zA-Z0-9À-ÿ !#$%&'‘’\"“”«»()+,./:;=?@\\[\\]|~£€¥\\u005C—–‐_^`-]{1,120}$"
+          "pattern": "^[a-zA-Z0-9\u00C0-\u00FF !#$%&'‘’\"“”«»()*+,./:;=?@\\[\\]|~£€¥\\u005C\u2014\u2013\u2010\u005F\u005E\u0060\u002d]{1,120}$"
         },
         "identification": {
           "type": "object",
@@ -795,7 +795,7 @@
           "properties": {
             "tradingName": {
               "type": "string",
-              "pattern": "^[a-zA-Z0-9À-ÿ !#$%&'‘’\"“”«»()+,./:;=?@\\[\\]|~£€¥\\u005C—–‐_^`-]{1,120}$"
+              "pattern": "^[a-zA-Z0-9\u00C0-\u00FF !#$%&'‘’\"“”«»()*+,./:;=?@\\[\\]|~£€¥\\u005C\u2014\u2013\u2010\u005F\u005E\u0060\u002d]{1,120}$"
             },
             "name": {
               "$ref": "#/definitions/namesType"
@@ -835,11 +835,11 @@
           "properties": {
             "companyName": {
               "type": "string",
-              "pattern": "^[a-zA-Z0-9À-ÿ !#$%&'‘’\"“”«»()+,./:;=?@\\[\\]£€¥\\u005C—–‐-]{1,140}$"
+              "pattern": "^[a-zA-Z0-9\u00C0-\u00FF !#$%&'‘’\"“”«»()*+,./:;=?@\\[\\]£€¥\\u005C\u2014\u2013\u2010\u002d]{1,140}$"
             },
             "tradingName": {
               "type": "string",
-              "pattern": "^[a-zA-Z0-9À-ÿ !#$%&'‘’\"“”«»()+,./:;=?@\\[\\]|~£€¥\\u005C—–‐_^`-]{1,120}$"
+              "pattern": "^[a-zA-Z0-9\u00C0-\u00FF !#$%&'‘’\"“”«»()*+,./:;=?@\\[\\]|~£€¥\\u005C\u2014\u2013\u2010\u005F\u005E\u0060\u002d]{1,120}$"
             }
           },
           "additionalProperties": false
@@ -887,11 +887,11 @@
           "properties": {
             "companyName": {
               "type": "string",
-              "pattern": "^[a-zA-Z0-9À-ÿ !#$%&'‘’\"“”«»()+,./:;=?@\\[\\]£€¥\\u005C—–‐-]{1,140}$"
+              "pattern": "^[a-zA-Z0-9\u00C0-\u00FF !#$%&'‘’\"“”«»()*+,./:;=?@\\[\\]£€¥\\u005C\u2014\u2013\u2010\u002d]{1,140}$"
             },
             "tradingName": {
               "type": "string",
-              "pattern": "^[a-zA-Z0-9À-ÿ !#$%&'‘’\"“”«»()+,./:;=?@\\[\\]|~£€¥\\u005C—–‐_^`-]{1,120}$"
+              "pattern": "^[a-zA-Z0-9\u00C0-\u00FF !#$%&'‘’\"“”«»()*+,./:;=?@\\[\\]|~£€¥\\u005C\u2014\u2013\u2010\u005F\u005E\u0060\u002d]{1,120}$"
             }
           },
           "additionalProperties": false
@@ -1179,7 +1179,7 @@
     "dateString": {
       "description": "YYYY-MM-DD",
       "type": "string",
-      "pattern": "^[2][0][1-9][0-9][-][0-1][0-9][-][0-3][0-9]$"
+      "pattern": "^\\d{4}-(0[1-9]|1[012])-(0[1-9]|[12][0-9]|3[01])$"
     }
   }
 }
