@@ -18,46 +18,65 @@ package uk.gov.hmrc.fhdds.models.des
 
 import play.api.libs.json._
 
-sealed trait IdentificationType
+
+sealed trait CompanyOfficial
+
+case class IndividualAsOfficial(
+  role: String,
+  name: Name,
+  identification: IndividualIdentification
+) extends CompanyOfficial
+
+case class CompanyAsOfficial(
+  role: String,
+  name: CompanyName,
+  identification: CompanyIdentification
+) extends CompanyOfficial
+
 
 case class IndividualIdentification(passportNumber: Option[String] = None,
                                     nationalIdNumber: Option[String] = None,
-                                    nino: Option[String] = None) extends IdentificationType
-
-object IndividualIdentification {
-  implicit val format = Json.format[IndividualIdentification]
-}
+                                    nino: Option[String] = None)
 
 case class CompanyIdentification(vatRegistrationNumber: Option[String] = None,
                                  uniqueTaxpayerReference: Option[String] = None,
-                                 companyRegistrationNumber: Option[String] = None) extends IdentificationType
+                                 companyRegistrationNumber: Option[String] = None)
 
 object CompanyIdentification {
   implicit val format = Json.format[CompanyIdentification]
 }
 
-object IdentificationType {
-
-  val reads: Reads[IdentificationType] = new Reads[IdentificationType] {
-    override def reads(json: JsValue): JsResult[IdentificationType] = json.validate[JsObject].flatMap{ o ⇒
-      if (o.keys.contains("passportNumber")) json.validate[IndividualIdentification]
-      else json.validate[CompanyIdentification]
-    }
-  }
-
-  val writes: Writes[IdentificationType] = new Writes[IdentificationType]{
-    override def writes(o: IdentificationType) = o match {
-      case individualIdentification: IndividualIdentification ⇒ IndividualIdentification.format.writes(individualIdentification)
-      case companyIdentification: CompanyIdentification ⇒ CompanyIdentification.format.writes(companyIdentification)
-    }
-  }
-  implicit  val format: Format[IdentificationType] = Format(reads, writes)
+object IndividualIdentification {
+  implicit val format = Json.format[IndividualIdentification]
 }
 
-case class CompanyOfficial(role: String,
-                           name: NameType,
-                           identification: IdentificationType)
+object IndividualAsOfficial {
+  implicit val format = Json.format[IndividualAsOfficial]
+}
+
+object CompanyAsOfficial {
+  implicit val format = Json.format[CompanyAsOfficial]
+}
+
 
 object CompanyOfficial {
-  implicit val format = Json.format[CompanyOfficial]
+  val reads: Reads[CompanyOfficial] = new Reads[CompanyOfficial] {
+    override def reads(json: JsValue) = json.validate[JsObject].flatMap { o ⇒
+      (o \ "name" \ "firstName") match {
+        case JsDefined(_) ⇒ o.validate[IndividualAsOfficial]
+        case _               ⇒ o.validate[CompanyAsOfficial]
+      }
+    }
+
+  }
+
+  val writes: Writes[CompanyOfficial] = new Writes[CompanyOfficial] {
+    override def writes(o: CompanyOfficial) = o match {
+      case individual: IndividualAsOfficial ⇒ IndividualAsOfficial.format.writes(individual)
+      case company: CompanyAsOfficial ⇒ CompanyAsOfficial.format.writes(company)
+    }
+  }
+
+  implicit val format = Format(reads, writes)
+
 }

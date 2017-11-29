@@ -41,7 +41,7 @@ object ApplicationUtils {
   def getCompanyOfficialAsPerson(person: Option[PanelPerson]): CompanyOfficial = {
     person.map(
       personPanel ⇒
-        CompanyOfficial(
+        IndividualAsOfficial(
           role = {
             personPanel.role match {
               case "Secretary" ⇒ "Company Secretary"
@@ -81,7 +81,7 @@ object ApplicationUtils {
   def getCompanyOfficialAsCompany(company: Option[PanelCompany]): CompanyOfficial = {
     company.map(
       companyPanel ⇒
-        CompanyOfficial(
+        CompanyAsOfficial(
           role = {
             companyPanel.role match {
               case "Secretary" ⇒ "Company Secretary"
@@ -91,7 +91,7 @@ object ApplicationUtils {
             }
           },
           name = {
-            Names(companyName = Some(companyPanel.companyName))
+            CompanyName(companyName = Some(companyPanel.companyName))
           },
           identification = {
             if (isYes(companyPanel.hasVat)) {
