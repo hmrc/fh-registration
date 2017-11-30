@@ -19,9 +19,10 @@ package uk.gov.hmrc.fhdds.connectors
 import com.google.inject.ImplementedBy
 import play.api.libs.json.{JsObject, JsString, Json}
 import uk.gov.hmrc.fhdds.config.WSHttp
+import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.config.ServicesConfig
-import uk.gov.hmrc.play.http.HeaderCarrier
-import uk.gov.hmrc.play.http.ws.WSHttp
+
+import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
 
 import scala.concurrent.Future
 

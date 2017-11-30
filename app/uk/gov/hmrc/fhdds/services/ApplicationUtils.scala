@@ -38,72 +38,57 @@ object ApplicationUtils {
 
   def isYes(radioButtonAnswer: String): Boolean = radioButtonAnswer equals "Yes"
 
-  def getCompanyOfficialAsPerson(person: Option[PanelPerson]): CompanyOfficial = {
-    person.map(
-      personPanel ⇒
-        IndividualAsOfficial(
-          role = {
-            personPanel.role match {
-              case "Secretary" ⇒ "Company Secretary"
-              case "Director+Secretary" ⇒ "Director and Company Secretary"
-              case "Director" ⇒ "Director"
-              case _ ⇒ "Member"
-            }
-          },
-          name = {
-            Name(firstName = personPanel.firstName,
-                 middleName = None,
-                 lastName = personPanel.lastName)
-          },
-          identification = {
-            if (isYes(personPanel.hasNino)) {
-              IndividualIdentification(nino = personPanel.panelNino.map(_.nino))
-            } else {
-              IndividualIdentification(
-                passportNumber = personPanel.panelNoNino.flatMap(
-                  personNoNino ⇒ if (isYes(personNoNino.hasPassportNumber)) {
-                    personNoNino.panelPassportNumber.map(
-                      passportNumber ⇒ passportNumber.passportNumber
-                    )
-                  } else None
-                ),
-                nationalIdNumber = personPanel.panelNoNino.flatMap(
-                  personNoNino ⇒
-                    personNoNino.panelNationalIDNumber.map(_.nationalIdNumber)
+  def getCompanyOfficialAsPerson(personPanel: PanelPerson): CompanyOfficial = {
+    IndividualAsOfficial(
+      role = personPanel.role match {
+        case "Secretary"          ⇒ "Company Secretary"
+        case "Director+Secretary" ⇒ "Director and Company Secretary"
+        case "Director"           ⇒ "Director"
+        case _                    ⇒ "Member"
+      },
+      name = Name(firstName = personPanel.firstName,
+        middleName = None,
+        lastName = personPanel.lastName),
+      identification = {
+        if (isYes(personPanel.hasNino)) {
+          IndividualIdentification(nino = personPanel.panelNino.map(_.nino))
+        } else {
+          IndividualIdentification(
+            passportNumber = personPanel.panelNoNino.flatMap(
+              personNoNino ⇒ if (isYes(personNoNino.hasPassportNumber)) {
+                personNoNino.panelPassportNumber.map(
+                  passportNumber ⇒ passportNumber.passportNumber
                 )
-              )
-            }
-          }
-        )
-    ).get
+              } else None
+            ),
+            nationalIdNumber = personPanel.panelNoNino.flatMap(
+              personNoNino ⇒
+                personNoNino.panelNationalIDNumber.map(_.nationalIdNumber)
+            )
+          )
+        }
+      }
+    )
   }
 
-  def getCompanyOfficialAsCompany(company: Option[PanelCompany]): CompanyOfficial = {
-    company.map(
-      companyPanel ⇒
-        CompanyAsOfficial(
-          role = {
-            companyPanel.role match {
-              case "Secretary" ⇒ "Company Secretary"
-              case "Director+Secretary" ⇒ "Director and Company Secretary"
-              case "Director" ⇒ "Director"
-              case _ ⇒ "Member"
-            }
-          },
-          name = {
-            CompanyName(companyName = Some(companyPanel.companyName))
-          },
-          identification = {
-            if (isYes(companyPanel.hasVat)) {
-              CompanyIdentification(vatRegistrationNumber = companyPanel.panelHasVat.map(_.vatRegistrationNumber))
-            } else {
-              CompanyIdentification(
-                companyRegistrationNumber = companyPanel.panelCrn.map(_.companyRegistrationNumber)
-              )
-            }
-          }
-        )
-    ).get
-
+  def getCompanyOfficialAsCompany(companyPanel: PanelCompany): CompanyOfficial = {
+    CompanyAsOfficial(
+      role = companyPanel.role match {
+          case "Secretary"          ⇒ "Company Secretary"
+          case "Director+Secretary" ⇒ "Director and Company Secretary"
+          case "Director"           ⇒ "Director"
+          case _                    ⇒ "Member"
+        },
+      name = CompanyName(companyName = Some(companyPanel.companyName)),
+      identification = {
+        if (isYes(companyPanel.hasVat)) {
+          CompanyIdentification(vatRegistrationNumber = companyPanel.panelHasVat.map(_.vatRegistrationNumber))
+        } else {
+          CompanyIdentification(
+            companyRegistrationNumber = companyPanel.panelCrn.map(_.companyRegistrationNumber)
+          )
+        }
+      }
+    )
   }
 }

@@ -10,20 +10,16 @@ object MicroServiceBuild extends Build with MicroService {
 
   val compile = Seq(
     ws,
-    "uk.gov.hmrc" %% "microservice-bootstrap" % "5.16.0",
-    "uk.gov.hmrc" %% "play-authorisation" % "4.3.0",
-    "uk.gov.hmrc" %% "play-health" % "2.1.0",
-    "uk.gov.hmrc" %% "play-ui" % "7.4.0",
-    "uk.gov.hmrc" %% "play-config" % "4.3.0",
-    "uk.gov.hmrc" %% "logback-json-logger" % "3.1.0",
-    "uk.gov.hmrc" %% "domain" % "4.1.0",
-    "uk.gov.hmrc" %% "play-auth" % "1.2.0",
+    "uk.gov.hmrc" %% "microservice-bootstrap" % "6.13.0",
+    "uk.gov.hmrc" %% "domain" % "5.0.0",
+    "uk.gov.hmrc" %% "play-auth" % "2.4.2",
+    "uk.gov.hmrc" %% "play-reactivemongo" % "6.1.0",
+    "uk.gov.hmrc" %% "simple-reactivemongo" % "6.0.0",
     "com.github.tototoshi" %% "play-json-naming" % "1.1.0",
     "com.eclipsesource" %% "play-json-schema-validator" % "0.8.9",
     "org.scala-lang.modules" %% "scala-xml" % "1.0.6",
-    "org.typelevel" %% "cats" % "0.9.0",
-    "uk.gov.hmrc" %% "play-reactivemongo" % "6.0.0",
-    "uk.gov.hmrc" %% "simple-reactivemongo" % "6.0.0"
+    "org.typelevel" %% "cats" % "0.9.0"
+
 
   )
 

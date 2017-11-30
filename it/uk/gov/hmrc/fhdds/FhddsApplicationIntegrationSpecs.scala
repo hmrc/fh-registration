@@ -5,13 +5,13 @@ import org.mockito.Mockito
 import play.mvc.Http.Status
 import uk.gov.hmrc.fhdds.Services.FakeData._
 import uk.gov.hmrc.fhdds.Services.FhddsApplicationIntegrationMocks
-import uk.gov.hmrc.play.http.HeaderCarrier
+import uk.gov.hmrc.http.HeaderCarrier
 
 import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, ExecutionContext, Future}
 
 
-class FhddsApplicationFhddsApplicationIntegrationMocks extends FhddsApplicationIntegrationMocks {
+class FhddsApplicationIntegrationSpecs extends FhddsApplicationIntegrationMocks {
 
   implicit val ec = ExecutionContext.global
 

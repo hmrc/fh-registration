@@ -61,8 +61,8 @@ trait FhddsApplicationService {
     companyOfficials.toList.map(
       companyOfficial ⇒
         companyOfficial.companyOfficerType match {
-          case "Individual" ⇒ getCompanyOfficialAsPerson(companyOfficial.panelPerson)
-          case "Company" ⇒ getCompanyOfficialAsCompany(companyOfficial.panelCompany)
+          case "Individual" ⇒ getCompanyOfficialAsPerson(companyOfficial.panelPerson.get)
+          case "Company" ⇒ getCompanyOfficialAsCompany(companyOfficial.panelCompany.get)
         }
     )
   }

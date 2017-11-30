@@ -21,9 +21,9 @@ import javax.inject.Singleton
 import com.google.inject.ImplementedBy
 import uk.gov.hmrc.fhdds.config.WSHttp
 import uk.gov.hmrc.fhdds.models.dfsStore.Submission
+import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.config.ServicesConfig
-import uk.gov.hmrc.play.http.HeaderCarrier
-import uk.gov.hmrc.play.http.ws.WSHttp
+import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
 
 import scala.concurrent.Future
 
@@ -39,7 +39,6 @@ trait DfsStoreConnector {
 
   val dfsStoreBaseUrl: String
   val http: WSHttp
-
 
   def getSubmission(submissionRef: String): Future[Submission] = {
     val url = s"$dfsStoreBaseUrl/dfs-store/submissions/$submissionRef"

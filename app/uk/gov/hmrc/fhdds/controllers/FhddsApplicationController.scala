@@ -26,7 +26,7 @@ import uk.gov.hmrc.fhdds.models.des.SubScriptionCreate.format
 import uk.gov.hmrc.fhdds.models.fhdds.{SubmissionRequest, SubmissionResponse}
 import uk.gov.hmrc.fhdds.repositories.{SubmissionExtraData, SubmissionExtraDataRepository}
 import uk.gov.hmrc.fhdds.services.{ControllerServices, FhddsApplicationService}
-import uk.gov.hmrc.play.http.{HeaderCarrier, NotFoundException}
+import uk.gov.hmrc.http.{HeaderCarrier, NotFoundException}
 import uk.gov.hmrc.play.microservice.controller.BaseController
 
 import scala.concurrent.ExecutionContext.Implicits.global
