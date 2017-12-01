@@ -16,38 +16,12 @@
 
 package uk.gov.hmrc.fhdds.models.des
 
-import java.time.LocalDate
-import java.time.format.DateTimeFormatter
+import play.api.libs.json.Json
 
-import play.api.libs.json.{JsString, Json, Reads, Writes}
-
-case class IncorporationDetails(companyRegistrationNumber: Option[String] = None,
-                                dateOfIncorporation: Option[LocalDate] = None)
-
-object IncorporationDetails {
-  val dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
-  implicit val localDateReads = Reads.localDateReads("yyyy-MM-dd")
-  implicit val localDateWrites = Writes { date: LocalDate ⇒
-    JsString(date.format(dateTimeFormatter))
-  }
-  implicit val format = Json.format[IncorporationDetails]
-}
-
-case class LimitedLiabilityPartnershipCorporateBody(groupRepresentativeJoinDate: Option[LocalDate] = None,
-                                                    incorporationDetails: IncorporationDetails)
-
-object LimitedLiabilityPartnershipCorporateBody {
-
-  val dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
-  implicit val localDateReads = Reads.localDateReads("yyyy-MM-dd")
-  implicit val localDateWrites = Writes { date: LocalDate ⇒
-    JsString(date.format(dateTimeFormatter))
-  }
-
-  implicit val format = Json.format[LimitedLiabilityPartnershipCorporateBody]
-}
-
-case class BusinessDetail(limitedLiabilityPartnershipCorporateBody: LimitedLiabilityPartnershipCorporateBody)
+case class BusinessDetail(soleProprietor: Option[SoleProprietor] = None,
+                          nonProprietor: Option[NonProprietor] = None,
+                          limitedLiabilityPartnershipCorporateBody: Option[LimitedLiabilityPartnershipCorporateBody] = None,
+                          partnerShipBusinessDetailsType: Option[PartnerShipBusinessDetailsType] = None)
 
 object BusinessDetail {
   implicit val format = Json.format[BusinessDetail]

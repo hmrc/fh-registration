@@ -22,42 +22,24 @@ import play.api.libs.json._
 sealed trait CompanyOfficial
 
 case class IndividualAsOfficial(
-  role: String,
-  name: Name,
-  identification: IndividualIdentification
-) extends CompanyOfficial
-
-case class CompanyAsOfficial(
-  role: String,
-  name: CompanyName,
-  identification: CompanyIdentification
-) extends CompanyOfficial
-
-
-case class IndividualIdentification(passportNumber: Option[String] = None,
-                                    nationalIdNumber: Option[String] = None,
-                                    nino: Option[String] = None)
-
-case class CompanyIdentification(vatRegistrationNumber: Option[String] = None,
-                                 uniqueTaxpayerReference: Option[String] = None,
-                                 companyRegistrationNumber: Option[String] = None)
-
-object CompanyIdentification {
-  implicit val format = Json.format[CompanyIdentification]
-}
-
-object IndividualIdentification {
-  implicit val format = Json.format[IndividualIdentification]
-}
+                                 role: String,
+                                 name: Name,
+                                 identification: IndividualIdentification
+                               ) extends CompanyOfficial
 
 object IndividualAsOfficial {
   implicit val format = Json.format[IndividualAsOfficial]
 }
 
+case class CompanyAsOfficial(
+                              role: String,
+                              name: CompanyName,
+                              identification: CompanyIdentification
+                            ) extends CompanyOfficial
+
 object CompanyAsOfficial {
   implicit val format = Json.format[CompanyAsOfficial]
 }
-
 
 object CompanyOfficial {
   val reads: Reads[CompanyOfficial] = new Reads[CompanyOfficial] {
