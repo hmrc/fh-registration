@@ -22,20 +22,22 @@ import play.api.libs.json._
 sealed trait CompanyOfficial
 
 case class IndividualAsOfficial(
-                                 role: String,
-                                 name: Name,
-                                 identification: IndividualIdentification
-                               ) extends CompanyOfficial
+  role: String,
+  name: Name,
+  identification: IndividualIdentification
+) extends CompanyOfficial
+
+case class CompanyAsOfficial(
+  role: String,
+  name: CompanyName,
+  identification: CompanyIdentification
+) extends CompanyOfficial
 
 object IndividualAsOfficial {
   implicit val format = Json.format[IndividualAsOfficial]
 }
 
-case class CompanyAsOfficial(
-                              role: String,
-                              name: CompanyName,
-                              identification: CompanyIdentification
-                            ) extends CompanyOfficial
+
 
 object CompanyAsOfficial {
   implicit val format = Json.format[CompanyAsOfficial]

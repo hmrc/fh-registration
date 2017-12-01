@@ -39,7 +39,7 @@ case class BusinessAddressForFHDDS(currentAddress: Address,
                                    commonDetails: CommonDetails,
                                    dateStartedTradingAsFulfilmentHouse: LocalDate,
                                    isOnlyPrinicipalPlaceOfBusinessInLastThreeYears: Boolean,
-                                   previousOperationalAddress: Option[List[PreviousOperationalAddress]] = None)
+                                   previousOperationalAddress: Option[List[PreviousOperationalAddress]])
 
 object BusinessAddressForFHDDS {
   val dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")

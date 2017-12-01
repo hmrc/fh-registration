@@ -19,20 +19,20 @@ package uk.gov.hmrc.fhdds.models.des
 import play.api.libs.json._
 
 
-case class IndividualIdentification(passportNumber: Option[String] = None,
-                                    nationalIdNumber: Option[String] = None,
-                                    nino: Option[String] = None)
+case class IndividualIdentification(passportNumber: Option[String],
+                                    nationalIdNumber: Option[String],
+                                    nino: Option[String])
 
-case class CompanyIdentification(vatRegistrationNumber: Option[String] = None,
-                                 uniqueTaxpayerReference: Option[String] = None,
-                                 companyRegistrationNumber: Option[String] = None)
+case class CompanyIdentification(vatRegistrationNumber: Option[String],
+                                 uniqueTaxpayerReference: Option[String],
+                                 companyRegistrationNumber: Option[String])
 
-case class SoleProprietorIdentification(nino: Option[String] = None,
-                                        vatRegistrationNumber: Option[String] = None,
-                                        uniqueTaxpayerReference: Option[String] = None)
+case class SoleProprietorIdentification(nino: Option[String],
+                                        vatRegistrationNumber: Option[String],
+                                        uniqueTaxpayerReference: Option[String])
 
-case class NonProprietorIdentification(vatRegistrationNumber: Option[String] = None,
-                                       uniqueTaxpayerReference: Option[String] = None)
+case class NonProprietorIdentification(vatRegistrationNumber: Option[String],
+                                       uniqueTaxpayerReference: Option[String])
 
 object IndividualIdentification {
   implicit val format = Json.format[IndividualIdentification]
@@ -44,4 +44,8 @@ object CompanyIdentification {
 
 object SoleProprietorIdentification {
   implicit val format = Json.format[SoleProprietorIdentification]
+}
+
+object NonProprietorIdentification {
+  implicit val format = Json.format[NonProprietorIdentification]
 }

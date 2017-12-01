@@ -18,14 +18,15 @@ package uk.gov.hmrc.fhdds.models.des
 
 import play.api.libs.json.Json
 
-case class SubscriptionCreateRequestSchema(organizationType: String = "Corporate Body",
-                                           FHbusinessDetail: IsNewFulfilmentBusiness,
-                                           GroupInformation: Option[LimitedLiabilityOrCorporateBodyWithOutGroup],
-                                           additionalBusinessInformation: AdditionalBusinessInformationwithType,
-                                           businessDetail: BusinessDetail,
-                                           businessAddressForFHDDS: BusinessAddressForFHDDS,
-                                           contactDetail: ContactDetail,
-                                           declaration: Declaration)
+case class SubscriptionCreateRequestSchema(
+  organizationType: String,
+  FHbusinessDetail: IsNewFulfilmentBusiness,
+  GroupInformation: Option[LimitedLiabilityOrCorporateBodyWithOutGroup],
+  additionalBusinessInformation: AdditionalBusinessInformationwithType,
+  businessDetail: BusinessDetail,
+  businessAddressForFHDDS: BusinessAddressForFHDDS,
+  contactDetail: ContactDetail,
+  declaration: Declaration)
 
 object SubscriptionCreateRequestSchema {
   implicit val format = Json.format[SubscriptionCreateRequestSchema]

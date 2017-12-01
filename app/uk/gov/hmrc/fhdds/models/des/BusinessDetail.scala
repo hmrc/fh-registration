@@ -18,10 +18,11 @@ package uk.gov.hmrc.fhdds.models.des
 
 import play.api.libs.json.Json
 
-case class BusinessDetail(soleProprietor: Option[SoleProprietor] = None,
-                          nonProprietor: Option[NonProprietor] = None,
-                          limitedLiabilityPartnershipCorporateBody: Option[LimitedLiabilityPartnershipCorporateBody] = None,
-                          partnerShipBusinessDetailsType: Option[PartnerShipBusinessDetailsType] = None)
+case class BusinessDetail(
+  soleProprietor: Option[SoleProprietor],
+  nonProprietor: Option[NonProprietor],
+  limitedLiabilityPartnershipCorporateBody: Option[LimitedLiabilityPartnershipCorporateBody],
+  partnership: Option[Partnership])
 
 object BusinessDetail {
   implicit val format = Json.format[BusinessDetail]

@@ -19,25 +19,28 @@ package uk.gov.hmrc.fhdds.models.des
 import play.api.libs.json.Json
 
 
-case class PartnerCorporateBody(numberOfOtherOfficials: String,
-                                companyOfficials: Option[List[CompanyOfficial]])
+case class PartnerCorporateBody(
+  numberOfOtherOfficials: String,
+  companyOfficials: Option[List[CompanyOfficial]])
 
 object PartnerCorporateBody {
   implicit val format = Json.format[PartnerCorporateBody]
 }
 
-case class AllOtherInformation(fulfilmentOrdersType: FulfilmentOrdersType,
-                               numberOfCustomers: String,
-                               premises: Premises,
-                               thirdPartyStorageUsed: Boolean = false,
-                               goodsImportedOutEORI: Boolean = true)
+case class AllOtherInformation(
+  fulfilmentOrdersType: FulfilmentOrdersType,
+  numberOfCustomers: String,
+  premises: Premises,
+  thirdPartyStorageUsed: Boolean,
+  goodsImportedOutEORI: Boolean)
 
 object AllOtherInformation {
   implicit val format = Json.format[AllOtherInformation]
 }
 
-case class AdditionalBusinessInformationwithType(partnerCorporateBody: Option[PartnerCorporateBody],
-                                                 allOtherInformation: AllOtherInformation)
+case class AdditionalBusinessInformationwithType(
+  partnerCorporateBody: Option[PartnerCorporateBody],
+  allOtherInformation: AllOtherInformation)
 
 object AdditionalBusinessInformationwithType {
   implicit val format = Json.format[AdditionalBusinessInformationwithType]

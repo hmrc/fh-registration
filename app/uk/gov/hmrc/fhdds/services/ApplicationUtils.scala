@@ -22,6 +22,23 @@ import uk.gov.hmrc.fhdds.models.des._
 
 object ApplicationUtils {
 
+
+  def getOrderType(fulfilmentOrdersType: generated.FulfilmentOrdersType): FulfilmentOrdersType = {
+    FulfilmentOrdersType(
+      onLine = isYes(fulfilmentOrdersType.onLine),
+      telephone = isYes(fulfilmentOrdersType.telephone),
+      physicalPremises = isYes(fulfilmentOrdersType.physicalPremises),
+      other = isYes(fulfilmentOrdersType.other),
+      typeOfOtherOrder =
+        if (isYes(fulfilmentOrdersType.other))
+          fulfilmentOrdersType.panelTypeOfOtherOrder.map(_.typeOfOtherOrder)
+        else
+          None
+    )
+
+  }
+
+
   implicit class AddressLineUtils(value: Option[String]) {
 
     /** Transforms Some("") in None */
@@ -51,9 +68,14 @@ object ApplicationUtils {
         lastName = personPanel.lastName),
       identification = {
         if (isYes(personPanel.hasNino)) {
-          IndividualIdentification(nino = personPanel.panelNino.map(_.nino))
+          IndividualIdentification(
+            nino = personPanel.panelNino.map(_.nino),
+            passportNumber = None,
+            nationalIdNumber = None
+          )
         } else {
           IndividualIdentification(
+            nino = None,
             passportNumber = personPanel.panelNoNino.flatMap(
               personNoNino ⇒ if (isYes(personNoNino.hasPassportNumber)) {
                 personNoNino.panelPassportNumber.map(
@@ -82,9 +104,15 @@ object ApplicationUtils {
       name = CompanyName(companyName = Some(companyPanel.companyName)),
       identification = {
         if (isYes(companyPanel.hasVat)) {
-          CompanyIdentification(vatRegistrationNumber = companyPanel.panelHasVat.map(_.vatRegistrationNumber))
+          CompanyIdentification(
+            vatRegistrationNumber = companyPanel.panelHasVat.map(_.vatRegistrationNumber),
+            uniqueTaxpayerReference = None,
+            companyRegistrationNumber = None
+          )
         } else {
           CompanyIdentification(
+            vatRegistrationNumber = None,
+            uniqueTaxpayerReference = None,
             companyRegistrationNumber = companyPanel.panelCrn.map(_.companyRegistrationNumber)
           )
         }
