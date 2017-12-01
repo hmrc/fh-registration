@@ -42,7 +42,8 @@ trait FhddsApplicationService {
   def iformXmlToApplication(xml: generated.Data, brd: BusinessRegistrationDetails): SubScriptionCreate = {
     SubScriptionCreate(SubscriptionCreateRequestSchema(
       organizationType = brd.businessType.map(translateBusinessType).getOrElse(DefaultOrganizationType),
-      FHbusinessDetail = IsNewFulfilmentBusiness(isNewFulfilmentBusiness = isYes(xml.isNewFulfilmentBusiness.isNewFulfilmentBusiness),
+      FHbusinessDetail = IsNewFulfilmentBusiness(
+        isNewFulfilmentBusiness = isYes(xml.isNewFulfilmentBusiness.isNewFulfilmentBusiness),
         proposedStartDate = getProposedStartDate(xml)),
       GroupInformation = None,
       additionalBusinessInformation = additionalBusinessInformation(brd, xml),
@@ -220,7 +221,7 @@ trait FhddsApplicationService {
         numberOfCustomers = numberOfCustomers,
         premises = Premises(numberOfpremises = otherStorageSitesDetail.getOrElse(List(principalBusinessAddress(brd))).length.toString,
                             address = otherStorageSitesDetail.getOrElse(List(principalBusinessAddress(brd)))),
-        thirdPartyStorageUsed = isYes(xml.otherStorageSites.hasOtherStorageSites),
+        thirdPartyStorageUsed = isYes(xml.thirdPartyStorageUsed.thirdPartyStorageUsed),
         goodsImportedOutEORI = isYes(xml.eoriStatus.goodsImportedOutEORI)
       )
     )
