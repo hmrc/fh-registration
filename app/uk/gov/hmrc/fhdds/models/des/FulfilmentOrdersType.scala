@@ -18,10 +18,10 @@ package uk.gov.hmrc.fhdds.models.des
 
 import play.api.libs.json._
 
-case class FulfilmentOrdersType(onLine: Boolean = true,
-                                telephone: Boolean = false,
-                                physicalPremises: Boolean = false,
-                                other: Boolean = false,
+case class FulfilmentOrdersType(onLine: Boolean,
+                                telephone: Boolean,
+                                physicalPremises: Boolean,
+                                other: Boolean,
                                 typeOfOtherOrder: Option[String])
 
 object FulfilmentOrdersType {

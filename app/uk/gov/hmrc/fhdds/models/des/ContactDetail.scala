@@ -18,15 +18,15 @@ package uk.gov.hmrc.fhdds.models.des
 
 import play.api.libs.json.Json
 
-case class RoleInOrganization(beneficialShareHolder: Boolean = true,
-                              director: Boolean = true,
-                              partner: Boolean = true,
-                              internalAccountant: Boolean = true,
-                              soleProprietor: Boolean = true,
-                              nominatedOfficer: Boolean = true,
-                              designatedmember: Boolean = true,
-                              otherRoleType: Boolean = true,
-                              otherRoleDescription: Option[String] = None)
+case class RoleInOrganization(beneficialShareHolder: Boolean,
+                              director: Boolean,
+                              partner: Boolean,
+                              internalAccountant: Boolean,
+                              soleProprietor: Boolean,
+                              nominatedOfficer: Boolean,
+                              designatedmember: Boolean,
+                              otherRoleType: Boolean,
+                              otherRoleDescription: Option[String])
 
 object RoleInOrganization {
   implicit val format = Json.format[RoleInOrganization]

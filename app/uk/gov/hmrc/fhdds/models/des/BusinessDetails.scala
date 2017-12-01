@@ -21,33 +21,52 @@ import java.time.format.DateTimeFormatter
 
 import play.api.libs.json.{JsString, Json, Reads, Writes}
 
-case class PreviousOperationalAddress(previousAddress: Address,
-                                      operatingDate: LocalDate)
 
-object PreviousOperationalAddress {
-  val dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
-  implicit val localDateReads = Reads.localDateReads("yyyy-MM-dd")
-  implicit val localDateWrites = Writes { date: LocalDate ⇒
-    JsString(date.format(dateTimeFormatter))
-  }
+case class SoleProprietor(tradingName: Option[String],
+                          identification: SoleProprietorIdentification)
 
-  implicit val format = Json.format[PreviousOperationalAddress]
-
+object SoleProprietor {
+  implicit val format = Json.format[SoleProprietor]
 }
 
-case class BusinessAddressForFHDDS(currentAddress: Address,
-                                   commonDetails: CommonDetails,
-                                   dateStartedTradingAsFulfilmentHouse: LocalDate,
-                                   isOnlyPrinicipalPlaceOfBusinessInLastThreeYears: Boolean,
-                                   previousOperationalAddress: Option[List[PreviousOperationalAddress]])
+case class NonProprietor(tradingName: Option[String],
+                         identification: NonProprietorIdentification)
 
-object BusinessAddressForFHDDS {
+object NonProprietor {
+  implicit val format = Json.format[NonProprietor]
+}
+
+case class Partnership(tradingName: Option[String],
+                         identification: NonProprietorIdentification)
+
+object Partnership {
+  implicit val format = Json.format[Partnership]
+}
+
+case class IncorporationDetails(
+  companyRegistrationNumber: Option[String],
+  dateOfIncorporation: Option[LocalDate])
+
+object IncorporationDetails {
+  val dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+  implicit val localDateReads = Reads.localDateReads("yyyy-MM-dd")
+  implicit val localDateWrites = Writes { date: LocalDate ⇒
+    JsString(date.format(dateTimeFormatter))
+  }
+  implicit val format = Json.format[IncorporationDetails]
+}
+
+case class LimitedLiabilityPartnershipCorporateBody(
+  groupRepresentativeJoinDate: Option[LocalDate],
+  incorporationDetails: IncorporationDetails)
+
+object LimitedLiabilityPartnershipCorporateBody {
+
   val dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
   implicit val localDateReads = Reads.localDateReads("yyyy-MM-dd")
   implicit val localDateWrites = Writes { date: LocalDate ⇒
     JsString(date.format(dateTimeFormatter))
   }
 
-  implicit val format = Json.format[BusinessAddressForFHDDS]
-
+  implicit val format = Json.format[LimitedLiabilityPartnershipCorporateBody]
 }

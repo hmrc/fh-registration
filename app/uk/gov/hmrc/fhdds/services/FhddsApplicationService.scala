@@ -44,10 +44,7 @@ trait FhddsApplicationService {
       organizationType = brd.businessType.map(translateBusinessType).getOrElse(DefaultOrganizationType),
       FHbusinessDetail = IsNewFulfilmentBusiness(isNewFulfilmentBusiness = isYes(xml.isNewFulfilmentBusiness.isNewFulfilmentBusiness),
         proposedStartDate = getProposedStartDate(xml)),
-      //todo can not find groupInformation
-      GroupInformation = Some(LimitedLiabilityOrCorporateBodyWithOutGroup(creatingFHDDSGroup = true,
-        confirmationByRepresentative = true,
-        groupMemberDetail = None)),
+      GroupInformation = None,
       additionalBusinessInformation = additionalBusinessInformation(brd, xml),
       businessDetail = businessDetails(xml, brd),
       businessAddressForFHDDS = businessAddressForFHDDS(xml, brd),
@@ -77,13 +74,32 @@ trait FhddsApplicationService {
 
   def businessDetails(xml: generated.Data, brd: BusinessRegistrationDetails): BusinessDetail = {
     BusinessDetail(
-      LimitedLiabilityPartnershipCorporateBody(
-        groupRepresentativeJoinDate = Some(DefaultIncorporationDate),
-        IncorporationDetails(
-          companyRegistrationNumber = Some(xml.businessDetail.limitedLiabilityPartnershipCorporateBody.companyRegistrationNumber),
-          dateOfIncorporation = Some(LocalDate.parse(xml.dateOfIncorporation.dateOfIncorporation, dtf))
+      soleProprietor = None,
+      nonProprietor = Some(NonProprietor(
+        tradingName =
+          if (isYes(xml.tradingName.hasTradingName))
+            xml.tradingName.panelTradingName.map(_.tradingName)
+          else
+            None,
+        identification = NonProprietorIdentification(
+          uniqueTaxpayerReference = brd.utr,
+          vatRegistrationNumber =
+            if (isYes(xml.vatRegistration.hasVatRegistrationNumber))
+              xml.vatRegistration.panelVatRegistrationNumber.map(_.vatRegistrationNumber)
+            else
+              None
         )
-      )
+      )),
+      Some(LimitedLiabilityPartnershipCorporateBody(
+        groupRepresentativeJoinDate = None,
+        incorporationDetails = IncorporationDetails(
+          companyRegistrationNumber = Some(
+            xml.businessDetail.limitedLiabilityPartnershipCorporateBody.companyRegistrationNumber),
+          dateOfIncorporation = Some(
+            LocalDate.parse(xml.dateOfIncorporation.dateOfIncorporation, dtf))
+        )
+      )),
+      partnership = None
     )
   }
 
@@ -200,10 +216,12 @@ trait FhddsApplicationService {
         )
       ),
       allOtherInformation = AllOtherInformation(
-        fulfilmentOrdersType = FulfilmentOrdersType(typeOfOtherOrder = None),
+        fulfilmentOrdersType = ApplicationUtils.getOrderType(xml.fulfilmentOrdersType.fulfilmentOrdersType),
         numberOfCustomers = numberOfCustomers,
         premises = Premises(numberOfpremises = otherStorageSitesDetail.getOrElse(List(principalBusinessAddress(brd))).length.toString,
-                            address = otherStorageSitesDetail.getOrElse(List(principalBusinessAddress(brd))))
+                            address = otherStorageSitesDetail.getOrElse(List(principalBusinessAddress(brd)))),
+        thirdPartyStorageUsed = isYes(xml.otherStorageSites.hasOtherStorageSites),
+        goodsImportedOutEORI = isYes(xml.eoriStatus.goodsImportedOutEORI)
       )
     )
   }
@@ -238,6 +256,7 @@ trait FhddsApplicationService {
       title = None,
       names = Name(
         firstName = xml.contactPerson.firstName,
+        middleName = None,
         lastName = xml.contactPerson.lastName),
       usingSameContactAddress = isYes(xml.contactPerson.contactCorrectAddress),
       address = contactPersonAddress,
@@ -245,7 +264,7 @@ trait FhddsApplicationService {
         telephone = Some(xml.contactPerson.telephoneNumber),
         mobileNumber = None,
         email = xml.contactPerson.email),
-      roleInOrganization = Some(RoleInOrganization())
+      roleInOrganization = None
     )
   }
 
