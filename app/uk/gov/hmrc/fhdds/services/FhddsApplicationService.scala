@@ -34,8 +34,6 @@ class FhddsApplicationServiceImpl extends FhddsApplicationService
 trait FhddsApplicationService {
 
   val DefaultOrganizationType = "Corporate Body"
-  //todo replace with right date
-  val DefaultIncorporationDate: LocalDate = LocalDate.of(2010, 1, 1)
 
   val dtf: DateTimeFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")
 
@@ -187,7 +185,7 @@ trait FhddsApplicationService {
   private def declaration(xml: Data) = {
     Declaration(personName = xml.declaration.hide_personName,
       personStatus = xml.declaration.hide_personStatus,
-      personStatusOther = None,
+      personStatusOther = xml.declaration.panelPersonStatusOther.map(_.hide_personStatusOther),
       isInformationAccurate = true)
   }
 
