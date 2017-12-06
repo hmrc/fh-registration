@@ -50,7 +50,6 @@ trait AuditService {
       "authorization" → Json.toJson(extraData.authorization),
       "submissionRef" → JsString(submissionRef),
       "submissionData" → Json.toJson(application),
-      "formXml" → JsString(submissionRequest.formData),
       "businessPartnerRecord" → Json.toJson(extraData.businessRegistrationDetails)
     ))
 
