@@ -22,11 +22,14 @@ import play.api.Logger
 import play.api.libs.json.Json
 import uk.gov.hmrc.fhdds.connectors.{DesConnector, DfsStoreConnector, TaxEnrolmentConnector}
 import play.api.mvc.{Action, AnyContent}
+import uk.gov.hmrc.fhdds.config.MicroserviceAuditConnector
+import uk.gov.hmrc.fhdds.models.des.{DesSubmissionResponse, SubScriptionCreate}
 import uk.gov.hmrc.fhdds.models.des.SubScriptionCreate.format
 import uk.gov.hmrc.fhdds.models.fhdds.{SubmissionRequest, SubmissionResponse}
 import uk.gov.hmrc.fhdds.repositories.{SubmissionExtraData, SubmissionExtraDataRepository}
-import uk.gov.hmrc.fhdds.services.{ControllerServices, FhddsApplicationService}
+import uk.gov.hmrc.fhdds.services.{AuditService, ControllerServices, FhddsApplicationService}
 import uk.gov.hmrc.http.{HeaderCarrier, NotFoundException}
+import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import uk.gov.hmrc.play.microservice.controller.BaseController
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -37,9 +40,12 @@ class FhddsApplicationController @Inject()(
   val desConnector            : DesConnector,
   val taxEnrolmentConnector   : TaxEnrolmentConnector,
   val submissionDataRepository: SubmissionExtraDataRepository,
-  val applicationService      : FhddsApplicationService
+  val applicationService      : FhddsApplicationService,
+  val auditService            : AuditService
 )
   extends BaseController {
+
+  val auditConnector: AuditConnector = MicroserviceAuditConnector
 
   def getApplication(submissionRef: String): Action[AnyContent] = Action.async {
     for {
@@ -70,10 +76,31 @@ class FhddsApplicationController @Inject()(
         desResponse.registrationNumberFHDDS,
         extraData.businessRegistrationDetails.safeId,
         extraData.authorization)
+      auditSubmission(request, application, extraData, desResponse, response.registrationNumber)
       Ok(Json toJson response)
     }
   }
 
+  private def auditSubmission(
+    submissionRequest: SubmissionRequest,
+    application: SubScriptionCreate,
+    extraData: SubmissionExtraData,
+    desResponse: DesSubmissionResponse,
+    submissionRef: String
+  ) (implicit hc: HeaderCarrier)= {
+
+    Logger.info(s"Sending audit event for submissionRef $submissionRef")
+    val event = auditService.buildSubmissionAuditEvent(
+      submissionRequest, application, extraData, desResponse, submissionRef)
+    import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext
+    auditConnector
+      .sendExtendedEvent(event)(hc, MdcLoggingExecutionContext.fromLoggingDetails)
+      .map(auditResult ⇒ Logger.info(s"Received audit result $auditResult for submissionRef $submissionRef"))
+      .recover{
+        case t: Throwable ⇒ Logger.error(s"Audit failed for submissionRef $submissionRef $submissionRef", t)
+      }
+
+  }
   private def storeRegistrationNumber(formId: String, submissionRef: String, registrationNumberFHDDS: String) = {
     submissionDataRepository
       .updateRegistrationNumber(formId, submissionRef, registrationNumberFHDDS)
