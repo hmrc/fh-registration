@@ -22,7 +22,6 @@ import uk.gov.hmrc.fhdds.models.des._
 
 object ApplicationUtils {
 
-
   def getOrderType(fulfilmentOrdersType: generated.FulfilmentOrdersType): FulfilmentOrdersType = {
     FulfilmentOrdersType(
       onLine = isYes(fulfilmentOrdersType.onLine),
@@ -37,7 +36,6 @@ object ApplicationUtils {
     )
 
   }
-
 
   implicit class AddressLineUtils(value: Option[String]) {
 

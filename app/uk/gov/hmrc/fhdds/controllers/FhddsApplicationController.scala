@@ -20,11 +20,11 @@ import javax.inject.Inject
 
 import play.api.Logger
 import play.api.libs.json.Json
-import uk.gov.hmrc.fhdds.connectors.{DesConnector, DfsStoreConnector, TaxEnrolmentConnector}
-import play.api.mvc.{Action, AnyContent}
+import play.api.mvc.Action
 import uk.gov.hmrc.fhdds.config.MicroserviceAuditConnector
-import uk.gov.hmrc.fhdds.models.des.{DesSubmissionResponse, SubScriptionCreate}
+import uk.gov.hmrc.fhdds.connectors.{DesConnector, TaxEnrolmentConnector}
 import uk.gov.hmrc.fhdds.models.des.SubScriptionCreate.format
+import uk.gov.hmrc.fhdds.models.des.{DesSubmissionResponse, SubScriptionCreate}
 import uk.gov.hmrc.fhdds.models.fhdds.{SubmissionRequest, SubmissionResponse}
 import uk.gov.hmrc.fhdds.repositories.{SubmissionExtraData, SubmissionExtraDataRepository}
 import uk.gov.hmrc.fhdds.services.{AuditService, ControllerServices, FhddsApplicationService}
@@ -36,7 +36,6 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.util.{Failure, Success}
 
 class FhddsApplicationController @Inject()(
-  val dfsStoreConnector       : DfsStoreConnector,
   val desConnector            : DesConnector,
   val taxEnrolmentConnector   : TaxEnrolmentConnector,
   val submissionDataRepository: SubmissionExtraDataRepository,
@@ -46,16 +45,6 @@ class FhddsApplicationController @Inject()(
   extends BaseController {
 
   val auditConnector: AuditConnector = MicroserviceAuditConnector
-
-  def getApplication(submissionRef: String): Action[AnyContent] = Action.async {
-    for {
-      submission ← dfsStoreConnector.getSubmission(submissionRef)
-      extraData ← findSubmissionExtraData(submission.formId)
-      application = createDesSubmission(submission.formData, extraData)
-    } yield {
-      Ok(Json.toJson(application))
-    }
-  }
 
   def submit() = Action.async(parse.json[SubmissionRequest]) {implicit r ⇒
     val request = r.body
@@ -130,16 +119,6 @@ class FhddsApplicationController @Inject()(
     val xml = scala.xml.XML.loadString(formData)
     val data = scalaxb.fromXML[generated.Data](xml)
     applicationService.iformXmlToApplication(data, extraData.businessRegistrationDetails)
-  }
-
-  def getSafeId(submissionRef: String) = Action.async {
-    for {
-      submission ← dfsStoreConnector.getSubmission(submissionRef)
-      extraData ← findSubmissionExtraData(submission.formId)
-      brd = extraData.businessRegistrationDetails
-    } yield {
-      Ok(Json toJson brd.safeId)
-    }
   }
 
   private def findSubmissionExtraData(formId: String) = {

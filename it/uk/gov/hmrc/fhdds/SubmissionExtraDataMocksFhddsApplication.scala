@@ -2,8 +2,8 @@ package uk.gov.hmrc.fhdds
 
 import play.api.libs.json.Json
 import play.mvc.Http.Status
-import uk.gov.hmrc.fhdds.Services.FakeData._
-import uk.gov.hmrc.fhdds.Services.SubMissionExtraDataIntegrationMocks
+import uk.gov.hmrc.fhdds.services.FakeData._
+import uk.gov.hmrc.fhdds.services.SubMissionExtraDataIntegrationMocks
 
 import scala.concurrent.ExecutionContext
 

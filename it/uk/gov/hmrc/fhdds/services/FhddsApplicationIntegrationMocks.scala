@@ -1,9 +1,9 @@
-package uk.gov.hmrc.fhdds.Services
+package uk.gov.hmrc.fhdds.services
 
 import akka.actor.ActorSystem
 import akka.stream.{ActorMaterializer, Materializer}
 import org.scalatest._
-import org.scalatest.concurrent.{Eventually, ScalaFutures}
+import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.mock.MockitoSugar
 import org.scalatest.time.{Millis, Seconds, Span}
 import org.scalatestplus.play.OneAppPerTest
@@ -11,11 +11,10 @@ import play.api.http.HttpEntity
 import play.api.mvc.AnyContentAsEmpty
 import play.api.test.{FakeHeaders, FakeRequest}
 import play.modules.reactivemongo.ReactiveMongoComponent
-import uk.gov.hmrc.fhdds.Services.FakeData.aFakeSubmissionRequest
 import uk.gov.hmrc.fhdds.connectors._
 import uk.gov.hmrc.fhdds.controllers.FhddsApplicationController
 import uk.gov.hmrc.fhdds.repositories.{SubmissionExtraData, SubmissionExtraDataRepository}
-import uk.gov.hmrc.fhdds.services.{FhddsApplicationService, FhddsApplicationServiceImpl}
+import uk.gov.hmrc.fhdds.services.FakeData.aFakeSubmissionRequest
 import uk.gov.hmrc.mongo.{MongoConnector, MongoSpecSupport}
 
 import scala.concurrent.ExecutionContext.Implicits._
@@ -31,30 +30,32 @@ trait FhddsApplicationIntegrationMocks extends FeatureSpec with GivenWhenThen wi
     override def mongoConnector: MongoConnector = mongoConnectorForTest
   }
 
-  var mockDfsStoreConnector: DfsStoreConnector = mock[DfsStoreConnectorImpl]
   var mockDesConnector: DesConnector = mock[DesConnectorImpl]
   var mockTaxEnrolmentConnector: TaxEnrolmentConnector = mock[TaxEnrolmentConnectorImpl]
   var mockSubmissionExtraDataRepository: SubmissionExtraDataRepository = mock[SubmissionExtraDataRepository]
   var mockFhddsApplicationService: FhddsApplicationService = new FhddsApplicationServiceImpl
+  var auditService: AuditService = new AuditServiceImpl
 
-  var fhddsApplicationController = new FhddsApplicationController(mockDfsStoreConnector,
-                                                                  mockDesConnector,
-                                                                  mockTaxEnrolmentConnector,
-                                                                  mockSubmissionExtraDataRepository,
-                                                                  mockFhddsApplicationService)
+  var fhddsApplicationController = new FhddsApplicationController(
+    mockDesConnector,
+    mockTaxEnrolmentConnector,
+    mockSubmissionExtraDataRepository,
+    mockFhddsApplicationService,
+    auditService
+  )
 
   override def beforeEach(): Unit = {
-    mockDfsStoreConnector = mock[DfsStoreConnectorImpl]
     mockDesConnector = mock[DesConnectorImpl]
     mockTaxEnrolmentConnector = mock[TaxEnrolmentConnectorImpl]
     mockSubmissionExtraDataRepository = mock[SubmissionExtraDataRepository]
     mockFhddsApplicationService = new FhddsApplicationServiceImpl
 
-    fhddsApplicationController = new FhddsApplicationController(mockDfsStoreConnector,
+    fhddsApplicationController = new FhddsApplicationController(
       mockDesConnector,
       mockTaxEnrolmentConnector,
       mockSubmissionExtraDataRepository,
-      mockFhddsApplicationService)
+      mockFhddsApplicationService,
+      auditService)
   }
 
   val fakeGetRequest: FakeRequest[AnyContentAsEmpty.type] = FakeRequest()
