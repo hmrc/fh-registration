@@ -21,7 +21,6 @@ import reactivemongo.bson.BSONObjectID
 import uk.gov.hmrc.fhdds.models.businessregistration.BusinessRegistrationDetails
 
 case class SubmissionExtraData(
-  //id
   encUserId: String,
   formTypeRef: String,
   formId: Option[String],

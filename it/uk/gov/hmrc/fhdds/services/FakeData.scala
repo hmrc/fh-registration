@@ -1,14 +1,11 @@
-package uk.gov.hmrc.fhdds.Services
+package uk.gov.hmrc.fhdds.services
 
 import org.joda.time.DateTime
 import play.api.libs.json.{JsObject, JsString, Json}
 import uk.gov.hmrc.fhdds.models.businessregistration.{Address, BusinessRegistrationDetails}
 import uk.gov.hmrc.fhdds.models.des.DesSubmissionResponse
-import uk.gov.hmrc.fhdds.models.dfsStore.Submission
 import uk.gov.hmrc.fhdds.models.fhdds.SubmissionRequest
 import uk.gov.hmrc.fhdds.repositories.SubmissionExtraData
-import uk.gov.hmrc.fhdds.services.ControllerServices
-import uk.gov.hmrc.mongo.CreationAndLastModifiedDetail
 
 import scala.xml.XML
 
@@ -37,32 +34,6 @@ object FakeData {
   val testFormTypeRef = "testFormTypeRef"
   val testFormId = "testID"
   val testUserId = "testUserId"
-
-  val aFakeSubmission = Submission(submissionRef = validFakeSubmissionRef,
-                                   submissionMark = None,
-                                   state = "",
-                                   formData = validFormData,
-                                   formTypeRef = testFormTypeRef,
-                                   formId = testFormId,
-                                   casKey = None,
-                                   savedDate = None,
-                                   submittedDate = None,
-                                   userId = "",
-                                   expireAt = DateTime.now(),
-                                   crudDetail = CreationAndLastModifiedDetail())
-
-  val aFakeInvalidSubmission = Submission(submissionRef = validFakeSubmissionRef,
-                                          submissionMark = None,
-                                          state = "",
-                                          formData = "",
-                                          formTypeRef = testFormTypeRef,
-                                          formId = testFormId,
-                                          casKey = None,
-                                          savedDate = None,
-                                          submittedDate = None,
-                                          userId = "",
-                                          expireAt = DateTime.now(),
-                                          crudDetail = CreationAndLastModifiedDetail())
 
   val aFakeAddress = Address(line1 = "line1",
                              line2 = "line2",

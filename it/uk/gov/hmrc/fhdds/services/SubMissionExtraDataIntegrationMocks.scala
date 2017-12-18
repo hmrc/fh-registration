@@ -1,4 +1,4 @@
-package uk.gov.hmrc.fhdds.Services
+package uk.gov.hmrc.fhdds.services
 
 import akka.actor.ActorSystem
 import akka.stream.{ActorMaterializer, Materializer}
@@ -11,7 +11,7 @@ import play.api.http.HttpEntity
 import play.api.mvc.AnyContentAsEmpty
 import play.api.test.{FakeHeaders, FakeRequest}
 import play.modules.reactivemongo.ReactiveMongoComponent
-import uk.gov.hmrc.fhdds.Services.FakeData.aFakeBusinessRegistrationDetails
+import uk.gov.hmrc.fhdds.services.FakeData.aFakeBusinessRegistrationDetails
 import uk.gov.hmrc.fhdds.controllers.SubmissionExtraDataController
 import uk.gov.hmrc.fhdds.repositories.SubmissionExtraDataRepository
 import uk.gov.hmrc.mongo.{MongoConnector, MongoSpecSupport}
