@@ -1,14 +1,36 @@
 package uk.gov.hmrc.fhdds
 
+import org.scalatest.concurrent.ScalaFutures
+import org.scalatest.{Matchers, OptionValues, WordSpec, WordSpecLike}
+import org.scalatestplus.play.WsScalaTestClient
 import play.api.libs.json.Json
+import play.api.test.WsTestClient
 import play.mvc.Http.Status
 import uk.gov.hmrc.fhdds.services.FakeData._
-import uk.gov.hmrc.fhdds.services.SubMissionExtraDataIntegrationMocks
+import uk.gov.hmrc.fhdds.testsupport.TestedApplication
 
 import scala.concurrent.ExecutionContext
 
 
-class SubmissionExtraDataMocksFhddsApplication extends SubMissionExtraDataIntegrationMocks {
+class SubmissionExtraDataMocksFhddsApplication
+  extends WordSpec
+    with OptionValues
+    with WsScalaTestClient
+    with TestedApplication
+    with WordSpecLike
+    with Matchers
+    with ScalaFutures {
+
+
+  "SubmissionExtraDataController" should {
+    "save and later retrieve a bussines registration detail" in {
+      WsTestClient.withClient { client ⇒
+
+
+
+      }
+    }
+  }
 
   implicit val ec = ExecutionContext.global
 
@@ -22,7 +44,7 @@ class SubmissionExtraDataMocksFhddsApplication extends SubMissionExtraDataIntegr
 
       info("Get the business registration retails with the same userId and formTypeRef")
       val response = submissionExtraDataController.getBusinessRegistrationDetails(testUserId, testFormTypeRef)
-                       .apply(fakeGetRequest).futureValue
+        .apply(fakeGetRequest).futureValue
 
       Then("response should be OK")
       response.header.status shouldBe Status.OK
@@ -32,12 +54,12 @@ class SubmissionExtraDataMocksFhddsApplication extends SubMissionExtraDataIntegr
 
       Then("update a form id using the same userId and formTypeRef")
       val updateFormIdResponse = submissionExtraDataController.updateFormId(testUserId, testFormTypeRef)
-                                   .apply(fakePutRequestForUpdateFormId).futureValue
+        .apply(fakePutRequestForUpdateFormId).futureValue
       updateFormIdResponse.header.status shouldBe Status.ACCEPTED
 
       info("Get the business registration retails with different userId and formTypeRef")
       val notFoundResponse = submissionExtraDataController.getBusinessRegistrationDetails("11", "22")
-                               .apply(fakeGetRequest).futureValue
+        .apply(fakeGetRequest).futureValue
 
       Then("response is not found")
       notFoundResponse.header.status shouldBe Status.NOT_FOUND
