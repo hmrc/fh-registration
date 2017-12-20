@@ -18,8 +18,10 @@ package uk.gov.hmrc.fhregistration.models.des
 
 import play.api.libs.json.Json
 
-case class Premises(numberOfpremises: String,
-                    address: List[Address])
+case class Premises(address: Address,
+                    thirdPartyPremises: Boolean,
+                    modification: Option[Modification]
+                    )
 
 object Premises {
   implicit val format = Json.format[Premises]

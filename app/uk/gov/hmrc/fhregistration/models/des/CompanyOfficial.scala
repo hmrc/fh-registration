@@ -24,13 +24,15 @@ sealed trait CompanyOfficial
 case class IndividualAsOfficial(
   role: String,
   name: Name,
-  identification: IndividualIdentification
+  identification: IndividualIdentification,
+  modification: Option[Modification]
 ) extends CompanyOfficial
 
 case class CompanyAsOfficial(
   role: String,
   name: CompanyName,
-  identification: CompanyIdentification
+  identification: CompanyIdentification,
+  modification: Option[Modification]
 ) extends CompanyOfficial
 
 object IndividualAsOfficial {

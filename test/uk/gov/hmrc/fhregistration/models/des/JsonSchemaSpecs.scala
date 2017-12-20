@@ -21,7 +21,7 @@ import play.api.libs.json._
 import uk.gov.hmrc.play.test.UnitSpec
 
 class JsonSchemaSpecs extends UnitSpec  {
-  val schemaAsJson = Json parse getClass.getResourceAsStream("/schemas/des-schema-alpha-v0.1.json")
+  val schemaAsJson = Json parse getClass.getResourceAsStream("/schemas/des-schema-alpha.json")
   val schema = Json.fromJson[SchemaType](schemaAsJson).get
   val validator = new SchemaValidator().validate(schema) _
 
