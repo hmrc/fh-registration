@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.fhdds.models.des
+package uk.gov.hmrc.fhregistration.models.des
 
 import java.time.LocalDate
 
