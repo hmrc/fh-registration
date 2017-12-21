@@ -12,4 +12,4 @@
 # Add all the application routes to the prod.routes file
 ->         /                          prod.Routes
 
-GET        /fhdds/test-only/submissionRef/:submissionRef/registrationNumber   @uk.gov.hmrc.fhdds.testonly.TestOnlyController.getRegistrationNumber(submissionRef)
+GET        /fhdds/test-only/submissionRef/:submissionRef/registrationNumber   @uk.gov.hmrc.fhregistration.testonly.TestOnlyController.getRegistrationNumber(submissionRef)
