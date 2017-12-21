@@ -17,14 +17,21 @@
 package uk.gov.hmrc.fhdds.models.des
 
 import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 
-import play.api.libs.json._
+import play.api.libs.json.{Format, JsString, Reads, Writes}
 
+trait DateTimeFormat {
+  val localDateTimeFormat = DateTimeFormat.localDateTimeFormat
+}
 
-case class Modification(changeIndicator: String,
-                        changeDate: Option[LocalDate])
+object DateTimeFormat {
+  val dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+  val localDateReads = Reads.localDateReads("yyyy-MM-dd")
+  val localDateWrites = Writes { date: LocalDate ⇒
+    JsString(date.format(dateTimeFormatter))
+  }
 
-object Modification extends DateTimeFormat {
+  val localDateTimeFormat = Format(localDateReads, localDateWrites)
 
-  implicit val format = Json.format[Modification]
 }

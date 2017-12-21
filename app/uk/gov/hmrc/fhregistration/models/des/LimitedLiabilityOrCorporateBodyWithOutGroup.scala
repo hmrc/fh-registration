@@ -25,9 +25,10 @@ object GroupMemberDetail {
   implicit val format = Json.format[GroupMemberDetail]
 }
 
-case class LimitedLiabilityOrCorporateBodyWithOutGroup(creatingFHDDSGroup:Boolean,
-                                                       confirmationByRepresentative:Boolean,
-                                                       groupMemberDetail: Option[GroupMemberDetail])
+case class LimitedLiabilityOrCorporateBodyWithOutGroup(
+  creatingFHDDSGroup: Boolean,
+  confirmationByRepresentative: Boolean,
+  groupMemberDetail: Option[GroupMemberDetail])
 
 object LimitedLiabilityOrCorporateBodyWithOutGroup {
   implicit val format = Json.format[LimitedLiabilityOrCorporateBodyWithOutGroup]
