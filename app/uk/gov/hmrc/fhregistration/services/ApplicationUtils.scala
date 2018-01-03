@@ -22,21 +22,6 @@ import uk.gov.hmrc.fhregistration.models.des._
 
 object ApplicationUtils {
 
-  def getOrderType(fulfilmentOrdersType: generated.FulfilmentOrdersType): FulfilmentOrdersType = {
-    FulfilmentOrdersType(
-      onLine = isYes(fulfilmentOrdersType.onLine),
-      telephone = isYes(fulfilmentOrdersType.telephone),
-      physicalPremises = isYes(fulfilmentOrdersType.physicalPremises),
-      other = isYes(fulfilmentOrdersType.other),
-      typeOfOtherOrder =
-        if (isYes(fulfilmentOrdersType.other))
-          fulfilmentOrdersType.panelTypeOfOtherOrder.map(_.typeOfOtherOrder)
-        else
-          None
-    )
-
-  }
-
   implicit class AddressLineUtils(value: Option[String]) {
 
     /** Transforms Some("") in None */
@@ -87,7 +72,9 @@ object ApplicationUtils {
             )
           )
         }
-      }
+      },
+      //todo set modification
+      modification = None
     )
   }
 
@@ -114,7 +101,9 @@ object ApplicationUtils {
             companyRegistrationNumber = companyPanel.panelCrn.map(_.companyRegistrationNumber)
           )
         }
-      }
+      },
+      //todo set modification
+      modification = None
     )
   }
 }

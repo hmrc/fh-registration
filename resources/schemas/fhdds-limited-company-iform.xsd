@@ -168,33 +168,33 @@
   <xs:element name="form" type="data"/>
   <xs:complexType name="data">
     <xs:sequence>
-      <xs:element minOccurs="0" name="principalPlaceOfBusiness">
-        <xs:complexType>
-          <xs:sequence>
-            <xs:element name="dateStartedTradingAsFulfilmentHouse" type="TextQuestion"/>
-          </xs:sequence>
-        </xs:complexType>
-      </xs:element>
       <xs:element name="timeAtCurrentAddress">
         <xs:complexType>
           <xs:sequence>
-            <xs:element name="isOnlyPrinicipalPlaceOfBusinessInLastThreeYears" type="RadioQuestion"/>
-            <xs:element minOccurs="0" name="panelPreviousAddress">
+            <xs:element name="timeOperatedAtCurrentAddress" type="RadioQuestion"/>
+            <xs:element minOccurs="0" name="panelAnyPreviousOperatingAddress">
               <xs:complexType>
                 <xs:sequence>
-                  <xs:element minOccurs="0" name="ukPanel">
+                  <xs:element name="anyPreviousOperatingAddress" type="RadioQuestion"/>
+                  <xs:element minOccurs="0" name="panelPreviousAddress">
                     <xs:complexType>
                       <xs:sequence>
-                        <xs:element minOccurs="0" name="hide_postcode" type="TextQuestion"/>
-                        <xs:element minOccurs="0" name="hide_houseNameNumber" type="TextQuestion"/>
-                        <xs:element minOccurs="0" name="radiobutton_results" type="RadioQuestion"/>
-                        <xs:element minOccurs="0" name="searchState" type="TextQuestion"/>
-                        <xs:element minOccurs="0" name="searchResults" type="TextQuestion"/>
-                        <xs:element minOccurs="0" name="block_addressUKPlus" type="AddressUKPlusQuestion"/>
+                        <xs:element minOccurs="0" name="ukPanel">
+                          <xs:complexType>
+                            <xs:sequence>
+                              <xs:element minOccurs="0" name="hide_postcode" type="TextQuestion"/>
+                              <xs:element minOccurs="0" name="hide_houseNameNumber" type="TextQuestion"/>
+                              <xs:element minOccurs="0" name="radiobutton_results" type="RadioQuestion"/>
+                              <xs:element name="searchState" type="TextQuestion"/>
+                              <xs:element name="searchResults" type="TextQuestion"/>
+                              <xs:element minOccurs="0" name="block_addressUKPlus" type="AddressUKPlusQuestion"/>
+                            </xs:sequence>
+                          </xs:complexType>
+                        </xs:element>
+                        <xs:element name="operatingDate" type="TextQuestion"/>
                       </xs:sequence>
                     </xs:complexType>
                   </xs:element>
-                  <xs:element minOccurs="0" name="operatingDate" type="TextQuestion"/>
                 </xs:sequence>
               </xs:complexType>
             </xs:element>
@@ -206,21 +206,22 @@
           <xs:sequence>
             <xs:element name="firstName" type="TextQuestion"/>
             <xs:element name="lastName" type="TextQuestion"/>
+            <xs:element name="otherRoleDescription" type="TextQuestion"/>
             <xs:element name="telephoneNumber" type="TextQuestion"/>
             <xs:element name="email" type="TextQuestion"/>
             <xs:element name="contactCorrectAddress" type="RadioQuestion"/>
             <xs:element minOccurs="0" name="addressLookUpContactAddress">
               <xs:complexType>
                 <xs:sequence>
-                  <xs:element minOccurs="0" name="selectLocation" type="RadioQuestion"/>
+                  <xs:element name="selectLocation" type="RadioQuestion"/>
                   <xs:element minOccurs="0" name="ukPanel">
                     <xs:complexType>
                       <xs:sequence>
                         <xs:element minOccurs="0" name="hide_postcode" type="TextQuestion"/>
                         <xs:element minOccurs="0" name="hide_houseNameNumber" type="TextQuestion"/>
                         <xs:element minOccurs="0" name="radiobutton_results" type="RadioQuestion"/>
-                        <xs:element minOccurs="0" name="searchState" type="TextQuestion"/>
-                        <xs:element minOccurs="0" name="searchResults" type="TextQuestion"/>
+                        <xs:element name="searchState" type="TextQuestion"/>
+                        <xs:element name="searchResults" type="TextQuestion"/>
                         <xs:element minOccurs="0" name="blockAddressUKPlus" type="AddressUKPlusQuestion"/>
                       </xs:sequence>
                     </xs:complexType>
@@ -371,7 +372,15 @@
       <xs:element name="eoriStatus">
         <xs:complexType>
           <xs:sequence>
-            <xs:element name="goodsImportedOutEORI" type="RadioQuestion"/>
+            <xs:element name="doesEORIExist" type="RadioQuestion"/>
+            <xs:element minOccurs="0" name="EORINumber">
+              <xs:complexType>
+                <xs:sequence>
+                  <xs:element minOccurs="0" name="EORI" type="TextQuestion"/>
+                  <xs:element name="goodsImportedOutEORI" type="RadioQuestion"/>
+                </xs:sequence>
+              </xs:complexType>
+            </xs:element>
           </xs:sequence>
         </xs:complexType>
       </xs:element>
@@ -379,29 +388,6 @@
         <xs:complexType>
           <xs:sequence>
             <xs:element name="numberOfCustomers" type="RadioQuestion"/>
-          </xs:sequence>
-        </xs:complexType>
-      </xs:element>
-      <xs:element name="fulfilmentOrdersType">
-        <xs:complexType>
-          <xs:sequence>
-            <xs:element name="fulfilmentOrdersType">
-              <xs:complexType>
-                <xs:sequence>
-                  <xs:element name="onLine" type="RadioQuestion"/>
-                  <xs:element name="telephone" type="RadioQuestion"/>
-                  <xs:element name="physicalPremises" type="RadioQuestion"/>
-                  <xs:element name="other" type="RadioQuestion"/>
-                  <xs:element minOccurs="0" name="panelTypeOfOtherOrder">
-                    <xs:complexType>
-                      <xs:sequence>
-                        <xs:element name="typeOfOtherOrder" type="TextQuestion"/>
-                      </xs:sequence>
-                    </xs:complexType>
-                  </xs:element>
-                </xs:sequence>
-              </xs:complexType>
-            </xs:element>
           </xs:sequence>
         </xs:complexType>
       </xs:element>
@@ -418,7 +404,7 @@
                         <xs:element maxOccurs="5" minOccurs="1" name="repeatingPanel">
                           <xs:complexType>
                             <xs:sequence>
-                              <xs:element minOccurs="0" name="otherTradingPremisesAddressLookup">
+                              <xs:element name="otherTradingPremisesAddressLookup">
                                 <xs:complexType>
                                   <xs:sequence>
                                     <xs:element minOccurs="0" name="ukPanel">
@@ -427,8 +413,8 @@
                                           <xs:element minOccurs="0" name="hide_postcode" type="TextQuestion"/>
                                           <xs:element minOccurs="0" name="hide_houseNameNumber" type="TextQuestion"/>
                                           <xs:element minOccurs="0" name="radiobutton_results" type="RadioQuestion"/>
-                                          <xs:element minOccurs="0" name="searchState" type="TextQuestion"/>
-                                          <xs:element minOccurs="0" name="searchResults" type="TextQuestion"/>
+                                          <xs:element name="searchState" type="TextQuestion"/>
+                                          <xs:element name="searchResults" type="TextQuestion"/>
                                           <xs:element minOccurs="0" name="blockAddressUKPlus" type="AddressUKPlusQuestion"/>
                                         </xs:sequence>
                                       </xs:complexType>
@@ -439,6 +425,7 @@
                             </xs:sequence>
                           </xs:complexType>
                         </xs:element>
+                        <xs:element name="thirdPartyPremises" type="RadioQuestion"/>
                       </xs:sequence>
                     </xs:complexType>
                   </xs:element>
@@ -448,22 +435,33 @@
           </xs:sequence>
         </xs:complexType>
       </xs:element>
-      <xs:element name="thirdPartyStorageUsed">
-        <xs:complexType>
-          <xs:sequence>
-            <xs:element name="thirdPartyStorageUsed" type="RadioQuestion"/>
-          </xs:sequence>
-        </xs:complexType>
-      </xs:element>
       <xs:element name="declaration">
         <xs:complexType>
           <xs:sequence>
             <xs:element name="hide_personName" type="TextQuestion"/>
-            <xs:element name="hide_personStatus" type="RadioQuestion"/>
-            <xs:element minOccurs="0" name="panelPersonStatusOther">
+            <xs:element name="hide_personStatus" type="TextQuestion"/>
+            <xs:element minOccurs="0" name="hasGGEmail" type="TextQuestion"/>
+            <xs:element minOccurs="0" name="panelHasGGEmail">
               <xs:complexType>
                 <xs:sequence>
-                  <xs:element name="hide_personStatusOther" type="TextQuestion"/>
+                  <xs:element name="hide_GGEmail" type="TextQuestion"/>
+                  <xs:element name="hide_useGGEmail" type="RadioQuestion"/>
+                  <xs:element minOccurs="0" name="panelAlternateEmail">
+                    <xs:complexType>
+                      <xs:sequence>
+                        <xs:element name="hide_confirmationEmail" type="TextQuestion"/>
+                        <xs:element name="hide_confirmConfirmationEmail" type="TextQuestion"/>
+                      </xs:sequence>
+                    </xs:complexType>
+                  </xs:element>
+                </xs:sequence>
+              </xs:complexType>
+            </xs:element>
+            <xs:element minOccurs="0" name="panelNoGGEmail">
+              <xs:complexType>
+                <xs:sequence>
+                  <xs:element name="hide_newConfirmationEmail" type="TextQuestion"/>
+                  <xs:element name="hide_confirmNewEmail" type="TextQuestion"/>
                 </xs:sequence>
               </xs:complexType>
             </xs:element>

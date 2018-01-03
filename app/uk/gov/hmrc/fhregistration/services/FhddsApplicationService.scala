@@ -21,7 +21,7 @@ import java.time.format.DateTimeFormatter
 import javax.inject.Singleton
 
 import com.google.inject.ImplementedBy
-import generated.{AddressInternationalPlusQuestion, AddressLookUpContactAddress, AddressUKPlusQuestion, Data, PanelPreviousAddress}
+import generated.{AddressInternationalPlusQuestion, AddressLookUpContactAddress, AddressUKPlusQuestion, Data}
 import uk.gov.hmrc.fhregistration.services.ApplicationUtils._
 import org.apache.commons.lang3.text.WordUtils
 import uk.gov.hmrc.fhregistration.models.businessregistration.BusinessRegistrationDetails
@@ -64,7 +64,7 @@ trait FhddsApplicationService {
   }
 
   def addressLookupToAddress(addressLookup: AddressLookUpContactAddress): Option[Address] = {
-    if (isYes(addressLookup.selectLocation.getOrElse("No"))) {
+    if (isYes(addressLookup.selectLocation)) {
       addressLookup.ukPanel.flatMap(_.blockAddressUKPlus).map(ukAddressToAddress)
     } else {
       addressLookup.blockAddressInternationalPlus.map(internationalAddressToAddress)
@@ -103,44 +103,58 @@ trait FhddsApplicationService {
   }
 
   def businessAddressForFHDDS(xml: generated.Data, brd: BusinessRegistrationDetails): BusinessAddressForFHDDS = {
-    val isOnlyPrincipalPlaceOfBusinessInLastThreeYears =
-      isYes(xml.timeAtCurrentAddress.isOnlyPrinicipalPlaceOfBusinessInLastThreeYears)
+    val isOnlyPrincipalPlaceOfBusinessInLastThreeYears: Boolean =
+      xml.timeAtCurrentAddress.timeOperatedAtCurrentAddress == "Less than 3 years"
     BusinessAddressForFHDDS(
       currentAddress = principalBusinessAddress(brd),
       commonDetails = CommonDetails(
         telephone = Some(xml.contactPerson.telephoneNumber),
         mobileNumber = None,
-        email = xml.contactPerson.email
+        email = Some(xml.contactPerson.email)
       ),
-      dateStartedTradingAsFulfilmentHouse = xml.principalPlaceOfBusiness match {
-        case Some(principalPlaceOfBusiness) ⇒ LocalDate.parse(principalPlaceOfBusiness.dateStartedTradingAsFulfilmentHouse, dtf)
-        case _                              ⇒ LocalDate.now()
-      },
-      isOnlyPrinicipalPlaceOfBusinessInLastThreeYears = isOnlyPrincipalPlaceOfBusinessInLastThreeYears,
+      timeOperatedAtCurrentAddress = xml.timeAtCurrentAddress.timeOperatedAtCurrentAddress,
       previousOperationalAddress = {
         if (isOnlyPrincipalPlaceOfBusinessInLastThreeYears) None
-        else xml.timeAtCurrentAddress.panelPreviousAddress.flatMap(previousPrincipalPlaceOfBusinessAddresses).map(List(_))
+        else {
+          Some(PreviousOperationalAddress(
+            anyPreviousOperatingAddress = isYes(xml.timeAtCurrentAddress.panelAnyPreviousOperatingAddress.get.anyPreviousOperatingAddress),
+            previousOperationalAddressDetail =
+              Some(List(PreviousOperationalAddressDetail(
+                previousAddress = {
+                  val address = xml.timeAtCurrentAddress.panelAnyPreviousOperatingAddress.get.panelPreviousAddress.get.ukPanel.get.block_addressUKPlus.get
+                  Address(
+                    address.line1,
+                    address.line2.nonEmptyString,
+                    address.line3.noneIfBlank,
+                    address.town,
+                    Some(address.postcode),
+                    "GB")
+                },
+                previousAddressStartdate = LocalDate.parse(xml.timeAtCurrentAddress.panelAnyPreviousOperatingAddress.get.panelPreviousAddress.get.operatingDate, dtf)
+              )))
+          ))
+        }
       }
     )
   }
 
-  def previousPrincipalPlaceOfBusinessAddresses(previousAddress: PanelPreviousAddress): Option[PreviousOperationalAddress] = {
-    for {
-      panelPreviousPrincipalTradingBusinessAddresses ← previousAddress.ukPanel
-      blockAddressUKPlus ← panelPreviousPrincipalTradingBusinessAddresses.block_addressUKPlus
-      operatingDate ← previousAddress.operatingDate
-    } yield {
-      PreviousOperationalAddress(
-        operatingDate = LocalDate.parse(operatingDate, dtf),
-        previousAddress = Address(
-          blockAddressUKPlus.line1,
-          blockAddressUKPlus.line2.nonEmptyString,
-          blockAddressUKPlus.line3.noneIfBlank,
-          blockAddressUKPlus.town,
-          Some(blockAddressUKPlus.postcode),
-          "GB"))
-    }
-  }
+//  def previousPrincipalPlaceOfBusinessAddresses(previousAddress: PanelPreviousAddress): Option[PreviousOperationalAddress] = {
+//    for {
+//      panelPreviousPrincipalTradingBusinessAddresses ← previousAddress.ukPanel
+//      blockAddressUKPlus ← panelPreviousPrincipalTradingBusinessAddresses.block_addressUKPlus
+//      operatingDate = previousAddress.operatingDate
+//    } yield {
+//      PreviousOperationalAddress(
+//        operatingDate = LocalDate.parse(operatingDate, dtf),
+//        previousAddress = Address(
+//          blockAddressUKPlus.line1,
+//          blockAddressUKPlus.line2.nonEmptyString,
+//          blockAddressUKPlus.line3.noneIfBlank,
+//          blockAddressUKPlus.town,
+//          Some(blockAddressUKPlus.postcode),
+//          "GB"))
+//    }
+//  }
 
   def principalBusinessAddress(brd: BusinessRegistrationDetails): Address = {
     Address(line1 = brd.businessAddress.line1,
@@ -185,20 +199,29 @@ trait FhddsApplicationService {
   private def declaration(xml: Data) = {
     Declaration(personName = xml.declaration.hide_personName,
       personStatus = xml.declaration.hide_personStatus,
-      personStatusOther = xml.declaration.panelPersonStatusOther.map(_.hide_personStatusOther),
+      email = Some(xml.declaration.panelNoGGEmail.get.hide_confirmNewEmail),
       isInformationAccurate = true)
   }
 
   private def additionalBusinessInformation(brd: BusinessRegistrationDetails, xml: Data) = {
     //val numberOfCustomersOutsideOfEU = xml.businessActivities.numberOfCustomersOutsideOfEU
-    val numberOfCustomers = xml.numberOfCustomers.numberOfCustomers
+    val numberOfCustomersData = xml.numberOfCustomers.numberOfCustomers
+    val isVatReg = isYes(xml.vatRegistration.hasVatRegistrationNumber)
+    val eoriStatus = xml.eoriStatus
+    val eoriNumberDetail = eoriStatus.EORINumber
+    val eoriNumber = eoriNumberDetail.get.EORI
+    val eoriNumberGoodsImportedOutEORI = isYes(eoriNumberDetail.get.goodsImportedOutEORI)
     val officials = companyOfficialsDetails(xml)
 
     // TODO should we always add the principalBusinessAddress(brd) at the beginning of the list?
     val otherStorageSitesDetail = {
       if (isYes(xml.otherStorageSites.hasOtherStorageSites)) {
         otherStorageSitesDetails(xml)
-      } else List(principalBusinessAddress(brd))
+      } else List(Premises(address = principalBusinessAddress(brd),
+                           thirdPartyPremises = false,
+                           //todo set modification for amend
+                           modification = None)
+      )
     }
 
     AdditionalBusinessInformationwithType(
@@ -209,12 +232,21 @@ trait FhddsApplicationService {
         )
       ),
       allOtherInformation = AllOtherInformation(
-        fulfilmentOrdersType = ApplicationUtils.getOrderType(xml.fulfilmentOrdersType.fulfilmentOrdersType),
-        numberOfCustomers = numberOfCustomers,
-        premises = Premises(numberOfpremises = otherStorageSitesDetail.length.toString,
-                            address = otherStorageSitesDetail),
-        thirdPartyStorageUsed = isYes(xml.thirdPartyStorageUsed.thirdPartyStorageUsed),
-        goodsImportedOutEORI = isYes(xml.eoriStatus.goodsImportedOutEORI)
+        numberOfCustomers = numberOfCustomersData,
+        doesEORIExist = isYes(eoriStatus.doesEORIExist),
+        EORINumber = Some(
+          if (isVatReg) {
+            EORINumberType(EORIVat = eoriNumber,
+                           EORINonVat =  None,
+                           goodsImportedOutEORI = Some(eoriNumberGoodsImportedOutEORI))
+          } else {
+            EORINumberType(EORIVat = None,
+                           EORINonVat = eoriNumber,
+                           goodsImportedOutEORI = Some(eoriNumberGoodsImportedOutEORI))
+          }
+        ),
+        numberOfpremises = otherStorageSitesDetail.length.toString,
+        premises = otherStorageSitesDetail
       )
     )
   }
@@ -224,17 +256,21 @@ trait FhddsApplicationService {
       otherStorageSites ← xml.otherStorageSites.panelOtherStorageSites.toList
       blockAddressUKPlus ← otherStorageSites.repeatingSectionOtherTradingPremises
       repeatingPanel ← blockAddressUKPlus.repeatingPanel
-      addressLookup ← repeatingPanel.otherTradingPremisesAddressLookup
-      ukPanel ← addressLookup.ukPanel
-      blockAddressUKPlus ← ukPanel.blockAddressUKPlus
+      thirdPartyPremises = blockAddressUKPlus.thirdPartyPremises
+      addressLookup ← repeatingPanel.otherTradingPremisesAddressLookup.ukPanel
+      blockAddressUKPlus ← addressLookup.blockAddressUKPlus
     } yield {
-      Address(
-        blockAddressUKPlus.line1,
-        blockAddressUKPlus.line2.nonEmptyString,
-        blockAddressUKPlus.line3.noneIfBlank,
-        blockAddressUKPlus.town,
-        Some(blockAddressUKPlus.postcode),
-        "GB"
+      Premises(address =
+        Address(
+          blockAddressUKPlus.line1,
+          blockAddressUKPlus.line2.nonEmptyString,
+          blockAddressUKPlus.line3.noneIfBlank,
+          blockAddressUKPlus.town,
+          Some(blockAddressUKPlus.postcode),
+          "GB"),
+        thirdPartyPremises = isYes(thirdPartyPremises),
+        //todo set modification for amend
+        modification = None
       )
     }
   }
@@ -253,7 +289,7 @@ trait FhddsApplicationService {
       commonDetails = CommonDetails(
         telephone = Some(xml.contactPerson.telephoneNumber),
         mobileNumber = None,
-        email = xml.contactPerson.email),
+        email = Some(xml.contactPerson.email)),
       roleInOrganization = None
     )
   }
