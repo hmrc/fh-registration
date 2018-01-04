@@ -19,10 +19,11 @@ package uk.gov.hmrc.fhregistration.controllers
 import javax.inject.Inject
 
 import play.api.Logger
-import play.api.libs.json.Json
+import play.api.libs.json.{JsValue, Json}
 import play.api.mvc.Action
 import uk.gov.hmrc.fhregistration.config.MicroserviceAuditConnector
 import uk.gov.hmrc.fhregistration.connectors.{DesConnector, TaxEnrolmentConnector}
+import uk.gov.hmrc.fhregistration.models.des.FormStatus.DesStatusResponse
 import uk.gov.hmrc.fhregistration.models.des.SubScriptionCreate.format
 import uk.gov.hmrc.fhregistration.models.des.{DesSubmissionResponse, SubScriptionCreate}
 import uk.gov.hmrc.fhregistration.models.fhdds.{SubmissionRequest, SubmissionResponse}
@@ -33,6 +34,7 @@ import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import uk.gov.hmrc.play.microservice.controller.BaseController
 
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
 import scala.util.{Failure, Success}
 
 class FhddsApplicationController @Inject()(
@@ -125,6 +127,22 @@ class FhddsApplicationController @Inject()(
     submissionDataRepository
       .findSubmissionExtraDataByFormId(formId)
       .map(_ getOrElse (throw new NotFoundException("extra data not found for formId")))
+  }
+
+  def checkStatus(fhddsRegistrationNumber: String): String = {
+   val resp: String = desConnector.getstatus(fhddsRegistrationNumber){
+      case msg: JsValue =>
+      val response (msg\"subscriptionStatus").asOpt[String]
+      response match {
+          case Some("Reg Form Received") => "Received"
+          case Some("Sent To DS")|Some("DS Outcome In Progress")|Some("In processing")|Some("Sent to RCM") => "Processing"
+          case Some("Successful") => "Successful"
+          case Some("Rejected") => "Rejected"
+          case _ => "Unsupported state"
+        }
+      case e:Error => Logger.error(s"Unexpected response type from DES, error: $e")
+    }
+    resp
   }
 
 }

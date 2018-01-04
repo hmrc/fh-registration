@@ -18,13 +18,15 @@ package uk.gov.hmrc.fhregistration.connectors
 
 import com.google.inject.ImplementedBy
 import play.api.Logger
+import play.api.libs.json.JsValue
 import uk.gov.hmrc.fhregistration.config.WSHttp
+import uk.gov.hmrc.fhregistration.models.des.FormStatus.DesStatusResponse
 import uk.gov.hmrc.fhregistration.models.des.{DesSubmissionResponse, SubScriptionCreate}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.http.logging.Authorization
 import uk.gov.hmrc.play.config.ServicesConfig
-
 import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
+
 import scala.concurrent.Future
 
 class DesConnectorImpl extends DesConnector with ServicesConfig {
@@ -44,8 +46,12 @@ trait DesConnector {
   val http: WSHttp
   val environment: String
   val desToken: String
-
+  def desServiceUri: String
   def desSubmissionUrl(safeId: String): String
+  def getstatus(fhddsRegistrationNumber: String)(implicit headerCarrier: HeaderCarrier): Future[DesStatusResponse] = {
+    implicit val desHeaders = headerCarrier.copy(authorization = Some(Authorization(s"Bearer $desToken"))).withExtraHeaders("Environment" -> environment)
+    http.GET[DesStatusResponse](s"$desServiceUri/$fhddsRegistrationNumber")
+  }
   def sendSubmission(safeId: String, application: SubScriptionCreate)(hc: HeaderCarrier): Future[DesSubmissionResponse] = {
     Logger.info(s"Sending fhdds registration data to DES for safeId $safeId")
     Logger.debug(s"Sending fhdds registration data to DES with payload $application")
