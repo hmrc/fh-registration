@@ -16,9 +16,13 @@
 
 package uk.gov.hmrc.fhregistration.models.des.FormStatus
 
-import play.api.libs.json.JsValue
+import play.api.libs.json.{JsValue, Json}
 
 case class DesStatusResponse(response: JsValue)
+
+object DesStatusResponse {
+  implicit val format = Json.format[DesStatusResponse]
+}
 
 
 
