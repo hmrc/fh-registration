@@ -32,6 +32,8 @@ import scala.concurrent.Future
 class DesConnectorImpl extends DesConnector with ServicesConfig {
 
   def desServiceUri() = config("des-service").getString("uri").getOrElse("")
+  def desServiceBaseUri() = config("des-service").getString("baseuri").getOrElse("")
+  def desServiceStatusUri() = s"${baseUrl("des-service")}${desServiceBaseUri()}"
   def desSubmissionUrl(safeId: String) =s"${baseUrl("des-service")}${desServiceUri()}/$safeId"
 
   lazy val http: WSHttp = WSHttp
@@ -47,10 +49,11 @@ trait DesConnector {
   val environment: String
   val desToken: String
   def desServiceUri: String
+  def desServiceStatusUri: String
   def desSubmissionUrl(safeId: String): String
   def getStatus(fhddsRegistrationNumber: String)(headerCarrier: HeaderCarrier): Future[HttpResponse] = {
     implicit val desHeaders = headerCarrier.copy(authorization = Some(Authorization(s"Bearer $desToken"))).withExtraHeaders("Environment" -> environment)
-    http.GET(s"$desServiceUri/fulfilment-diligence/subscription/$fhddsRegistrationNumber/status")
+    http.GET(s"$desServiceStatusUri/fulfilment-diligence/subscription/$fhddsRegistrationNumber/status")
   }
   def sendSubmission(safeId: String, application: SubScriptionCreate)(hc: HeaderCarrier): Future[DesSubmissionResponse] = {
     Logger.info(s"Sending fhdds registration data to DES for safeId $safeId")
