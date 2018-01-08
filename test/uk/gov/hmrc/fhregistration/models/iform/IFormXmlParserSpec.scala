@@ -53,14 +53,7 @@ class IFormXmlParserSpec extends UnitSpec {
 
     }
 
-
-//      "parse without errors example-maximum.xml" in {
-//        val file = "example-maximum.xml"
-//        val x = XML.loadFile(s"$basePath/$file")
-//        scalaxb.fromXML[generated.Data](x) should not be null
-//
-//      }
-    }
+  }
 
   def getXmlInputStream(name: String) = {
     getClass.getResourceAsStream(s"/xml/$name")
