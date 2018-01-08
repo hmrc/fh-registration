@@ -55,10 +55,14 @@ class SubmissionExtraDataRepository @Inject() (implicit rmc: ReactiveMongoCompon
       .map(_.isDefined)
   }
 
-  def updateRegistrationNumber(formId: String, submissionRef: String, registrationNumber: String): Future[Boolean] = {
+  def updateRegistrationNumberWithETMPFormBundleNumber(formId: String, submissionRef: String,
+                                                       etmpFormBundleNumber: String,
+                                                       registrationNumber: String): Future[Boolean] = {
     atomicUpdate(
       finder = findSubmissionDataBSONByFormId(formId),
-      set(BSONDocument("submissionRef" → submissionRef, "registrationNumber" → registrationNumber)))
+      set(BSONDocument("submissionRef" → submissionRef,
+        "registrationNumber" → registrationNumber,
+        "etmpFormBundleNumber" → etmpFormBundleNumber)))
       .map(_.isDefined)
   }
 

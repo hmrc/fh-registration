@@ -56,14 +56,15 @@ class FhddsApplicationController @Inject()(
       response = SubmissionResponse(ControllerServices.createSubmissionRef())
     } yield {
       Logger.info(s"Received subscription id ${desResponse.registrationNumberFHDDS} for safeId $safeId")
-      storeRegistrationNumber(
+      storeRegistrationNumberAndBundleNumber(
         request.formId,
         response.registrationNumber,
+        desResponse.etmpFormBundleNumber,
         desResponse.registrationNumberFHDDS
       )
       subscribeToTaxEnrolment(
         desResponse.registrationNumberFHDDS,
-        extraData.businessRegistrationDetails.safeId,
+        desResponse.etmpFormBundleNumber,
         extraData.authorization)
       auditSubmission(request, application, extraData, desResponse, response.registrationNumber)
       Ok(Json toJson response)
@@ -90,22 +91,25 @@ class FhddsApplicationController @Inject()(
       }
 
   }
-  private def storeRegistrationNumber(formId: String, submissionRef: String, registrationNumberFHDDS: String) = {
+  private def storeRegistrationNumberAndBundleNumber(formId: String, submissionRef: String,
+                                                     etmpFormBundleNumber: String,
+                                                     registrationNumberFHDDS: String) = {
     submissionDataRepository
-      .updateRegistrationNumber(formId, submissionRef, registrationNumberFHDDS)
+      .updateRegistrationNumberWithETMPFormBundleNumber(formId,
+        submissionRef, etmpFormBundleNumber, registrationNumberFHDDS)
       .map(v ⇒ Logger.info(s"Saving registration number yield $v"))
       .recover {
         case t: Throwable ⇒ Logger.error("Saving registration number failed", t)
       }
   }
 
-  private def subscribeToTaxEnrolment(subscriptionId: String, safeId: String, authorization: Option[String])(implicit hc: HeaderCarrier) = {
-    Logger.info(s"Sending subscription $subscriptionId for $safeId to tax enrolments")
+  private def subscribeToTaxEnrolment(subscriptionId: String, etmpFormBundleNumber: String, authorization: Option[String])(implicit hc: HeaderCarrier) = {
+    Logger.info(s"Sending subscription $subscriptionId for $etmpFormBundleNumber to tax enrolments")
     taxEnrolmentConnector
-     .subscribe(subscriptionId, safeId, authorization)(hc)
+     .subscribe(subscriptionId, etmpFormBundleNumber, authorization)(hc)
      .onComplete({
-       case Success(r) ⇒ Logger.info(s"Tax enrolments for subscription $subscriptionId and safeId $safeId returned $r")
-       case Failure(e) ⇒ Logger.error(s"Tax enrolments for subscription $subscriptionId and safeId $safeId failed", e)
+       case Success(r) ⇒ Logger.info(s"Tax enrolments for subscription $subscriptionId and etmpFormBundleNumber $etmpFormBundleNumber returned $r")
+       case Failure(e) ⇒ Logger.error(s"Tax enrolments for subscription $subscriptionId and etmpFormBundleNumber $etmpFormBundleNumber failed", e)
      })
   }
 
