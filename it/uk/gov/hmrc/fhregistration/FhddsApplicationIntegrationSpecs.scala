@@ -2,14 +2,14 @@ package uk.gov.hmrc.fhregistration
 
 import org.mockito.ArgumentMatchers.{any, eq ⇒ matcherEq}
 import org.mockito.Mockito
+import play.api.libs.json.{JsObject, JsString, JsValue}
 import play.mvc.Http.Status
 import uk.gov.hmrc.fhregistration.services.FakeData._
 import uk.gov.hmrc.fhregistration.services.FhddsApplicationIntegrationMocks
-import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
 
-import scala.concurrent.duration.Duration
+import scala.concurrent.duration._
 import scala.concurrent.{Await, ExecutionContext, Future}
-
 
 class FhddsApplicationIntegrationSpecs extends FhddsApplicationIntegrationMocks {
 
@@ -50,6 +50,104 @@ class FhddsApplicationIntegrationSpecs extends FhddsApplicationIntegrationMocks 
       Then("response for the submit should be OK")
       response.header.status shouldBe Status.OK
     }
+  }
+
+  feature("retrieve an mdtp subscription status from DES") {
+
+    scenario("When bta calls fh-registration to retrieve a status and gets a 200 response") {
+
+      val json: JsValue = JsObject(Seq("subscriptionStatus" → JsString("Reg Form Received")))
+      val fakeDesResponse: HttpResponse = HttpResponse(200, Some(json))
+
+      Mockito
+        .when(
+          mockDesConnector.getStatus(matcherEq("registrationID"))(any[HeaderCarrier]())
+        )
+        .thenReturn(Future successful fakeDesResponse)
+
+      val response = fhddsApplicationController.checkStatus("registrationID")(fakeGetRequest)
+
+      Then("response for the submit should be OK")
+      Await.result(response, 500.millis).header.status shouldBe Status.OK
+      consume(Await.result(response, 500.millis).body) shouldBe "Received"
+    }
+  }
+
+  {
+
+    scenario("When bta calls fh-registration to retrieve a status and receives a 400") {
+
+      val json: JsValue = JsObject(Seq("subscriptionStatus" → JsString("Reg Form Received")))
+      val fakeDesResponse: HttpResponse = HttpResponse(400, Some(json))
+
+      Mockito
+        .when(
+          mockDesConnector.getStatus(matcherEq("registrationID"))(any[HeaderCarrier]())
+        )
+        .thenReturn(Future successful fakeDesResponse)
+
+      val response = fhddsApplicationController.checkStatus("registrationID")(fakeGetRequest)
+
+      Then("response for the submit should be BadRequest")
+      Await.result(response, 500.millis).header.status shouldBe Status.BAD_REQUEST
+      val ext = "Submission has not passed validation. Invalid parameter FHDDS Registration Number."
+      consume(Await.result(response, 500.millis).body) shouldBe ext
+    }
+
+    scenario("When bta calls fh-registration to retrieve a status and receives a 404") {
+
+      val json: JsValue = JsObject(Seq("subscriptionStatus" → JsString("Reg Form Received")))
+      val fakeDesResponse: HttpResponse = HttpResponse(404, Some(json))
+
+      Mockito
+        .when(
+          mockDesConnector.getStatus(matcherEq("registrationID"))(any[HeaderCarrier]())
+        )
+        .thenReturn(Future successful fakeDesResponse)
+
+      val response = fhddsApplicationController.checkStatus("registrationID")(fakeGetRequest)
+
+      Then("response for the submit should be NotFound")
+      Await.result(response, 500.millis).header.status shouldBe Status.NOT_FOUND
+      val ext = "No SAP Number found for the provided FHDDS Registration Number."
+      consume(Await.result(response, 500.millis).body) shouldBe ext
+    }
+
+    scenario("When bta calls fh-registration to retrieve a status and receives a 403") {
+
+      val fakeDesResponse: HttpResponse = HttpResponse(403, None)
+
+      Mockito
+        .when(
+          mockDesConnector.getStatus(matcherEq("registrationID"))(any[HeaderCarrier]())
+        )
+        .thenReturn(Future successful fakeDesResponse)
+
+      val response = fhddsApplicationController.checkStatus("registrationID")(fakeGetRequest)
+
+      Then("response for the submit should be Forbidden")
+      Await.result(response, 500.millis).header.status shouldBe Status.FORBIDDEN
+      val ext = "Unexpected business error received."
+      consume(Await.result(response, 500.millis).body) shouldBe ext
+    }
+
+
+    scenario("When bta calls fh-registration to retrieve a status and receives a 500") {
+
+      val fakeDesResponse: HttpResponse = HttpResponse(500, None)
+
+      Mockito
+        .when(
+          mockDesConnector.getStatus(matcherEq("registrationID"))(any[HeaderCarrier]())
+        )
+        .thenReturn(Future successful fakeDesResponse)
+
+      val response = fhddsApplicationController.checkStatus("registrationID")(fakeGetRequest)
+
+      Then("response for the submit should be Internal server error")
+      Await.result(response, 500.millis).header.status shouldBe Status.INTERNAL_SERVER_ERROR
+    }
+
   }
 
 }
