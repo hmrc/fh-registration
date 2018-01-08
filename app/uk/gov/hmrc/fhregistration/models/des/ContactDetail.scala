@@ -38,6 +38,7 @@ case class CommonDetails(telephone: Option[String],
 
 object CommonDetails {
   implicit val format = Json.format[CommonDetails]
+  def apply(): CommonDetails = CommonDetails(None, None, None)
 }
 
 case class ContactDetail(title: Option[String],

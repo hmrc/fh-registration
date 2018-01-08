@@ -16,8 +16,10 @@
 
 package uk.gov.hmrc.fhregistration.controllers
 
+import java.io.FileOutputStream
 import javax.inject.Inject
 
+import org.apache.commons.io.{FileUtils, IOUtils}
 import play.api.Logger
 import play.api.libs.json.Json
 import play.api.mvc.Action
@@ -49,6 +51,7 @@ class FhddsApplicationController @Inject()(
 
   def submit() = Action.async(parse.json[SubmissionRequest]) { implicit r ⇒
     val request = r.body
+    IOUtils.write(request.formData, new FileOutputStream("/tmp/1.xml"))
     for {
       extraData ← findSubmissionExtraData(request.formId)
       application = createDesSubmission(request.formData, extraData)

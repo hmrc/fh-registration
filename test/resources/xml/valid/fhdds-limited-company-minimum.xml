@@ -1,21 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <data>
-    <principalPlaceOfBusiness>
-        <dateStartedTradingAsFulfilmentHouse>20/03/2015</dateStartedTradingAsFulfilmentHouse>
-    </principalPlaceOfBusiness>
     <timeAtCurrentAddress>
-        <isOnlyPrinicipalPlaceOfBusinessInLastThreeYears>Yes</isOnlyPrinicipalPlaceOfBusinessInLastThreeYears>
-        <panelPreviousAddress>
-            <ukPanel>
-                <searchState>initial</searchState>
-                <block_addressUKPlus data_type="" uprn=""/>
-            </ukPanel>
-        </panelPreviousAddress>
+        <timeOperatedAtCurrentAddress>3-5 years</timeOperatedAtCurrentAddress>
+        <panelAnyPreviousOperatingAddress>
+            <anyPreviousOperatingAddress/>
+            <panelPreviousAddress>
+                <ukPanel>
+                    <searchState>initial</searchState>
+                    <block_addressUKPlus data_type="" uprn=""/>
+                </ukPanel>
+            </panelPreviousAddress>
+        </panelAnyPreviousOperatingAddress>
     </timeAtCurrentAddress>
     <contactPerson>
-        <firstName>Alex</firstName>
-        <lastName>Grit</lastName>
-        <telephoneNumber>123123</telephoneNumber>
+        <firstName>C</firstName>
+        <lastName>M</lastName>
+        <otherRoleDescription>director</otherRoleDescription>
+        <telephoneNumber>07231111</telephoneNumber>
         <email>a@a.ro</email>
         <contactCorrectAddress>Yes</contactCorrectAddress>
         <addressLookUpContactAddress>
@@ -44,11 +45,11 @@
         <panelRepeatingCompanyOfficial>
             <companyOfficerType>Individual</companyOfficerType>
             <panelPerson>
-                <firstName>gf</firstName>
-                <lastName>ghg</lastName>
+                <firstName>C</firstName>
+                <lastName>M</lastName>
                 <hasNino>Yes</hasNino>
                 <panelNino>
-                    <nino>AA123456C</nino>
+                    <nino>AA123456A</nino>
                 </panelNino>
                 <role>Director</role>
             </panelPerson>
@@ -58,19 +59,14 @@
         <isNewFulfilmentBusiness>No</isNewFulfilmentBusiness>
     </isNewFulfilmentBusiness>
     <eoriStatus>
-        <goodsImportedOutEORI>Yes</goodsImportedOutEORI>
+        <doesEORIExist>No</doesEORIExist>
+        <EORINumber>
+            <goodsImportedOutEORI/>
+        </EORINumber>
     </eoriStatus>
     <numberOfCustomers>
-        <numberOfCustomers>01</numberOfCustomers>
+        <numberOfCustomers>1-10</numberOfCustomers>
     </numberOfCustomers>
-    <fulfilmentOrdersType>
-        <fulfilmentOrdersType>
-            <onLine>Yes</onLine>
-            <telephone>No</telephone>
-            <physicalPremises>No</physicalPremises>
-            <other>No</other>
-        </fulfilmentOrdersType>
-    </fulfilmentOrdersType>
     <otherStorageSites>
         <hasOtherStorageSites>No</hasOtherStorageSites>
         <panelOtherStorageSites>
@@ -86,11 +82,16 @@
             </repeatingSectionOtherTradingPremises>
         </panelOtherStorageSites>
     </otherStorageSites>
-    <thirdPartyStorageUsed>
-        <thirdPartyStorageUsed>No</thirdPartyStorageUsed>
-    </thirdPartyStorageUsed>
     <declaration>
-        <hide_personName>dfg</hide_personName>
+        <hide_personName>C</hide_personName>
         <hide_personStatus>Director</hide_personStatus>
+        <hasGGEmail/>
+        <panelHasGGEmail>
+            <hide_GGEmail/>
+        </panelHasGGEmail>
+        <panelNoGGEmail>
+            <hide_newConfirmationEmail>a@a.ro</hide_newConfirmationEmail>
+            <hide_confirmNewEmail>a@a.ro</hide_confirmNewEmail>
+        </panelNoGGEmail>
     </declaration>
 </data>

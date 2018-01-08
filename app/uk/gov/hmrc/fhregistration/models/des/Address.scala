@@ -19,9 +19,9 @@ package uk.gov.hmrc.fhregistration.models.des
 import play.api.libs.json.Json
 
 case class Address(line1: String,
-                   line2: String,
+                   line2: Option[String],
                    line3: Option[String],
-                   town: Option[String],
+                   line4: Option[String],
                    postalCode: Option[String],
                    countryCode: String)
 

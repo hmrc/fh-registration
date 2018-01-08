@@ -14,21 +14,19 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.fhregistration.models.iform
+package uk.gov.hmrc.fhregistration.services
 
-import com.eclipsesource.schema.{SchemaType, SchemaValidator}
+import com.eclipsesource.schema.{SchemaType, SchemaValidator, _}
 import play.api.libs.json.Json
 import uk.gov.hmrc.fhregistration.models.businessregistration.BusinessRegistrationDetails
 import uk.gov.hmrc.fhregistration.models.des.SubScriptionCreate.format
-import uk.gov.hmrc.fhregistration.services.{FhddsApplicationService, FhddsApplicationServiceImpl}
 import uk.gov.hmrc.play.test.UnitSpec
-import com.eclipsesource.schema._
 
 import scala.xml.XML
 
-class subscriptionCreateRequestSchemaServiceSpec extends UnitSpec {
+class FhddsApplicationServiceSpec extends UnitSpec {
 
-  val schemaAsJson = Json parse getClass.getResourceAsStream("/schemas/des-schema-alpha.json")
+  val schemaAsJson = Json parse getClass.getResourceAsStream("/schemas/des-schema-r1.json")
   val schema = Json.fromJson[SchemaType](schemaAsJson).get
   val validator = new SchemaValidator().validate(schema) _
   val service = new FhddsApplicationServiceImpl
@@ -42,17 +40,19 @@ class subscriptionCreateRequestSchemaServiceSpec extends UnitSpec {
       validatesFor("fhdds-limited-company-large-uk.xml")
     }
 
-//    "Create a correct json for fhdds-limited-company-large-uk-without-addressLine2.xml" in {
-//      validatesFor("fhdds-limited-company-large-uk-without-addressLine2.xml")
-//    }
 
     "Create a correct json for fhdds-limited-company-minimum.xml" in {
       validatesFor("fhdds-limited-company-minimum.xml")
     }
 
-//    "Create a correct json for fhdds-limited-company-minimum-international.xml" in {
-//      validatesFor("fhdds-limited-company-minimum-international.xml")
-//    }
+    "Create a correct json for fhdds-limited-company-minimum-international.xml" in {
+      validatesFor("fhdds-limited-company-minimum-international.xml")
+    }
+
+    "Create a correct json for fhdds-limited-company-minimum-with-ggemail.xml" in {
+      validatesFor("fhdds-limited-company-minimum-with-ggemail.xml")
+    }
+
   }
 
   def validatesFor(file: String) = {
@@ -62,6 +62,10 @@ class subscriptionCreateRequestSchemaServiceSpec extends UnitSpec {
     val json = Json.toJson(subscrtiptionCreate)
 
     val validationResult = validator(json)
+    validationResult.fold(
+      invalid = {errors ⇒ println(errors.toJson)},
+      valid = {v ⇒ println("OK")}
+    )
     validationResult.isSuccess shouldEqual true
   }
 

@@ -32,7 +32,9 @@ object SubscriptionCreateRequestSchema {
   implicit val format = Json.format[SubscriptionCreateRequestSchema]
 }
 
-case class SubScriptionCreate(subScriptionCreate: SubscriptionCreateRequestSchema)
+case class SubScriptionCreate(
+  requestType: String,
+  subScriptionCreate: SubscriptionCreateRequestSchema)
 
 
 object SubScriptionCreate {

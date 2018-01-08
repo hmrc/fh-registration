@@ -3,7 +3,6 @@
     <timeAtCurrentAddress>
         <timeOperatedAtCurrentAddress>3-5 years</timeOperatedAtCurrentAddress>
         <panelAnyPreviousOperatingAddress>
-            <anyPreviousOperatingAddress/>
             <panelPreviousAddress>
                 <ukPanel>
                     <searchState>initial</searchState>
@@ -15,8 +14,8 @@
     <contactPerson>
         <firstName>C</firstName>
         <lastName>M</lastName>
-        <otherRoleDescription>director</otherRoleDescription>
-        <telephoneNumber>07231111</telephoneNumber>
+        <otherRoleDescription>D</otherRoleDescription>
+        <telephoneNumber>111</telephoneNumber>
         <email>a@a.ro</email>
         <contactCorrectAddress>Yes</contactCorrectAddress>
         <addressLookUpContactAddress>
@@ -49,7 +48,7 @@
                 <lastName>M</lastName>
                 <hasNino>Yes</hasNino>
                 <panelNino>
-                    <nino>AA123456A</nino>
+                    <nino>AA123123A</nino>
                 </panelNino>
                 <role>Director</role>
             </panelPerson>
@@ -60,12 +59,9 @@
     </isNewFulfilmentBusiness>
     <eoriStatus>
         <doesEORIExist>No</doesEORIExist>
-        <EORINumber>
-            <goodsImportedOutEORI/>
-        </EORINumber>
     </eoriStatus>
     <numberOfCustomers>
-        <numberOfCustomers>1-10</numberOfCustomers>
+        <numberOfCustomers>11-50</numberOfCustomers>
     </numberOfCustomers>
     <otherStorageSites>
         <hasOtherStorageSites>No</hasOtherStorageSites>
@@ -83,15 +79,13 @@
         </panelOtherStorageSites>
     </otherStorageSites>
     <declaration>
-        <hide_personName>C</hide_personName>
-        <hide_personStatus>Director</hide_personStatus>
+        <hide_personName>cc</hide_personName>
+        <hide_personStatus>c</hide_personStatus>
         <hasGGEmail/>
         <panelHasGGEmail>
-            <hide_GGEmail/>
+            <hide_GGEmail>cosmin@cosmin.co.uk</hide_GGEmail>
+            <hide_useGGEmail>Yes</hide_useGGEmail>
+
         </panelHasGGEmail>
-        <panelNoGGEmail>
-            <hide_newConfirmationEmail>a@a.ro</hide_newConfirmationEmail>
-            <hide_confirmNewEmail>a@a.ro</hide_confirmNewEmail>
-        </panelNoGGEmail>
     </declaration>
 </data>

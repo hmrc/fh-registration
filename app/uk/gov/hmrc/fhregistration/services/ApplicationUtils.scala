@@ -22,7 +22,18 @@ import uk.gov.hmrc.fhregistration.models.des._
 
 object ApplicationUtils {
 
-  implicit class AddressLineUtils(value: Option[String]) {
+  implicit class AddressLineUtils(value: String) {
+
+    /** Transforms Some("") in None */
+    def noneIfBlank =
+      if (StringUtils isBlank value)
+        None
+      else
+        Some(value)
+
+  }
+
+  implicit class OptionalAddressLineUtils(value: Option[String]) {
 
     /** Transforms Some("") in None */
     def noneIfBlank = value flatMap { s ⇒
@@ -37,6 +48,7 @@ object ApplicationUtils {
   }
 
   def isYes(radioButtonAnswer: String): Boolean = radioButtonAnswer equals "Yes"
+  def isYes(radioButtonAnswer: Option[String]): Boolean = radioButtonAnswer.filter(isYes).isDefined
 
   def getCompanyOfficialAsPerson(personPanel: PanelPerson): CompanyOfficial = {
     IndividualAsOfficial(

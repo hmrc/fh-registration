@@ -31,27 +31,35 @@ class IFormXmlParserSpec extends UnitSpec {
 
     }
 
-//    "parse without errors short form with international contact address" in {
-//      val file = "fhdds-limited-company-minimum-international.xml"
-//      val x = XML.load(getXmlInputStream(s"valid/$file"))
-//      scalaxb.fromXML[generated.Data](x) should not be null
-//
-//    }
+    "parse without errors shortest form with gg email" in {
+      val file = "fhdds-limited-company-minimum-with-ggemail.xml"
+      val x = XML.load(getXmlInputStream(s"valid/$file"))
+      scalaxb.fromXML[generated.Data](x) should not be null
 
-//    "parse without errors long form with uk contact address" in {
-//      val file = "fhdds-limited-company-large-uk.xml"
-//      val x = XML.load(getXmlInputStream(s"valid/$file"))
-//      scalaxb.fromXML[generated.Data](x) should not be null
-//
-//    }
+    }
 
-  //
-  //    "parse without errors example-maximum.xml" in {
-  //      val file = "example-maximum.xml"
-  //      val x = XML.loadFile(s"$basePath/$file")
-  //      scalaxb.fromXML[generated.Data](x) should not be null
-  //
-  //    }
+
+    "parse without errors short form with international contact address" in {
+      val file = "fhdds-limited-company-minimum-international.xml"
+      val x = XML.load(getXmlInputStream(s"valid/$file"))
+      scalaxb.fromXML[generated.Data](x) should not be null
+
+    }
+
+    "parse without errors long form with uk contact address" in {
+      val file = "fhdds-limited-company-large-uk.xml"
+      val x = XML.load(getXmlInputStream(s"valid/$file"))
+      scalaxb.fromXML[generated.Data](x) should not be null
+
+    }
+
+
+//      "parse without errors example-maximum.xml" in {
+//        val file = "example-maximum.xml"
+//        val x = XML.loadFile(s"$basePath/$file")
+//        scalaxb.fromXML[generated.Data](x) should not be null
+//
+//      }
     }
 
   def getXmlInputStream(name: String) = {

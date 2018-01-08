@@ -38,7 +38,9 @@ trait FhddsApplicationService {
   val dtf: DateTimeFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")
 
   def iformXmlToApplication(xml: generated.Data, brd: BusinessRegistrationDetails): SubScriptionCreate = {
-    SubScriptionCreate(SubscriptionCreateRequestSchema(
+    SubScriptionCreate(
+      requestType = "Create",
+      SubscriptionCreateRequestSchema(
       organizationType = brd.businessType.map(translateBusinessType).getOrElse(DefaultOrganizationType),
       FHbusinessDetail = IsNewFulfilmentBusiness(
         isNewFulfilmentBusiness = isYes(xml.isNewFulfilmentBusiness.isNewFulfilmentBusiness),
@@ -48,7 +50,7 @@ trait FhddsApplicationService {
       businessDetail = businessDetails(xml, brd),
       businessAddressForFHDDS = businessAddressForFHDDS(xml, brd),
       contactDetail = contactDetail(xml, brd),
-      declaration = declaration(xml)
+      declaration = declaration(xml.declaration)
     ))
   }
 
@@ -103,18 +105,15 @@ trait FhddsApplicationService {
   }
 
   def businessAddressForFHDDS(xml: generated.Data, brd: BusinessRegistrationDetails): BusinessAddressForFHDDS = {
-    val isOnlyPrincipalPlaceOfBusinessInLastThreeYears: Boolean =
+    val lessThan3Years: Boolean =
       xml.timeAtCurrentAddress.timeOperatedAtCurrentAddress == "Less than 3 years"
+
     BusinessAddressForFHDDS(
       currentAddress = principalBusinessAddress(brd),
-      commonDetails = CommonDetails(
-        telephone = Some(xml.contactPerson.telephoneNumber),
-        mobileNumber = None,
-        email = Some(xml.contactPerson.email)
-      ),
+      commonDetails = CommonDetails(),
       timeOperatedAtCurrentAddress = xml.timeAtCurrentAddress.timeOperatedAtCurrentAddress,
       previousOperationalAddress = {
-        if (isOnlyPrincipalPlaceOfBusinessInLastThreeYears) None
+        if (!lessThan3Years) None
         else {
           Some(PreviousOperationalAddress(
             anyPreviousOperatingAddress = isYes(xml.timeAtCurrentAddress.panelAnyPreviousOperatingAddress.get.anyPreviousOperatingAddress),
@@ -124,13 +123,13 @@ trait FhddsApplicationService {
                   val address = xml.timeAtCurrentAddress.panelAnyPreviousOperatingAddress.get.panelPreviousAddress.get.ukPanel.get.block_addressUKPlus.get
                   Address(
                     address.line1,
-                    address.line2.nonEmptyString,
+                    address.line2,
                     address.line3.noneIfBlank,
                     address.town,
                     Some(address.postcode),
                     "GB")
                 },
-                previousAddressStartdate = LocalDate.parse(xml.timeAtCurrentAddress.panelAnyPreviousOperatingAddress.get.panelPreviousAddress.get.operatingDate, dtf)
+                previousAddressStartdate = LocalDate.parse(xml.timeAtCurrentAddress.panelAnyPreviousOperatingAddress.get.panelPreviousAddress.get.operatingDate.get, dtf)
               )))
           ))
         }
@@ -158,9 +157,9 @@ trait FhddsApplicationService {
 
   def principalBusinessAddress(brd: BusinessRegistrationDetails): Address = {
     Address(line1 = brd.businessAddress.line1,
-      line2 = checkEmptyAddressLine(brd.businessAddress.line2),
+      line2 = brd.businessAddress.line2.noneIfBlank,
       line3 = brd.businessAddress.line3.noneIfBlank,
-      town = brd.businessAddress.line4,
+      line4 = brd.businessAddress.line4,
       postalCode = brd.businessAddress.postcode,
       countryCode = brd.businessAddress.country)
   }
@@ -168,7 +167,7 @@ trait FhddsApplicationService {
   def ukAddressToAddress(blockAddressUk: AddressUKPlusQuestion) =
     Address(
       blockAddressUk.line1,
-      blockAddressUk.line2.nonEmptyString,
+      blockAddressUk.line2.noneIfBlank,
       blockAddressUk.line3.noneIfBlank,
       blockAddressUk.town,
       Some(blockAddressUk.postcode),
@@ -177,7 +176,7 @@ trait FhddsApplicationService {
   def internationalAddressToAddress(blockAddressInternationalPlus: AddressInternationalPlusQuestion) =
     Address(
       blockAddressInternationalPlus.line1,
-      checkEmptyAddressLine(blockAddressInternationalPlus.line2),
+      blockAddressInternationalPlus.line2.noneIfBlank,
       blockAddressInternationalPlus.line3.noneIfBlank,
       None,
       None,
@@ -196,11 +195,28 @@ trait FhddsApplicationService {
     }
   }
 
-  private def declaration(xml: Data) = {
-    Declaration(personName = xml.declaration.hide_personName,
-      personStatus = xml.declaration.hide_personStatus,
-      email = Some(xml.declaration.panelNoGGEmail.get.hide_confirmNewEmail),
+  private def declaration(declaration: generated.Declaration) = {
+    Declaration(personName = declaration.hide_personName,
+      personStatus = declaration.hide_personStatus,
+      email = email(declaration),
       isInformationAccurate = true)
+  }
+
+  private def email(declaration: generated.Declaration): Option[String] = {
+    if (declaration.panelHasGGEmail.map(_.hide_GGEmail).getOrElse("").isEmpty) {
+      //NO gg email
+      declaration.panelNoGGEmail.map(_.hide_confirmNewEmail)
+    } else {
+      //HAS gg email
+      declaration.panelHasGGEmail flatMap { ggEmailPanel ⇒
+        if (isYes(ggEmailPanel.hide_useGGEmail))
+          Some(ggEmailPanel.hide_GGEmail)
+        else {
+          ggEmailPanel.panelAlternateEmail.map(_.hide_confirmationEmail)
+        }
+      }
+    }
+
   }
 
   private def additionalBusinessInformation(brd: BusinessRegistrationDetails, xml: Data) = {
@@ -208,9 +224,7 @@ trait FhddsApplicationService {
     val numberOfCustomersData = xml.numberOfCustomers.numberOfCustomers
     val isVatReg = isYes(xml.vatRegistration.hasVatRegistrationNumber)
     val eoriStatus = xml.eoriStatus
-    val eoriNumberDetail = eoriStatus.EORINumber
-    val eoriNumber = eoriNumberDetail.get.EORI
-    val eoriNumberGoodsImportedOutEORI = isYes(eoriNumberDetail.get.goodsImportedOutEORI)
+
     val officials = companyOfficialsDetails(xml)
 
     // TODO should we always add the principalBusinessAddress(brd) at the beginning of the list?
@@ -234,21 +248,26 @@ trait FhddsApplicationService {
       allOtherInformation = AllOtherInformation(
         numberOfCustomers = numberOfCustomersData,
         doesEORIExist = isYes(eoriStatus.doesEORIExist),
-        EORINumber = Some(
-          if (isVatReg) {
-            EORINumberType(EORIVat = eoriNumber,
-                           EORINonVat =  None,
-                           goodsImportedOutEORI = Some(eoriNumberGoodsImportedOutEORI))
-          } else {
-            EORINumberType(EORIVat = None,
-                           EORINonVat = eoriNumber,
-                           goodsImportedOutEORI = Some(eoriNumberGoodsImportedOutEORI))
-          }
-        ),
+        EORINumber = eoriStatus.EORINumber map eoriNumber(isVatReg),
         numberOfpremises = otherStorageSitesDetail.length.toString,
         premises = otherStorageSitesDetail
       )
     )
+  }
+
+  def eoriNumber(isVatReg: Boolean)(eori: generated.EORINumber) = {
+    val eoriNumberGoodsImportedOutEORI = isYes(eori.goodsImportedOutEORI)
+    if (isVatReg) {
+      EORINumberType(
+        EORIVat = eori.EORI,
+        EORINonVat =  None,
+        goodsImportedOutEORI = Some(eoriNumberGoodsImportedOutEORI))
+    } else {
+      EORINumberType(
+        EORIVat = None,
+        EORINonVat = eori.EORI,
+        goodsImportedOutEORI = Some(eoriNumberGoodsImportedOutEORI))
+    }
   }
 
   private def otherStorageSitesDetails(xml: Data) = {
@@ -256,14 +275,14 @@ trait FhddsApplicationService {
       otherStorageSites ← xml.otherStorageSites.panelOtherStorageSites.toList
       blockAddressUKPlus ← otherStorageSites.repeatingSectionOtherTradingPremises
       repeatingPanel ← blockAddressUKPlus.repeatingPanel
-      thirdPartyPremises = blockAddressUKPlus.thirdPartyPremises
+      thirdPartyPremises = repeatingPanel.thirdPartyPremises
       addressLookup ← repeatingPanel.otherTradingPremisesAddressLookup.ukPanel
       blockAddressUKPlus ← addressLookup.blockAddressUKPlus
     } yield {
       Premises(address =
         Address(
           blockAddressUKPlus.line1,
-          blockAddressUKPlus.line2.nonEmptyString,
+          blockAddressUKPlus.line2.noneIfBlank,
           blockAddressUKPlus.line3.noneIfBlank,
           blockAddressUKPlus.town,
           Some(blockAddressUKPlus.postcode),
