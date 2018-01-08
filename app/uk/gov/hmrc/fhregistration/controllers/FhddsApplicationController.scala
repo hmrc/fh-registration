@@ -28,25 +28,26 @@ import uk.gov.hmrc.fhregistration.models.des.{DesSubmissionResponse, SubScriptio
 import uk.gov.hmrc.fhregistration.models.fhdds.{SubmissionRequest, SubmissionResponse}
 import uk.gov.hmrc.fhregistration.repositories.{SubmissionExtraData, SubmissionExtraDataRepository}
 import uk.gov.hmrc.fhregistration.services.{AuditService, ControllerServices, FhddsApplicationService}
-import uk.gov.hmrc.http.{HeaderCarrier, NotFoundException}
+import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, NotFoundException}
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import uk.gov.hmrc.play.microservice.controller.BaseController
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.util.{Failure, Success}
 
+
 class FhddsApplicationController @Inject()(
-  val desConnector            : DesConnector,
-  val taxEnrolmentConnector   : TaxEnrolmentConnector,
-  val submissionDataRepository: SubmissionExtraDataRepository,
-  val applicationService      : FhddsApplicationService,
-  val auditService            : AuditService
-)
+                                            val desConnector: DesConnector,
+                                            val taxEnrolmentConnector: TaxEnrolmentConnector,
+                                            val submissionDataRepository: SubmissionExtraDataRepository,
+                                            val applicationService: FhddsApplicationService,
+                                            val auditService: AuditService
+                                          )
   extends BaseController {
 
   val auditConnector: AuditConnector = MicroserviceAuditConnector
 
-  def submit() = Action.async(parse.json[SubmissionRequest]) {implicit r ⇒
+  def submit() = Action.async(parse.json[SubmissionRequest]) { implicit r ⇒
     val request = r.body
     for {
       extraData ← findSubmissionExtraData(request.formId)
@@ -71,12 +72,12 @@ class FhddsApplicationController @Inject()(
   }
 
   private def auditSubmission(
-    submissionRequest: SubmissionRequest,
-    application: SubScriptionCreate,
-    extraData: SubmissionExtraData,
-    desResponse: DesSubmissionResponse,
-    submissionRef: String
-  ) (implicit hc: HeaderCarrier)= {
+                               submissionRequest: SubmissionRequest,
+                               application: SubScriptionCreate,
+                               extraData: SubmissionExtraData,
+                               desResponse: DesSubmissionResponse,
+                               submissionRef: String
+                             )(implicit hc: HeaderCarrier) = {
 
     Logger.info(s"Sending audit event for submissionRef $submissionRef")
     val event = auditService.buildSubmissionAuditEvent(
@@ -85,11 +86,12 @@ class FhddsApplicationController @Inject()(
     auditConnector
       .sendExtendedEvent(event)(hc, MdcLoggingExecutionContext.fromLoggingDetails)
       .map(auditResult ⇒ Logger.info(s"Received audit result $auditResult for submissionRef $submissionRef"))
-      .recover{
+      .recover {
         case t: Throwable ⇒ Logger.error(s"Audit failed for submissionRef $submissionRef $submissionRef", t)
       }
 
   }
+
   private def storeRegistrationNumber(formId: String, submissionRef: String, registrationNumberFHDDS: String) = {
     submissionDataRepository
       .updateRegistrationNumber(formId, submissionRef, registrationNumberFHDDS)
@@ -102,16 +104,16 @@ class FhddsApplicationController @Inject()(
   private def subscribeToTaxEnrolment(subscriptionId: String, safeId: String, authorization: Option[String])(implicit hc: HeaderCarrier) = {
     Logger.info(s"Sending subscription $subscriptionId for $safeId to tax enrolments")
     taxEnrolmentConnector
-     .subscribe(subscriptionId, safeId, authorization)(hc)
-     .onComplete({
-       case Success(r) ⇒ Logger.info(s"Tax enrolments for subscription $subscriptionId and safeId $safeId returned $r")
-       case Failure(e) ⇒ Logger.error(s"Tax enrolments for subscription $subscriptionId and safeId $safeId failed", e)
-     })
+      .subscribe(subscriptionId, safeId, authorization)(hc)
+      .onComplete({
+        case Success(r) ⇒ Logger.info(s"Tax enrolments for subscription $subscriptionId and safeId $safeId returned $r")
+        case Failure(e) ⇒ Logger.error(s"Tax enrolments for subscription $subscriptionId and safeId $safeId failed", e)
+      })
   }
 
   def subscriptionCallback = Action { request ⇒
     val subscriptionId = request.getQueryString("subscriptionId").getOrElse("N/A")
-    Logger.info(s"Received subscription callback for subscriptionId: $subscriptionId with response" )
+    Logger.info(s"Received subscription callback for subscriptionId: $subscriptionId with response")
     Ok("")
   }
 
@@ -125,6 +127,31 @@ class FhddsApplicationController @Inject()(
     submissionDataRepository
       .findSubmissionExtraDataByFormId(formId)
       .map(_ getOrElse (throw new NotFoundException("extra data not found for formId")))
+  }
+
+  def checkStatus(fhddsRegistrationNumber: String) = Action.async { implicit request ⇒
+    desConnector.getStatus(fhddsRegistrationNumber)(hc) map { resp ⇒
+      val dfsResponseStatus = resp.status
+      Logger.info(s"Statue for $fhddsRegistrationNumber is $dfsResponseStatus")
+      dfsResponseStatus match {
+        case 200 ⇒ mdtpSubscriptionStatus(resp)
+        case 400 ⇒ BadRequest("Submission has not passed validation. Invalid parameter FHDDS Registration Number.")
+        case 404 ⇒ NotFound("No SAP Number found for the provided FHDDS Registration Number.")
+        case 403 ⇒ Forbidden("Unexpected business error received.")
+        case _ ⇒ InternalServerError("DES is currently experiencing problems that require live service intervention.")
+      }
+    }
+  }
+
+  def mdtpSubscriptionStatus(r: HttpResponse) = {
+    val responseInJs = r.json
+    (responseInJs \ "subscriptionStatus").as[String] match {
+      case ("Reg Form Received") => Ok("Received")
+      case ("Sent To DS") | ("DS Outcome In Progress") | ("In processing") | ("Sent to RCM") => Ok("Processing")
+      case ("Successful") => Ok("Successful")
+      case ("Rejected") => Ok("Rejected")
+      case _ => Unauthorized("Unexpected business error received.")
+    }
   }
 
 }

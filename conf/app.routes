@@ -7,3 +7,4 @@ GET  /submission-extra-data/:userId/:formTypeRef/businessRegistrationDetails    
 POST /application/submit                                                         @uk.gov.hmrc.fhregistration.controllers.FhddsApplicationController.submit()
 GET  /tax-enrolment/callback/subscriptions                                       @uk.gov.hmrc.fhregistration.controllers.FhddsApplicationController.subscriptionCallback()
 POST /tax-enrolment/callback/subscriptions                                       @uk.gov.hmrc.fhregistration.controllers.FhddsApplicationController.subscriptionCallback()
+GET  /fulfilment-diligence/subscription/:fhddsRegistrationNumber/status          @uk.gov.hmrc.fhregistration.controllers.FhddsApplicationController.checkStatus(fhddsRegistrationNumber)
