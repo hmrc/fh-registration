@@ -17,7 +17,7 @@
 package uk.gov.hmrc.fhregistration.connectors
 
 import com.google.inject.ImplementedBy
-import play.api.libs.json.{JsObject, JsString, JsNumber, Json}
+import play.api.libs.json.{JsObject, JsString, Json}
 import uk.gov.hmrc.fhregistration.config.WSHttp
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.config.ServicesConfig
