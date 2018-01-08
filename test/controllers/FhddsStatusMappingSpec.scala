@@ -17,11 +17,14 @@
 package controllers
 
 import play.api.libs.json._
-import uk.gov.hmrc.fhregistration.controllers.FhddsApplicationControllerTrait
+import uk.gov.hmrc.fhregistration.services.FhddsApplicationControllerMock
 import uk.gov.hmrc.http.HttpResponse
+import uk.gov.hmrc.play.microservice.controller.BaseController
 import uk.gov.hmrc.play.test.UnitSpec
 
-class FhddsStatusMappingSpec extends UnitSpec with FhddsApplicationControllerTrait {
+class FhddsStatusMappingSpec extends UnitSpec with BaseController {
+
+  val fhddsApplicationController = FhddsApplicationControllerMock.fhddsApplicationController
 
   "mdtpSubscriptionStatus" should {
     "map MDTP subscription status to received from DES status" in {
@@ -30,7 +33,7 @@ class FhddsStatusMappingSpec extends UnitSpec with FhddsApplicationControllerTra
 
       val fakeDesResponse: HttpResponse = HttpResponse(200, Some(json))
 
-      val mdtpStatus = mdtpSubscriptionStatus(fakeDesResponse)
+      val mdtpStatus = fhddsApplicationController.mdtpSubscriptionStatus(fakeDesResponse)
 
       mdtpStatus shouldBe Ok("Received")
 
@@ -43,7 +46,7 @@ class FhddsStatusMappingSpec extends UnitSpec with FhddsApplicationControllerTra
 
       val fakeDesResponse: HttpResponse = HttpResponse(200, Some(json))
 
-      val mdtpStatus = mdtpSubscriptionStatus(fakeDesResponse)
+      val mdtpStatus = fhddsApplicationController.mdtpSubscriptionStatus(fakeDesResponse)
 
       mdtpStatus shouldBe Ok("Processing")
 
@@ -56,7 +59,7 @@ class FhddsStatusMappingSpec extends UnitSpec with FhddsApplicationControllerTra
 
       val fakeDesResponse: HttpResponse = HttpResponse(200, Some(json))
 
-      val mdtpStatus = mdtpSubscriptionStatus(fakeDesResponse)
+      val mdtpStatus = fhddsApplicationController.mdtpSubscriptionStatus(fakeDesResponse)
 
       mdtpStatus shouldBe Ok("Successful")
 
@@ -69,7 +72,7 @@ class FhddsStatusMappingSpec extends UnitSpec with FhddsApplicationControllerTra
 
       val fakeDesResponse: HttpResponse = HttpResponse(200, Some(json))
 
-      val mdtpStatus = mdtpSubscriptionStatus(fakeDesResponse)
+      val mdtpStatus = fhddsApplicationController.mdtpSubscriptionStatus(fakeDesResponse)
 
       mdtpStatus shouldBe Ok("Rejected")
 
@@ -82,7 +85,7 @@ class FhddsStatusMappingSpec extends UnitSpec with FhddsApplicationControllerTra
 
       val fakeDesResponse: HttpResponse = HttpResponse(200, Some(json))
 
-      val mdtpStatus = mdtpSubscriptionStatus(fakeDesResponse)
+      val mdtpStatus = fhddsApplicationController.mdtpSubscriptionStatus(fakeDesResponse)
 
       mdtpStatus shouldBe Unauthorized("Unexpected business error received.")
 

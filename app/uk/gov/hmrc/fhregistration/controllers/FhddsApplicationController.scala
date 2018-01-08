@@ -43,7 +43,7 @@ class FhddsApplicationController @Inject()(
                                             val applicationService: FhddsApplicationService,
                                             val auditService: AuditService
                                           )
-  extends FhddsApplicationControllerTrait {
+  extends BaseController {
 
   val auditConnector: AuditConnector = MicroserviceAuditConnector
 
@@ -130,7 +130,6 @@ class FhddsApplicationController @Inject()(
   }
 
   def checkStatus(fhddsRegistrationNumber: String) = Action.async { implicit request ⇒
-
     desConnector.getStatus(fhddsRegistrationNumber)(hc) map { resp ⇒
       val dfsResponseStatus = resp.status
       Logger.info(s"Statue for $fhddsRegistrationNumber is $dfsResponseStatus")
@@ -142,12 +141,8 @@ class FhddsApplicationController @Inject()(
         case _ ⇒ InternalServerError("DES is currently experiencing problems that require live service intervention.")
       }
     }
-
   }
 
-}
-
-trait FhddsApplicationControllerTrait extends BaseController {
   def mdtpSubscriptionStatus(r: HttpResponse) = {
     val responseInJs = r.json
     (responseInJs \ "subscriptionStatus").as[String] match {
@@ -158,4 +153,5 @@ trait FhddsApplicationControllerTrait extends BaseController {
       case _ => Unauthorized("Unexpected business error received.")
     }
   }
+
 }
