@@ -132,16 +132,15 @@ class FhddsApplicationController @Inject()(
   def checkStatus(fhddsRegistrationNumber: String) = Action.async { implicit request ⇒
 
     desConnector.getStatus(fhddsRegistrationNumber)(hc) map { resp ⇒
-
-        val dfsResponseStatus = resp.status
-        Logger.info(s"Statue for $fhddsRegistrationNumber is $dfsResponseStatus")
-        dfsResponseStatus match {
-          case 200 ⇒ mdtpSubscriptionStatus(resp)
-          case 400 ⇒ BadRequest("INVALID_FHDDS_RN: Submission has not passed validation. Invalid parameter FHDDS Registration Number.")
-          case 404 ⇒ NotFound("NOT_FOUND: No SAP Number found for the provided FHDDS Registration Number.")
-          case 403 ⇒ Forbidden("UNEXPECTED_ERROR: Unexpected business error received.")
-          case _ ⇒ InternalServerError("UNEXPECTED_ERROR: DES is currently experiencing problems that require live service intervention.")
-        }
+      val dfsResponseStatus = resp.status
+      Logger.info(s"Statue for $fhddsRegistrationNumber is $dfsResponseStatus")
+      dfsResponseStatus match {
+        case 200 ⇒ mdtpSubscriptionStatus(resp)
+        case 400 ⇒ BadRequest("Submission has not passed validation. Invalid parameter FHDDS Registration Number.")
+        case 404 ⇒ NotFound("No SAP Number found for the provided FHDDS Registration Number.")
+        case 403 ⇒ Forbidden("Unexpected business error received.")
+        case _ ⇒ InternalServerError("DES is currently experiencing problems that require live service intervention.")
+      }
     }
 
   }
@@ -156,7 +155,7 @@ trait FhddsApplicationControllerTrait extends BaseController {
       case ("Sent To DS") | ("DS Outcome In Progress") | ("In processing") | ("Sent to RCM") => Ok("Processing")
       case ("Successful") => Ok("Successful")
       case ("Rejected") => Ok("Rejected")
-      case _ => Unauthorized("UNEXPECTED_ERROR: Unexpected business error received.")
+      case _ => Unauthorized("Unexpected business error received.")
     }
   }
 }

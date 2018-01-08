@@ -84,7 +84,7 @@ class FhddsStatusMappingSpec extends UnitSpec with FhddsApplicationControllerTra
 
       val mdtpStatus = mdtpSubscriptionStatus(fakeDesResponse)
 
-      mdtpStatus shouldBe Unauthorized("UNEXPECTED_ERROR: Unexpected business error received.")
+      mdtpStatus shouldBe Unauthorized("Unexpected business error received.")
 
     }
   }

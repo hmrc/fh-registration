@@ -1,6 +1,5 @@
 package uk.gov.hmrc.fhregistration
 
-import akka.util.ByteString
 import org.mockito.ArgumentMatchers.{any, eq ⇒ matcherEq}
 import org.mockito.Mockito
 import play.api.libs.json.{JsObject, JsString, JsValue}
@@ -90,7 +89,7 @@ class FhddsApplicationIntegrationSpecs extends FhddsApplicationIntegrationMocks 
 
       Then("response for the submit should be BadRequest")
       Await.result(response, 500.millis).header.status shouldBe Status.BAD_REQUEST
-      val ext = "INVALID_FHDDS_RN: Submission has not passed validation. Invalid parameter FHDDS Registration Number."
+      val ext = "Submission has not passed validation. Invalid parameter FHDDS Registration Number."
       consume(Await.result(response, 500.millis).body) shouldBe ext
     }
 
@@ -109,7 +108,7 @@ class FhddsApplicationIntegrationSpecs extends FhddsApplicationIntegrationMocks 
 
       Then("response for the submit should be NotFound")
       Await.result(response, 500.millis).header.status shouldBe Status.NOT_FOUND
-      val ext = "NOT_FOUND: No SAP Number found for the provided FHDDS Registration Number."
+      val ext = "No SAP Number found for the provided FHDDS Registration Number."
       consume(Await.result(response, 500.millis).body) shouldBe ext
     }
 
@@ -127,7 +126,7 @@ class FhddsApplicationIntegrationSpecs extends FhddsApplicationIntegrationMocks 
 
       Then("response for the submit should be Forbidden")
       Await.result(response, 500.millis).header.status shouldBe Status.FORBIDDEN
-      val ext = "UNEXPECTED_ERROR: Unexpected business error received."
+      val ext = "Unexpected business error received."
       consume(Await.result(response, 500.millis).body) shouldBe ext
     }
 
