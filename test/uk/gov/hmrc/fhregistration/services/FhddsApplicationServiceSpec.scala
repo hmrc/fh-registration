@@ -50,7 +50,7 @@ class FhddsApplicationServiceSpec extends UnitSpec {
       val request = validatesFor("fhdds-limited-company-minimum-international.xml")
 
       request.subScriptionCreate.contactDetail.address.map(_.countryCode) shouldEqual Some("BG")
-      request.subScriptionCreate.contactDetail.address.flatMap(_.line4) shouldEqual Some("BG")
+      request.subScriptionCreate.contactDetail.address.flatMap(_.line4) shouldEqual Some("Bulgaria")
     }
 
     "Create a correct json for fhdds-limited-company-minimum-with-ggemail.xml" in {
