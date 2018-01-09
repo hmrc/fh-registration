@@ -33,7 +33,7 @@ trait FhddsApplicationIntegrationMocks extends FeatureSpec with GivenWhenThen wi
   var mockDesConnector: DesConnector = mock[DesConnectorImpl]
   var mockTaxEnrolmentConnector: TaxEnrolmentConnector = mock[TaxEnrolmentConnectorImpl]
   var mockSubmissionExtraDataRepository: SubmissionExtraDataRepository = mock[SubmissionExtraDataRepository]
-  var mockFhddsApplicationService: FhddsApplicationService = new FhddsApplicationServiceImpl
+  var mockFhddsApplicationService: FhddsApplicationService = new FhddsApplicationServiceImpl(new CountryCodeLookupImpl)
   var auditService: AuditService = new AuditServiceImpl
 
   var fhddsApplicationController = new FhddsApplicationController(
@@ -48,7 +48,7 @@ trait FhddsApplicationIntegrationMocks extends FeatureSpec with GivenWhenThen wi
     mockDesConnector = mock[DesConnectorImpl]
     mockTaxEnrolmentConnector = mock[TaxEnrolmentConnectorImpl]
     mockSubmissionExtraDataRepository = mock[SubmissionExtraDataRepository]
-    mockFhddsApplicationService = new FhddsApplicationServiceImpl
+    mockFhddsApplicationService = new FhddsApplicationServiceImpl(new CountryCodeLookupImpl)
 
     fhddsApplicationController = new FhddsApplicationController(
       mockDesConnector,

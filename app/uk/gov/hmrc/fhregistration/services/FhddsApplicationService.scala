@@ -18,21 +18,23 @@ package uk.gov.hmrc.fhregistration.services
 
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
-import javax.inject.Singleton
+import javax.inject.{Inject, Singleton}
 
 import com.google.inject.ImplementedBy
 import generated.{AddressInternationalPlusQuestion, AddressLookUpContactAddress, AddressUKPlusQuestion, Data}
-import uk.gov.hmrc.fhregistration.services.ApplicationUtils._
 import org.apache.commons.lang3.text.WordUtils
 import uk.gov.hmrc.fhregistration.models.businessregistration.BusinessRegistrationDetails
 import uk.gov.hmrc.fhregistration.models.des._
+import uk.gov.hmrc.fhregistration.services.ApplicationUtils._
 
 @Singleton
-class FhddsApplicationServiceImpl extends FhddsApplicationService
+class FhddsApplicationServiceImpl @Inject()(val countryCodeLookup: CountryCodeLookup)
+  extends FhddsApplicationService
 
 @ImplementedBy(classOf[FhddsApplicationServiceImpl])
 trait FhddsApplicationService {
 
+  val countryCodeLookup: CountryCodeLookup
   val DefaultOrganizationType = "Corporate Body"
 
   val dtf: DateTimeFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")
@@ -173,14 +175,16 @@ trait FhddsApplicationService {
       Some(blockAddressUk.postcode),
       "GB")
 
-  def internationalAddressToAddress(blockAddressInternationalPlus: AddressInternationalPlusQuestion) =
+  def internationalAddressToAddress(blockAddressInternationalPlus: AddressInternationalPlusQuestion) = {
+    val countryCode = countryCodeLookup.countryCode(blockAddressInternationalPlus.country)
     Address(
       blockAddressInternationalPlus.line1,
       blockAddressInternationalPlus.line2.noneIfBlank,
       blockAddressInternationalPlus.line3.noneIfBlank,
+      blockAddressInternationalPlus.country.noneIfBlank,
       None,
-      None,
-      blockAddressInternationalPlus.country_code.getOrElse("GB"))
+      countryCode.get)
+  }
 
   private def translateBusinessType(businessType: String) = WordUtils.capitalizeFully(businessType) match {
     case "Sole Trader" ⇒ "Sole Proprietor"

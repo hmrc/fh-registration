@@ -19,6 +19,7 @@ package uk.gov.hmrc.fhregistration.services
 import com.eclipsesource.schema.{SchemaType, SchemaValidator, _}
 import play.api.libs.json.Json
 import uk.gov.hmrc.fhregistration.models.businessregistration.BusinessRegistrationDetails
+import uk.gov.hmrc.fhregistration.models.des.SubScriptionCreate
 import uk.gov.hmrc.fhregistration.models.des.SubScriptionCreate.format
 import uk.gov.hmrc.play.test.UnitSpec
 
@@ -29,7 +30,7 @@ class FhddsApplicationServiceSpec extends UnitSpec {
   val schemaAsJson = Json parse getClass.getResourceAsStream("/schemas/des-schema-r1.json")
   val schema = Json.fromJson[SchemaType](schemaAsJson).get
   val validator = new SchemaValidator().validate(schema) _
-  val service = new FhddsApplicationServiceImpl
+  val service = new FhddsApplicationServiceImpl(new CountryCodeLookupImpl)
 
   val brd: BusinessRegistrationDetails = Json
     .parse(getClass.getResourceAsStream("/models/business-registration-details-sole-trader.json"))
@@ -46,18 +47,24 @@ class FhddsApplicationServiceSpec extends UnitSpec {
     }
 
     "Create a correct json for fhdds-limited-company-minimum-international.xml" in {
-      validatesFor("fhdds-limited-company-minimum-international.xml")
+      val request = validatesFor("fhdds-limited-company-minimum-international.xml")
+
+      request.subScriptionCreate.contactDetail.address.map(_.countryCode) shouldEqual Some("BG")
+      request.subScriptionCreate.contactDetail.address.flatMap(_.line4) shouldEqual Some("BG")
     }
 
     "Create a correct json for fhdds-limited-company-minimum-with-ggemail.xml" in {
-      validatesFor("fhdds-limited-company-minimum-with-ggemail.xml")
+      val request = validatesFor("fhdds-limited-company-minimum-with-ggemail.xml")
+
+      request.subScriptionCreate.declaration.email shouldEqual Some("cosmin@cosmin.co.uk")
     }
 
   }
 
-  def validatesFor(file: String) = {
+  def validatesFor(file: String): SubScriptionCreate = {
     val iform = loadSubmission(file)
     val subscrtiptionCreate = service.iformXmlToApplication(iform, brd)
+
 
     val json = Json.toJson(subscrtiptionCreate)
 
@@ -67,6 +74,7 @@ class FhddsApplicationServiceSpec extends UnitSpec {
       valid = {v ⇒ println("OK")}
     )
     validationResult.isSuccess shouldEqual true
+    subscrtiptionCreate
   }
 
 
