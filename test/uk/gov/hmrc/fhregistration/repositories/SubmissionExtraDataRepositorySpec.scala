@@ -46,6 +46,7 @@ class SubmissionExtraDataRepositorySpec
   val aFormId = "111-333-444"
   val aSubmissionRef = "YYY-ZZZ1-TTTT"
   val aRegistrationNumber = "XDFH00000100054"
+  val aETMPFormBundleNumber: String = "012345678901"
 
   override protected def beforeEach(): Unit = {
     await(repository.drop)
@@ -88,7 +89,9 @@ class SubmissionExtraDataRepositorySpec
       initially.flatMap(_.submissionRef) should be(None)
       initially.flatMap(_.registrationNumber) should be(None)
 
-      val result2 = repository.updateRegistrationNumber(aFormId, aSubmissionRef, aRegistrationNumber)
+      val result2 = repository
+        .updateRegistrationNumberWithETMPFormBundleNumber(aFormId, aSubmissionRef, aETMPFormBundleNumber, aRegistrationNumber)
+
       await(result2) shouldBe true
       val updated = await(repository.findSubmissionExtraDataBySubmissionRef(aSubmissionRef))
 

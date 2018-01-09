@@ -35,6 +35,8 @@ object FakeData {
   val testFormId = "testID"
   val testUserId = "testUserId"
 
+  val testETMPFormBundleNumber: String = "012345678901"
+
   val aFakeAddress = Address(line1 = "line1",
                              line2 = "line2",
                              line3 = None,
@@ -69,5 +71,6 @@ object FakeData {
   val aFakeSubmissionRequest: SubmissionRequest = SubmissionRequest(formId = testFormId, formTypeRef = testFormTypeRef, formData = validFormData)
 
   val aFakeDesSubmissionResponse: DesSubmissionResponse = DesSubmissionResponse(processingDate = DateTime.now().toString,
+                                                                                etmpFormBundleNumber = testETMPFormBundleNumber,
                                                                                 registrationNumberFHDDS = ControllerServices.createSubmissionRef())
 }

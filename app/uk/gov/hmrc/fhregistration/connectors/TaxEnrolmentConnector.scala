@@ -44,20 +44,20 @@ trait TaxEnrolmentConnector {
   def subscriberUrl(subscriptionId: String): String
 
 
-  def subscribe(subscriptionId: String, safeId: String, authorization: Option[String])(hc: HeaderCarrier): Future[Option[JsObject]] = {
+  def subscribe(subscriptionId: String, etmpFormBundleNumber: String, authorization: Option[String])(hc: HeaderCarrier): Future[Option[JsObject]] = {
     val extraHeaders = authorization map ("Authorization" -> _)
     implicit val hcWithAuthorization = hc.withExtraHeaders(extraHeaders.toSeq: _*)
     http.PUT[JsObject, Option[JsObject]](
       subscriberUrl(subscriptionId),
-      requestBody(safeId)
+      requestBody(etmpFormBundleNumber)
     )
   }
 
-  def requestBody(safeId: String): JsObject = {
+  def requestBody(etmpFormBundleNumber: String): JsObject = {
     Json.obj(
       "serviceName" → JsString(serviceName),
       "callback" → JsString(callback),
-      "etmpId" → JsString(safeId)
+      "etmpId" → JsString(etmpFormBundleNumber)
     )
   }
 }

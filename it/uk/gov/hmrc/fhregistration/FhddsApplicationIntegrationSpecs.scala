@@ -25,7 +25,8 @@ class FhddsApplicationIntegrationSpecs extends FhddsApplicationIntegrationMocks 
         .thenReturn(Future successful Option(aFakeSubmissionExtraData))
 
       Mockito
-        .when(mockSubmissionExtraDataRepository.updateRegistrationNumber(any[String](), any[String](), any[String]()))
+        .when(mockSubmissionExtraDataRepository
+          .updateRegistrationNumberWithETMPFormBundleNumber(any[String](), any[String](), any[String](), any[String]()))
         .thenReturn(Future successful true)
 
       Then("Creates an application for DES")
@@ -40,7 +41,7 @@ class FhddsApplicationIntegrationSpecs extends FhddsApplicationIntegrationMocks 
       Then("submit to tax enrolment, and get tax enrolment response")
       Mockito
         .when(mockTaxEnrolmentConnector.subscribe(subscriptionId = matcherEq(aFakeDesSubmissionResponse.registrationNumberFHDDS),
-                                                  safeId = matcherEq(aFakeSubmissionExtraData.businessRegistrationDetails.safeId),
+                                                  etmpFormBundleNumber = matcherEq(testETMPFormBundleNumber),
                                                   authorization = matcherEq(None))(any[HeaderCarrier]()))
         .thenReturn(Future successful Some(aFakeJsonObject))
 
