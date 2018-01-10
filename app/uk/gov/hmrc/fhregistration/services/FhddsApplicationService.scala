@@ -117,23 +117,24 @@ trait FhddsApplicationService {
       previousOperationalAddress = {
         if (!lessThan3Years) None
         else {
-          Some(PreviousOperationalAddress(
-            anyPreviousOperatingAddress = isYes(xml.timeAtCurrentAddress.panelAnyPreviousOperatingAddress.get.anyPreviousOperatingAddress),
-            previousOperationalAddressDetail =
-              Some(List(PreviousOperationalAddressDetail(
+          if (isYes(xml.timeAtCurrentAddress.panelAnyPreviousOperatingAddress.get.anyPreviousOperatingAddress)) {
+            val previousOperationalAddressDetails =
+              PreviousOperationalAddressDetail(
                 previousAddress = {
                   val address = xml.timeAtCurrentAddress.panelAnyPreviousOperatingAddress.get.panelPreviousAddress.get.ukPanel.get.block_addressUKPlus.get
-                  Address(
-                    address.line1,
-                    address.line2,
-                    address.line3.noneIfBlank,
-                    address.town,
-                    Some(address.postcode),
-                    "GB")
+                  ukAddressToAddress(address)
                 },
-                previousAddressStartdate = LocalDate.parse(xml.timeAtCurrentAddress.panelAnyPreviousOperatingAddress.get.panelPreviousAddress.get.operatingDate.get, dtf)
-              )))
-          ))
+                previousAddressStartdate = LocalDate.parse(xml.timeAtCurrentAddress.panelAnyPreviousOperatingAddress.get.panelPreviousAddress.get.operatingDate.get, dtf))
+            Some(PreviousOperationalAddress(
+              true,
+              Some(List(previousOperationalAddressDetails))
+            ))
+          } else {
+            Some(PreviousOperationalAddress(
+              false,
+              None
+            ))
+          }
         }
       }
     )
