@@ -3,12 +3,25 @@
   "title": "84EZ - FHDDS - Subscription Create - Request Schema",
   "type": "object",
   "properties": {
+    "requestType": {
+      "description": "Create or Update",
+      "type": "string",
+      "enum": [
+        "Create",
+        "Update"
+      ]
+    },
+    "changeIndicators": {
+      "description": "This Object is only required when requesttype is Update",
+      "$ref": "#/definitions/changeIndicatorType"
+    },
     "subScriptionCreate": {
       "$ref": "#/definitions/subscriptionCreateRequestSchema"
     }
   },
   "required": [
-    "subScriptionCreate"
+    "subScriptionCreate",
+    "requestType"
   ],
   "additionalProperties": false,
   "definitions": {
@@ -145,11 +158,11 @@
                 "properties": {
                   "companyName": {
                     "type": "string",
-                    "pattern": "^[a-zA-Z0-9\u00C0-\u00FF !#$%&'‘’\"“”«»()*+,./:;=?@\\[\\]£€¥\\u005C\u2014\u2013\u2010\u002d]{1,140}$"
+                    "pattern": "^[a-zA-Z0-9À-ÿ !#$%&'‘’\"“”«»()*+,./:;=?@\\[\\]£€¥\\u005C—–‐-]{1,140}$"
                   },
                   "tradingName": {
                     "type": "string",
-                    "pattern": "^[a-zA-Z0-9\u00C0-\u00FF !#$%&'‘’\"“”«»()*+,./:;=?@\\[\\]|~£€¥\\u005C\u2014\u2013\u2010\u005F\u005E\u0060\u002d]{1,120}$"
+                    "pattern": "^[a-zA-Z0-9À-ÿ !#$%&'‘’\"“”«»()*+,./:;=?@\\[\\]|~£€¥\\u005C—–‐_^`-]{1,120}$"
                   }
                 },
                 "additionalProperties": false
@@ -186,6 +199,9 @@
               },
               "address": {
                 "$ref": "#/definitions/addressType"
+              },
+              "modification": {
+                "$ref": "#/definitions/modificationType"
               }
             },
             "required": [
@@ -240,11 +256,11 @@
                         "properties": {
                           "passportNumber": {
                             "type": "string",
-                            "pattern": "^[a-zA-Z0-9\u00C0-\u00FF !#$%&'‘’\"“”«»()*+,./:;=?@\\[\\]|~£€¥\\u005C\u2014\u2013\u2010\u005F\u005E\u0060\u002d]{1,20}$"
+                            "pattern": "^[a-zA-Z0-9À-ÿ !#$%&'‘’\"“”«»()*+,./:;=?@\\[\\]|~£€¥\\u005C—–‐_^`-]{1,20}$"
                           },
                           "nationalIdNumber": {
                             "type": "string",
-                            "pattern": "^[a-zA-Z0-9\u00C0-\u00FF !#$%&'‘’\"“”«»()*+,./:;=?@\\[\\]|~£€¥\\u005C\u2014\u2013\u2010\u005F\u005E\u0060\u002d]{1,20}$"
+                            "pattern": "^[a-zA-Z0-9À-ÿ !#$%&'‘’\"“”«»()*+,./:;=?@\\[\\]|~£€¥\\u005C—–‐_^`-]{1,20}$"
                           },
                           "nino": {
                             "type": "string",
@@ -252,6 +268,9 @@
                           }
                         },
                         "additionalProperties": false
+                      },
+                      "modification": {
+                        "$ref": "#/definitions/modificationType"
                       }
                     },
                     "required": [
@@ -278,11 +297,11 @@
                         "properties": {
                           "companyName": {
                             "type": "string",
-                            "pattern": "^[a-zA-Z0-9\u00C0-\u00FF !#$%&'‘’\"“”«»()*+,./:;=?@\\[\\]£€¥\\u005C\u2014\u2013\u2010\u002d]{1,140}$"
+                            "pattern": "^[a-zA-Z0-9À-ÿ !#$%&'‘’\"“”«»()*+,./:;=?@\\[\\]£€¥\\u005C—–‐-]{1,140}$"
                           },
                           "tradingName": {
                             "type": "string",
-                            "pattern": "^[a-zA-Z0-9\u00C0-\u00FF !#$%&'‘’\"“”«»()*+,./:;=?@\\[\\]|~£€¥\\u005C\u2014\u2013\u2010\u005F\u005E\u0060\u002d]{1,120}$"
+                            "pattern": "^[a-zA-Z0-9À-ÿ !#$%&'‘’\"“”«»()*+,./:;=?@\\[\\]|~£€¥\\u005C—–‐_^`-]{1,120}$"
                           }
                         },
                         "additionalProperties": false
@@ -304,6 +323,9 @@
                           }
                         },
                         "additionalProperties": false
+                      },
+                      "modification": {
+                        "$ref": "#/definitions/modificationType"
                       }
                     },
                     "required": [
@@ -325,76 +347,55 @@
         "allOtherInformation": {
           "type": "object",
           "properties": {
-            "fulfilmentOrdersType": {
-              "type": "object",
-              "properties": {
-                "onLine": {
-                  "type": "boolean"
-                },
-                "telephone": {
-                  "type": "boolean"
-                },
-                "physicalPremises": {
-                  "type": "boolean"
-                },
-                "other": {
-                  "type": "boolean"
-                },
-                "typeOfOtherOrder": {
-                  "type": "string",
-                  "pattern": "^[a-zA-Z0-9\u00C0-\u00FF !#$%&'‘’\"“”«»()*+,./:;=?@\\[\\]|~£€¥\\u005C\u2014\u2013\u2010\u005F\u005E\u0060\u002d]{1,40}$"
-                }
-              },
-              "required": [
-                "onLine",
-                "telephone",
-                "physicalPremises",
-                "other"
-              ],
-              "additionalProperties": false
-            },
             "numberOfCustomers": {
               "type": "string",
               "enum": [
-                "01",
-                "02",
-                "03"
+                "None",
+                "1-10",
+                "11-50",
+                "51-100",
+                "Over 100"
               ]
             },
+            "doesEORIExist": {
+              "type": "boolean"
+            },
+            "EORINumber": {
+              "$ref": "#/definitions/EORINumberType"
+            },
+            "numberOfpremises": {
+              "type": "string",
+              "pattern": "^[0-9]{1,10}$"
+            },
             "premises": {
-              "type": "object",
-              "properties": {
-                "numberOfpremises": {
-                  "type": "string",
-                  "pattern": "^[0-9]{1,10}$"
-                },
-                "address": {
-                  "type": "array",
-                  "minItems": 1,
-                  "items": {
+              "type": "array",
+              "minItems": 0,
+              "items": {
+                "properties": {
+                  "address": {
                     "$ref": "#/definitions/addressType"
+                  },
+                  "thirdPartyPremises": {
+                    "description": "This field comes with per address",
+                    "type": "boolean"
+                  },
+                  "modification": {
+                    "$ref": "#/definitions/modificationType"
                   }
-                }
-              },
-              "required": [
-                "numberOfpremises",
-                "address"
-              ],
-              "additionalProperties": false
-            },
-            "thirdPartyStorageUsed": {
-              "type": "boolean"
-            },
-            "goodsImportedOutEORI": {
-              "type": "boolean"
+                },
+                "required": [
+                  "thirdPartyPremises",
+                  "address"
+                ],
+                "additionalProperties": false
+              }
             }
           },
           "required": [
-            "fulfilmentOrdersType",
+            "doesEORIExist",
             "numberOfCustomers",
             "premises",
-            "thirdPartyStorageUsed",
-            "goodsImportedOutEORI"
+            "numberOfpremises"
           ],
           "additionalProperties": false
         }
@@ -413,38 +414,51 @@
         "commonDetails": {
           "$ref": "#/definitions/commonDetailsType"
         },
-        "dateStartedTradingAsFulfilmentHouse": {
-          "$ref": "#/definitions/dateString"
-        },
-        "isOnlyPrinicipalPlaceOfBusinessInLastThreeYears": {
-          "type": "boolean"
+        "timeOperatedAtCurrentAddress": {
+          "type": "string",
+          "enum": [
+            "Less than 3 years",
+            "3-5 years",
+            "5-10 years",
+            "10 or more years"
+          ]
         },
         "previousOperationalAddress": {
-          "type": "array",
-          "minItems": 0,
-          "items": {
-            "type": "object",
-            "properties": {
-              "previousAddress": {
-                "$ref": "#/definitions/addressType"
-              },
-              "operatingDate": {
-                "$ref": "#/definitions/dateString"
-              }
+          "type": "object",
+          "properties": {
+            "anyPreviousOperatingAddress": {
+              "type": "boolean"
             },
-            "required": [
-              "previousAddress",
-              "operatingDate"
-            ],
-            "additionalProperties": false
-          }
+            "previousOperationalAddressDetail": {
+              "type": "array",
+              "minItems": 0,
+              "items": {
+                "type": "object",
+                "properties": {
+                  "previousAddress": {
+                    "$ref": "#/definitions/addressType"
+                  },
+                  "previousAddressStartdate": {
+                    "$ref": "#/definitions/dateString"
+                  }
+                },
+                "required": [
+                  "previousAddress"
+                ],
+                "additionalProperties": false
+              }
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "anyPreviousOperatingAddress"
+          ]
         }
       },
       "required": [
         "currentAddress",
         "commonDetails",
-        "dateStartedTradingAsFulfilmentHouse",
-        "isOnlyPrinicipalPlaceOfBusinessInLastThreeYears"
+        "timeOperatedAtCurrentAddress"
       ],
       "additionalProperties": false
     },
@@ -453,7 +467,7 @@
       "properties": {
         "title": {
           "type": "string",
-          "pattern": "^[a-zA-Z\u00C0-\u00FF '‘’\u2014\u2013\u2010\u002d]{2,30}$"
+          "pattern": "^[a-zA-ZÀ-ÿ'‘’—–‐-]{2,30}$"
         },
         "names": {
           "$ref": "#/definitions/namesType"
@@ -524,21 +538,16 @@
       "properties": {
         "personName": {
           "type": "string",
-          "pattern": "^[a-zA-Z\u00C0-\u00FF '‘’\u2014\u2013\u2010\u002d]{1,140}$"
+          "pattern": "^[a-zA-ZÀ-ÿ '‘’—–‐-]{1,140}$"
         },
         "personStatus": {
           "type": "string",
-          "enum": [
-            "Director",
-            "Company Secretary",
-            "Director and Company Secretary",
-            "Authorised Signatory",
-            "Other"
-          ]
+          "pattern": "^[a-zA-Z0-9À-ÿ!#$%&'‘’\"“”«»()*+,./:;=?@\\[\\]|~£€¥\\u005C—–‐_^`-]{1,140}$"
         },
-        "personStatusOther": {
+        "email": {
           "type": "string",
-          "pattern": "^[a-zA-Z0-9\u00C0-\u00FF !#$%&'‘’\"“”«»()*+,./:;=?@\\[\\]|~£€¥\\u005C\u2014\u2013\u2010\u005F\u005E\u0060\u002d]{1,40}$"
+          "maxLength": 132,
+          "format": "email"
         },
         "isInformationAccurate": {
           "type": "boolean"
@@ -564,7 +573,7 @@
         "line3": {
           "$ref": "#/definitions/AddressLineType"
         },
-        "town": {
+        "line4": {
           "$ref": "#/definitions/AddressLineType"
         },
         "postalCode": {
@@ -578,7 +587,6 @@
       },
       "required": [
         "line1",
-        "line2",
         "countryCode"
       ],
       "additionalProperties": false
@@ -587,18 +595,18 @@
       "type": "string",
       "minLength": 1,
       "maxLength": 35,
-      "pattern": "^[A-Za-z0-9 !'‘’\"“”(),./\u2014\u2013\u2010\u002d]{1,35}$"
+      "pattern": "^[A-Za-z0-9 !'‘’\"“”(),./—–‐-]{1,35}$"
     },
     "commonDetailsType": {
       "type": "object",
       "properties": {
         "telephone": {
           "type": "string",
-          "pattern": "^[0-9 ()+\u2010\u002d]{1,24}$"
+          "pattern": "^[0-9 ()+--]{1,24}$"
         },
         "mobileNumber": {
           "type": "string",
-          "pattern": "^[0-9 ()+\u2010\u002d]{1,24}$"
+          "pattern": "^[0-9 ()+--]{1,24}$"
         },
         "email": {
           "type": "string",
@@ -606,9 +614,6 @@
           "format": "email"
         }
       },
-      "required": [
-        "email"
-      ],
       "additionalProperties": false
     },
     "namesType": {
@@ -616,15 +621,15 @@
       "properties": {
         "firstName": {
           "type": "string",
-          "pattern": "^[a-zA-Z\u00C0-\u00FF '‘’\u2014\u2013\u2010\u002d]{1,35}$"
+          "pattern": "^[a-zA-ZÀ-ÿ '‘’—–‐-]{1,35}$"
         },
         "middleName": {
           "type": "string",
-          "pattern": "^[a-zA-Z\u00C0-\u00FF '‘’\u2014\u2013\u2010\u002d]{1,35}$"
+          "pattern": "^[a-zA-ZÀ-ÿ '‘’—–‐-]{1,35}$"
         },
         "lastName": {
           "type": "string",
-          "pattern": "^[a-zA-Z\u00C0-\u00FF '‘’\u2014\u2013\u2010\u002d]{1,35}$"
+          "pattern": "^[a-zA-ZÀ-ÿ '‘’—–‐-]{1,35}$"
         }
       },
       "required": [
@@ -638,7 +643,7 @@
       "properties": {
         "tradingName": {
           "type": "string",
-          "pattern": "^[a-zA-Z0-9\u00C0-\u00FF !#$%&'‘’\"“”«»()*+,./:;=?@\\[\\]|~£€¥\\u005C\u2014\u2013\u2010\u005F\u005E\u0060\u002d]{1,120}$"
+          "pattern": "^[a-zA-Z0-9À-ÿ !#$%&'‘’\"“”«»()*+,./:;=?@\\[\\]|~£€¥\\u005C—–‐_^`-]{1,120}$"
         },
         "identification": {
           "type": "object",
@@ -669,7 +674,7 @@
       "properties": {
         "tradingName": {
           "type": "string",
-          "pattern": "^[a-zA-Z0-9\u00C0-\u00FF !#$%&'‘’\"“”«»()*+,./:;=?@\\[\\]|~£€¥\\u005C\u2014\u2013\u2010\u005F\u005E\u0060\u002d]{1,120}$"
+          "pattern": "^[a-zA-Z0-9À-ÿ !#$%&'‘’\"“”«»()*+,./:;=?@\\[\\]|~£€¥\\u005C—–‐_^`-]{1,120}$"
         },
         "identification": {
           "type": "object",
@@ -755,6 +760,9 @@
                     "$ref": "#/definitions/partnershipOrUnIncorporatedBodyType"
                   }
                 ]
+              },
+              "modification": {
+                "$ref": "#/definitions/modificationType"
               }
             },
             "required": [
@@ -795,7 +803,7 @@
           "properties": {
             "tradingName": {
               "type": "string",
-              "pattern": "^[a-zA-Z0-9\u00C0-\u00FF !#$%&'‘’\"“”«»()*+,./:;=?@\\[\\]|~£€¥\\u005C\u2014\u2013\u2010\u005F\u005E\u0060\u002d]{1,120}$"
+              "pattern": "^[a-zA-Z0-9À-ÿ!#$%&'‘’\"“”«»()*+,./:;=?@\\[\\]|~£€¥\\u005C—–‐_^`-]{1,120}$"
             },
             "name": {
               "$ref": "#/definitions/namesType"
@@ -835,11 +843,11 @@
           "properties": {
             "companyName": {
               "type": "string",
-              "pattern": "^[a-zA-Z0-9\u00C0-\u00FF !#$%&'‘’\"“”«»()*+,./:;=?@\\[\\]£€¥\\u005C\u2014\u2013\u2010\u002d]{1,140}$"
+              "pattern": "^[a-zA-Z0-9À-ÿ !#$%&'‘’\"“”«»()*+,./:;=?@\\[\\]£€¥\\u005C—–‐-]{1,140}$"
             },
             "tradingName": {
               "type": "string",
-              "pattern": "^[a-zA-Z0-9\u00C0-\u00FF !#$%&'‘’\"“”«»()*+,./:;=?@\\[\\]|~£€¥\\u005C\u2014\u2013\u2010\u005F\u005E\u0060\u002d]{1,120}$"
+              "pattern": "^[a-zA-Z0-9À-ÿ!#$%&'‘’\"“”«»()*+,./:;=?@\\[\\]|~£€¥\\u005C—–‐_^`-]{1,120}$"
             }
           },
           "additionalProperties": false
@@ -887,11 +895,11 @@
           "properties": {
             "companyName": {
               "type": "string",
-              "pattern": "^[a-zA-Z0-9\u00C0-\u00FF !#$%&'‘’\"“”«»()*+,./:;=?@\\[\\]£€¥\\u005C\u2014\u2013\u2010\u002d]{1,140}$"
+              "pattern": "^[a-zA-Z0-9À-ÿ !#$%&'‘’\"“”«»()*+,./:;=?@\\[\\]£€¥\\u005C—–‐-]{1,140}$"
             },
             "tradingName": {
               "type": "string",
-              "pattern": "^[a-zA-Z0-9\u00C0-\u00FF !#$%&'‘’\"“”«»()*+,./:;=?@\\[\\]|~£€¥\\u005C\u2014\u2013\u2010\u005F\u005E\u0060\u002d]{1,120}$"
+              "pattern": "^[a-zA-Z0-9À-ÿ !#$%&'‘’\"“”«»()*+,./:;=?@\\[\\]|~£€¥\\u005C—–‐_^`-]{1,120}$"
             }
           },
           "additionalProperties": false
@@ -915,6 +923,95 @@
         "names",
         "identification"
       ],
+      "additionalProperties": false
+    },
+    "changeIndicatorType": {
+      "type": "object",
+      "properties": {
+        "businessTypeChanged": {
+          "type": "boolean"
+        },
+        "businessDetailChanged": {
+          "type": "boolean"
+        },
+        "partnersChanged": {
+          "type": "boolean"
+        },
+        "businessAddressChanged": {
+          "type": "boolean"
+        },
+        "businessPreviousAddressChanged": {
+          "type": "boolean"
+        },
+        "contactDetailChanged": {
+          "type": "boolean"
+        },
+        "groupMemberChanged": {
+          "type": "boolean"
+        },
+        "coOfficialsChanged": {
+          "type": "boolean"
+        },
+        "additionalBusinessInfoChanged": {
+          "type": "boolean"
+        },
+        "premisesChanged": {
+          "type": "boolean"
+        },
+        "declarationChanged": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "businessTypeChanged",
+        "businessDetailChanged",
+        "partnersChanged",
+        "businessAddressChanged",
+        "businessPreviousAddressChanged",
+        "contactDetailChanged",
+        "groupMemberChanged",
+        "coOfficialsChanged",
+        "additionalBusinessInfoChanged",
+        "premisesChanged",
+        "declarationChanged"
+      ],
+      "additionalProperties": false
+    },
+    "modificationType": {
+      "type": "object",
+      "properties": {
+        "changeIndicator": {
+          "type": "string",
+          "enum": [
+            "Added",
+            "Updated",
+            "Removed"
+          ]
+        },
+        "changeDate": {
+          "$ref": "#/definitions/dateString"
+        }
+      },
+      "required": [
+        "changeIndicator"
+      ],
+      "additionalProperties": false
+    },
+    "EORINumberType": {
+      "type": "object",
+      "properties": {
+        "EORIVat": {
+          "type": "string",
+          "pattern": "^[A-Z0-9 -]{1,15}$"
+        },
+        "EORINonVat": {
+          "type": "string",
+          "pattern": "^[A-Z0-9 -]{1,15}$"
+        },
+        "goodsImportedOutEORI": {
+          "type": "boolean"
+        }
+      },
       "additionalProperties": false
     },
     "countryCodes": {

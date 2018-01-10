@@ -22,22 +22,18 @@ import uk.gov.hmrc.fhregistration.models.des._
 
 object ApplicationUtils {
 
-  def getOrderType(fulfilmentOrdersType: generated.FulfilmentOrdersType): FulfilmentOrdersType = {
-    FulfilmentOrdersType(
-      onLine = isYes(fulfilmentOrdersType.onLine),
-      telephone = isYes(fulfilmentOrdersType.telephone),
-      physicalPremises = isYes(fulfilmentOrdersType.physicalPremises),
-      other = isYes(fulfilmentOrdersType.other),
-      typeOfOtherOrder =
-        if (isYes(fulfilmentOrdersType.other))
-          fulfilmentOrdersType.panelTypeOfOtherOrder.map(_.typeOfOtherOrder)
-        else
-          None
-    )
+  implicit class AddressLineUtils(value: String) {
+
+    /** Transforms Some("") in None */
+    def noneIfBlank =
+      if (StringUtils isBlank value)
+        None
+      else
+        Some(value)
 
   }
 
-  implicit class AddressLineUtils(value: Option[String]) {
+  implicit class OptionalAddressLineUtils(value: Option[String]) {
 
     /** Transforms Some("") in None */
     def noneIfBlank = value flatMap { s ⇒
@@ -52,6 +48,7 @@ object ApplicationUtils {
   }
 
   def isYes(radioButtonAnswer: String): Boolean = radioButtonAnswer equals "Yes"
+  def isYes(radioButtonAnswer: Option[String]): Boolean = radioButtonAnswer.filter(isYes).isDefined
 
   def getCompanyOfficialAsPerson(personPanel: PanelPerson): CompanyOfficial = {
     IndividualAsOfficial(
@@ -87,7 +84,9 @@ object ApplicationUtils {
             )
           )
         }
-      }
+      },
+      //todo set modification
+      modification = None
     )
   }
 
@@ -114,7 +113,9 @@ object ApplicationUtils {
             companyRegistrationNumber = companyPanel.panelCrn.map(_.companyRegistrationNumber)
           )
         }
-      }
+      },
+      //todo set modification
+      modification = None
     )
   }
 }

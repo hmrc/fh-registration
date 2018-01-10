@@ -30,7 +30,7 @@ object FhddsApplicationControllerMock extends ScalaFutures with MockitoSugar {
   var mockDesConnector: DesConnector = mock[DesConnectorImpl]
   var mockTaxEnrolmentConnector: TaxEnrolmentConnector = mock[TaxEnrolmentConnectorImpl]
   var mockSubmissionExtraDataRepository: SubmissionExtraDataRepository = mock[SubmissionExtraDataRepository]
-  var mockFhddsApplicationService: FhddsApplicationService = new FhddsApplicationServiceImpl
+  var mockFhddsApplicationService: FhddsApplicationService = new FhddsApplicationServiceImpl(new CountryCodeLookupImpl)
   var auditService: AuditService = new AuditServiceImpl
 
   var fhddsApplicationController = new FhddsApplicationController(

@@ -16,20 +16,15 @@
 
 package uk.gov.hmrc.fhregistration.models.des
 
-import play.api.libs.json.Json
+import java.time.LocalDate
+
+import play.api.libs.json._
 
 
-case class GroupMemberDetail(numberOfMembersInGroup: String, memberDetails: List[MemberDetail])
+case class Modification(changeIndicator: String,
+                        changeDate: Option[LocalDate])
 
-object GroupMemberDetail {
-  implicit val format = Json.format[GroupMemberDetail]
-}
+object Modification extends DateTimeFormat {
 
-case class LimitedLiabilityOrCorporateBodyWithOutGroup(
-  creatingFHDDSGroup: Boolean,
-  confirmationByRepresentative: Boolean,
-  groupMemberDetail: Option[GroupMemberDetail])
-
-object LimitedLiabilityOrCorporateBodyWithOutGroup {
-  implicit val format = Json.format[LimitedLiabilityOrCorporateBodyWithOutGroup]
+  implicit val format = Json.format[Modification]
 }

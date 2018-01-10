@@ -36,8 +36,20 @@ object NonProprietor {
   implicit val format = Json.format[NonProprietor]
 }
 
-case class Partnership(tradingName: Option[String],
-                         identification: NonProprietorIdentification)
+case class PartnerDetail(
+  entityType: String,
+  partnerAddress: Address,
+  partnerTypeDetail: PartnerType,
+  modification: Modification
+)
+
+object PartnerDetail {
+  implicit val format = Json.format[PartnerDetail]
+}
+
+case class Partnership(
+  numberOfPartners: String,
+  partnerDetails: List[PartnerDetail])
 
 object Partnership {
   implicit val format = Json.format[Partnership]
@@ -47,12 +59,8 @@ case class IncorporationDetails(
   companyRegistrationNumber: Option[String],
   dateOfIncorporation: Option[LocalDate])
 
-object IncorporationDetails {
-  val dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
-  implicit val localDateReads = Reads.localDateReads("yyyy-MM-dd")
-  implicit val localDateWrites = Writes { date: LocalDate ⇒
-    JsString(date.format(dateTimeFormatter))
-  }
+object IncorporationDetails extends DateTimeFormat {
+
   implicit val format = Json.format[IncorporationDetails]
 }
 
@@ -60,13 +68,7 @@ case class LimitedLiabilityPartnershipCorporateBody(
   groupRepresentativeJoinDate: Option[LocalDate],
   incorporationDetails: IncorporationDetails)
 
-object LimitedLiabilityPartnershipCorporateBody {
-
-  val dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
-  implicit val localDateReads = Reads.localDateReads("yyyy-MM-dd")
-  implicit val localDateWrites = Writes { date: LocalDate ⇒
-    JsString(date.format(dateTimeFormatter))
-  }
+object LimitedLiabilityPartnershipCorporateBody extends DateTimeFormat {
 
   implicit val format = Json.format[LimitedLiabilityPartnershipCorporateBody]
 }

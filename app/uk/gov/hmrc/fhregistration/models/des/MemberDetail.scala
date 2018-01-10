@@ -17,46 +17,34 @@
 package uk.gov.hmrc.fhregistration.models.des
 
 import java.time.LocalDate
-import java.time.format.DateTimeFormatter
 
-import play.api.libs.json.{JsString, Json, Reads, Writes}
+import play.api.libs.json.Json
 
 
-case class GroupJoiningDate(groupJoiningDate: Option[LocalDate])
-
-object GroupJoiningDate {
-  val dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
-  implicit val localDateReads = Reads.localDateReads("yyyy-MM-dd")
-  implicit val localDateWrites = Writes { date: LocalDate ⇒
-    JsString(date.format(dateTimeFormatter))
-  }
-  implicit val format = Json.format[GroupJoiningDate]
-}
-
-case class IdentificationBusiness(vatRegistrationNumber: Option[String],
-                                  uniqueTaxpayerReference: Option[String])
+case class IdentificationBusiness(
+  vatRegistrationNumber: Option[String],
+  uniqueTaxpayerReference: Option[String])
 
 object IdentificationBusiness {
   implicit val format = Json.format[IdentificationBusiness]
 }
 
-case class IncorporationDetail(companyRegistrationNumber: Option[String],
-                               dateOfIncorporation: Option[LocalDate])
+case class IncorporationDetail(
+  companyRegistrationNumber: Option[String],
+  dateOfIncorporation: Option[LocalDate])
 
-object IncorporationDetail {
-  val dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
-  implicit val localDateReads = Reads.localDateReads("yyyy-MM-dd")
-  implicit val localDateWrites = Writes { date: LocalDate ⇒
-    JsString(date.format(dateTimeFormatter))
-  }
+object IncorporationDetail extends DateTimeFormat {
+
   implicit val format = Json.format[IncorporationDetail]
 }
 
-case class MemberDetail(names: CompanyName,
-                        incorporationDetail: IncorporationDetail,
-                        identification: IdentificationBusiness,
-                        groupJoiningDate: GroupJoiningDate,
-                        address: Address)
+case class MemberDetail(
+  names: CompanyName,
+  incorporationDetail: IncorporationDetail,
+  identification: IdentificationBusiness,
+  groupJoiningDate: Option[LocalDate],
+  address: Address,
+  modification: Modification)
 
 
 object MemberDetail {

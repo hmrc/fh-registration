@@ -1,33 +1,36 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <data>
-    <principalPlaceOfBusiness>
-        <dateStartedTradingAsFulfilmentHouse>20/03/2015</dateStartedTradingAsFulfilmentHouse>
-    </principalPlaceOfBusiness>
     <timeAtCurrentAddress>
-        <isOnlyPrinicipalPlaceOfBusinessInLastThreeYears>No</isOnlyPrinicipalPlaceOfBusinessInLastThreeYears>
-        <panelPreviousAddress>
-            <ukPanel>
-                <hide_postcode>AA00 0AA</hide_postcode>
-                <searchState>manual</searchState>
-                <block_addressUKPlus data_type="addressUKLookup" line1="address line" line2="address line two"
-                                     postcode="AA00 0AA" town="town" uprn="manual"/>
-            </ukPanel>
-            <operatingDate>20/03/2015</operatingDate>
-        </panelPreviousAddress>
+        <timeOperatedAtCurrentAddress>Less than 3 years</timeOperatedAtCurrentAddress>
+        <panelAnyPreviousOperatingAddress>
+            <anyPreviousOperatingAddress>Yes</anyPreviousOperatingAddress>
+            <panelPreviousAddress>
+                <ukPanel>
+                    <hide_postcode>ZZ11 1ZZ</hide_postcode>
+                    <hide_houseNameNumber/>
+                    <searchState>manual</searchState>
+                    <block_addressUKPlus data_type="addressUKLookup" line1="Flat 1A" postcode="ZZ11 1ZZ" town="Testtown"
+                                         uprn="manual"/>
+                </ukPanel>
+                <operatingDate>20/03/2015</operatingDate>
+            </panelPreviousAddress>
+        </panelAnyPreviousOperatingAddress>
     </timeAtCurrentAddress>
     <contactPerson>
-        <firstName>CC</firstName>
-        <lastName>CC</lastName>
-        <telephoneNumber>123123</telephoneNumber>
-        <email>a@a.ro</email>
+        <firstName>Cosmin</firstName>
+        <lastName>Marian</lastName>
+        <otherRoleDescription>Director</otherRoleDescription>
+        <telephoneNumber>11123</telephoneNumber>
+        <email>a@w.ro</email>
         <contactCorrectAddress>No</contactCorrectAddress>
         <addressLookUpContactAddress>
             <selectLocation>Yes</selectLocation>
             <ukPanel>
-                <hide_postcode>AA00 0AA</hide_postcode>
+                <hide_postcode>ZZ11 1ZZ</hide_postcode>
+                <hide_houseNameNumber/>
                 <searchState>manual</searchState>
-                <blockAddressUKPlus data_type="addressUKLookup" line1="line a one" line2="line a two"
-                                    line3="line a three" postcode="AA00 0AA" town="some town" uprn="manual"/>
+                <blockAddressUKPlus data_type="addressUKLookup" line1="Flat 1B" postcode="ZZ11 1ZZ" town="Testtown"
+                                    uprn="manual"/>
             </ukPanel>
             <blockAddressInternationalPlus data_type=""/>
         </addressLookUpContactAddress>
@@ -38,12 +41,12 @@
         </limitedLiabilityPartnershipCorporateBody>
     </businessDetail>
     <dateOfIncorporation>
-        <dateOfIncorporation>20/03/2015</dateOfIncorporation>
+        <dateOfIncorporation>20/03/2014</dateOfIncorporation>
     </dateOfIncorporation>
     <tradingName>
         <hasTradingName>Yes</hasTradingName>
         <panelTradingName>
-            <tradingName>my trading name</tradingName>
+            <tradingName>DodgyCo</tradingName>
         </panelTradingName>
     </tradingName>
     <vatRegistration>
@@ -56,39 +59,55 @@
         <panelRepeatingCompanyOfficial>
             <companyOfficerType>Individual</companyOfficerType>
             <panelPerson>
-                <firstName>T</firstName>
-                <lastName>Y</lastName>
+                <firstName>Cosmin</firstName>
+                <lastName>M</lastName>
                 <hasNino>Yes</hasNino>
                 <panelNino>
-                    <nino>AA123456A</nino>
+                    <nino>AA123123A</nino>
                 </panelNino>
                 <role>Secretary</role>
             </panelPerson>
+        </panelRepeatingCompanyOfficial>
+        <panelRepeatingCompanyOfficial>
+            <companyOfficerType>Individual</companyOfficerType>
+            <panelPerson>
+                <firstName>Vlad</firstName>
+                <lastName>M</lastName>
+                <hasNino>Yes</hasNino>
+                <panelNino>
+                    <nino>AA123231</nino>
+                </panelNino>
+                <role>Director</role>
+            </panelPerson>
+        </panelRepeatingCompanyOfficial>
+        <panelRepeatingCompanyOfficial>
+            <companyOfficerType>Company</companyOfficerType>
+            <panelCompany>
+                <companyName>Some Company</companyName>
+                <hasVat>Yes</hasVat>
+                <panelHasVat>
+                    <vatRegistrationNumber>123456789</vatRegistrationNumber>
+                </panelHasVat>
+                <role>Secretary</role>
+            </panelCompany>
         </panelRepeatingCompanyOfficial>
     </companyOfficials>
     <isNewFulfilmentBusiness>
         <isNewFulfilmentBusiness>Yes</isNewFulfilmentBusiness>
         <panelProposedStartDate>
-            <proposedStartDate>31/07/2018</proposedStartDate>
+            <proposedStartDate>30/06/2018</proposedStartDate>
         </panelProposedStartDate>
     </isNewFulfilmentBusiness>
     <eoriStatus>
-        <goodsImportedOutEORI>Yes</goodsImportedOutEORI>
+        <doesEORIExist>Yes</doesEORIExist>
+        <EORINumber>
+            <EORI>1234123132</EORI>
+            <goodsImportedOutEORI>Yes</goodsImportedOutEORI>
+        </EORINumber>
     </eoriStatus>
     <numberOfCustomers>
-        <numberOfCustomers>02</numberOfCustomers>
+        <numberOfCustomers>Over 100</numberOfCustomers>
     </numberOfCustomers>
-    <fulfilmentOrdersType>
-        <fulfilmentOrdersType>
-            <onLine>Yes</onLine>
-            <telephone>Yes</telephone>
-            <physicalPremises>Yes</physicalPremises>
-            <other>Yes</other>
-            <panelTypeOfOtherOrder>
-                <typeOfOtherOrder>dodgy markets</typeOfOtherOrder>
-            </panelTypeOfOtherOrder>
-        </fulfilmentOrdersType>
-    </fulfilmentOrdersType>
     <otherStorageSites>
         <hasOtherStorageSites>Yes</hasOtherStorageSites>
         <panelOtherStorageSites>
@@ -96,32 +115,38 @@
                 <repeatingPanel>
                     <otherTradingPremisesAddressLookup>
                         <ukPanel>
-                            <hide_postcode>AA01 0AA</hide_postcode>
+                            <hide_postcode>Z99 2YY</hide_postcode>
                             <searchState>manual</searchState>
-                            <blockAddressUKPlus data_type="addressUKLookup" line1="some line" line2="some other line"
-                                                line3="extra line" postcode="AA01 0AA" town="extra city" uprn="manual"/>
+                            <blockAddressUKPlus data_type="addressUKLookup" line1="1 Some High Street"
+                                                postcode="Z99 2YY" town="Sometown" uprn="manual"/>
                         </ukPanel>
                     </otherTradingPremisesAddressLookup>
                 </repeatingPanel>
                 <repeatingPanel>
                     <otherTradingPremisesAddressLookup>
                         <ukPanel>
-                            <hide_postcode>AA02 1AA</hide_postcode>
+                            <hide_postcode>Z9 3WW</hide_postcode>
                             <searchState>manual</searchState>
-                            <blockAddressUKPlus data_type="addressUKLookup" line1="sec add line one"
-                                                line3="sec add line three" postcode="AA02 1AA" town="extra town"
-                                                uprn="manual"/>
+                            <blockAddressUKPlus data_type="addressUKLookup" line1="25 Testing Close" postcode="Z9 3WW"
+                                                town="Othertown" uprn="manual"/>
                         </ukPanel>
                     </otherTradingPremisesAddressLookup>
                 </repeatingPanel>
+                <thirdPartyPremises>No</thirdPartyPremises>
             </repeatingSectionOtherTradingPremises>
         </panelOtherStorageSites>
     </otherStorageSites>
-    <thirdPartyStorageUsed>
-        <thirdPartyStorageUsed>Yes</thirdPartyStorageUsed>
-    </thirdPartyStorageUsed>
     <declaration>
-        <hide_personName>ggg</hide_personName>
-        <hide_personStatus>Director</hide_personStatus>
+        <hide_personName>C</hide_personName>
+        <hide_personStatus>D</hide_personStatus>
+        <hasGGEmail/>
+        <panelHasGGEmail>
+            <hide_GGEmail>cosmin@cosmin.co.uk</hide_GGEmail>
+            <hide_useGGEmail>No</hide_useGGEmail>
+            <panelAlternateEmail>
+                <hide_confirmationEmail>a@b.co</hide_confirmationEmail>
+                <hide_confirmConfirmationEmail>a@b.co</hide_confirmConfirmationEmail>
+            </panelAlternateEmail>
+        </panelHasGGEmail>
     </declaration>
 </data>

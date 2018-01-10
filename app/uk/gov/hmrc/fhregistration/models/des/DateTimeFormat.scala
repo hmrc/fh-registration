@@ -16,20 +16,22 @@
 
 package uk.gov.hmrc.fhregistration.models.des
 
-import play.api.libs.json.Json
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 
+import play.api.libs.json.{Format, JsString, Reads, Writes}
 
-case class GroupMemberDetail(numberOfMembersInGroup: String, memberDetails: List[MemberDetail])
-
-object GroupMemberDetail {
-  implicit val format = Json.format[GroupMemberDetail]
+trait DateTimeFormat {
+  val localDateTimeFormat = DateTimeFormat.localDateTimeFormat
 }
 
-case class LimitedLiabilityOrCorporateBodyWithOutGroup(
-  creatingFHDDSGroup: Boolean,
-  confirmationByRepresentative: Boolean,
-  groupMemberDetail: Option[GroupMemberDetail])
+object DateTimeFormat {
+  val dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+  val localDateReads = Reads.localDateReads("yyyy-MM-dd")
+  val localDateWrites = Writes { date: LocalDate ⇒
+    JsString(date.format(dateTimeFormatter))
+  }
 
-object LimitedLiabilityOrCorporateBodyWithOutGroup {
-  implicit val format = Json.format[LimitedLiabilityOrCorporateBodyWithOutGroup]
+  val localDateTimeFormat = Format(localDateReads, localDateWrites)
+
 }

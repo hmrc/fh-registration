@@ -21,7 +21,8 @@ import java.time.format.DateTimeFormatter
 
 import play.api.libs.json.{JsString, Json, Reads, Writes}
 
-case class IsNewFulfilmentBusiness(isNewFulfilmentBusiness: Boolean, proposedStartDate: Option[LocalDate])
+case class IsNewFulfilmentBusiness(isNewFulfilmentBusiness: Boolean,
+                                   proposedStartDate: Option[LocalDate])
 
 object IsNewFulfilmentBusiness {
   val dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")

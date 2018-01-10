@@ -21,33 +21,27 @@ import java.time.format.DateTimeFormatter
 
 import play.api.libs.json.{JsString, Json, Reads, Writes}
 
-case class PreviousOperationalAddress(previousAddress: Address,
-                                      operatingDate: LocalDate)
+case class PreviousOperationalAddressDetail(previousAddress: Address,
+                                            previousAddressStartdate: LocalDate)
+
+object PreviousOperationalAddressDetail extends DateTimeFormat {
+  implicit val format = Json.format[PreviousOperationalAddressDetail]
+
+}
+
+case class PreviousOperationalAddress(
+  anyPreviousOperatingAddress: Boolean,
+  previousOperationalAddressDetail: Option[List[PreviousOperationalAddressDetail]])
 
 object PreviousOperationalAddress {
-  val dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
-  implicit val localDateReads = Reads.localDateReads("yyyy-MM-dd")
-  implicit val localDateWrites = Writes { date: LocalDate ⇒
-    JsString(date.format(dateTimeFormatter))
-  }
-
   implicit val format = Json.format[PreviousOperationalAddress]
-
 }
 
 case class BusinessAddressForFHDDS(currentAddress: Address,
                                    commonDetails: CommonDetails,
-                                   dateStartedTradingAsFulfilmentHouse: LocalDate,
-                                   isOnlyPrinicipalPlaceOfBusinessInLastThreeYears: Boolean,
-                                   previousOperationalAddress: Option[List[PreviousOperationalAddress]])
+                                   timeOperatedAtCurrentAddress: String,
+                                   previousOperationalAddress: Option[PreviousOperationalAddress])
 
 object BusinessAddressForFHDDS {
-  val dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
-  implicit val localDateReads = Reads.localDateReads("yyyy-MM-dd")
-  implicit val localDateWrites = Writes { date: LocalDate ⇒
-    JsString(date.format(dateTimeFormatter))
-  }
-
   implicit val format = Json.format[BusinessAddressForFHDDS]
-
 }

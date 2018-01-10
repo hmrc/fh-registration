@@ -34,10 +34,11 @@ object RoleInOrganization {
 
 case class CommonDetails(telephone: Option[String],
                          mobileNumber: Option[String],
-                         email: String = "email@email.com")
+                         email: Option[String])
 
 object CommonDetails {
   implicit val format = Json.format[CommonDetails]
+  def apply(): CommonDetails = CommonDetails(None, None, None)
 }
 
 case class ContactDetail(title: Option[String],

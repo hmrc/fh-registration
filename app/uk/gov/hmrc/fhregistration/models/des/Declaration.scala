@@ -20,7 +20,7 @@ import play.api.libs.json.Json
 
 case class Declaration(personName: String,
                        personStatus: String,
-                       personStatusOther: Option[String],
+                       email: Option[String],
                        isInformationAccurate: Boolean)
 
 object Declaration {
