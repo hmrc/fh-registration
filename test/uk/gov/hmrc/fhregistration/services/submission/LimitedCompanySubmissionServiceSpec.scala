@@ -14,26 +14,27 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.fhregistration.services
+package uk.gov.hmrc.fhregistration.services.submission
 
 import com.eclipsesource.schema.{SchemaType, SchemaValidator, _}
 import play.api.libs.json.Json
 import uk.gov.hmrc.fhregistration.models.businessregistration.BusinessRegistrationDetails
 import uk.gov.hmrc.fhregistration.models.des.SubScriptionCreate
 import uk.gov.hmrc.fhregistration.models.des.SubScriptionCreate.format
+import uk.gov.hmrc.fhregistration.services.{CountryCodeLookupImpl, FhddsApplicationServiceImpl}
 import uk.gov.hmrc.play.test.UnitSpec
 
 import scala.xml.XML
 
-class FhddsApplicationServiceSpec extends UnitSpec {
+class LimitedCompanySubmissionServiceSpec extends UnitSpec {
 
   val schemaAsJson = Json parse getClass.getResourceAsStream("/schemas/des-schema-r1.json")
   val schema = Json.fromJson[SchemaType](schemaAsJson).get
   val validator = new SchemaValidator().validate(schema) _
-  val service = new FhddsApplicationServiceImpl(new CountryCodeLookupImpl)
+  val service = new LimitedCompanySubmissionService(new CountryCodeLookupImpl)
 
   val brd: BusinessRegistrationDetails = Json
-    .parse(getClass.getResourceAsStream("/models/business-registration-details-sole-trader.json"))
+    .parse(getClass.getResourceAsStream("/models/business-registration-details-limited-company.json"))
     .as[BusinessRegistrationDetails]
 
   "Application service" should {
@@ -63,7 +64,7 @@ class FhddsApplicationServiceSpec extends UnitSpec {
 
   def validatesFor(file: String): SubScriptionCreate = {
     val iform = loadSubmission(file)
-    val subscrtiptionCreate = service.iformXmlToApplication(iform, brd)
+    val subscrtiptionCreate = service.iformXmlToSubmission(iform, brd)
 
 
     val json = Json.toJson(subscrtiptionCreate)

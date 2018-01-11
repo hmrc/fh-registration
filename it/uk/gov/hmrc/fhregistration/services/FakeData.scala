@@ -26,7 +26,7 @@ object FakeData {
   }
 
   val fakeBusinessDetails: String = {
-    scala.io.Source.fromFile(s"${directoryPath}business-registration-details.json").mkString
+    scala.io.Source.fromFile(s"${directoryPath}business-registration-details-limited-company.json").mkString
   }
 
   val validFakeSubmissionRef = "ValidSubmissionRef123"
