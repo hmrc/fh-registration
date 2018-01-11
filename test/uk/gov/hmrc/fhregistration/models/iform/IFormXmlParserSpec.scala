@@ -62,6 +62,20 @@ class IFormXmlParserSpec extends UnitSpec {
       scalaxb.fromXML[generated.sole.Data](x) should not be null
 
     }
+
+    "parse without errors shortest form with international address" in {
+      val file = "sole-proprietor-minimum-international.xml"
+      val x = XML.load(getXmlInputStream(s"valid/sole-proprietor/$file"))
+      scalaxb.fromXML[generated.sole.Data](x) should not be null
+
+    }
+
+    "parse without errors long form with uk address" in {
+      val file = "sole-proprietor-large-uk.xml"
+      val x = XML.load(getXmlInputStream(s"valid/sole-proprietor/$file"))
+      scalaxb.fromXML[generated.sole.Data](x) should not be null
+
+    }
   }
 
   def getXmlInputStream(name: String) = {
