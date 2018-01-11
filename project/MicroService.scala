@@ -52,7 +52,11 @@ trait MicroService {
       sourceGenerators in Compile += (scalaxb in Compile).taskValue,
       dispatchVersion in(Compile, scalaxb) := dispatchV,
       async in(Compile, scalaxb) := true,
-      packageName in(Compile, scalaxb) := "generated",
+      packageNames in (Compile, scalaxb) := Map(
+        uri("http://iforms.hmrc.gov.uk/sole") -> "generated.sole",
+        uri("http://iforms.hmrc.gov.uk/limited") -> "generated.limited"
+      ),
+//      packageName in(Compile, scalaxb) := "generated",
       xsdSource in(Compile, scalaxb) := file("resources/schemas/"),
       ignoreUnknown in(Compile, scalaxb) := true) // to ignore unknown XML elements, as well as order in which they are arrived
     .settings(

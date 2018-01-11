@@ -68,7 +68,7 @@ trait FhddsApplicationIntegrationMocks extends FeatureSpec with GivenWhenThen wi
 
   def createDesSubmission(formData: String, extraData: SubmissionExtraData) = {
     val xml = scala.xml.XML.loadString(formData)
-    val data = scalaxb.fromXML[generated.Data](xml)
+    val data = scalaxb.fromXML[generated.limited.Data](xml)
     mockFhddsApplicationService.iformXmlToApplication(data, extraData.businessRegistrationDetails)
   }
 

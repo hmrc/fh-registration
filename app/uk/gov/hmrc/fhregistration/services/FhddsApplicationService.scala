@@ -21,7 +21,7 @@ import java.time.format.DateTimeFormatter
 import javax.inject.{Inject, Singleton}
 
 import com.google.inject.ImplementedBy
-import generated.{AddressInternationalPlusQuestion, AddressLookUpContactAddress, AddressUKPlusQuestion, Data}
+import generated.limited.{AddressInternationalPlusQuestion, AddressLookUpContactAddress, AddressUKPlusQuestion, Data}
 import org.apache.commons.lang3.text.WordUtils
 import uk.gov.hmrc.fhregistration.models.businessregistration.BusinessRegistrationDetails
 import uk.gov.hmrc.fhregistration.models.des._
@@ -39,7 +39,7 @@ trait FhddsApplicationService {
 
   val dtf: DateTimeFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")
 
-  def iformXmlToApplication(xml: generated.Data, brd: BusinessRegistrationDetails): SubScriptionCreate = {
+  def iformXmlToApplication(xml: generated.limited.Data, brd: BusinessRegistrationDetails): SubScriptionCreate = {
     SubScriptionCreate(
       requestType = "Create",
       SubscriptionCreateRequestSchema(
@@ -56,7 +56,7 @@ trait FhddsApplicationService {
     ))
   }
 
-  def companyOfficialsDetails(xml: generated.Data): List[CompanyOfficial] = {
+  def companyOfficialsDetails(xml: generated.limited.Data): List[CompanyOfficial] = {
     val companyOfficials = xml.companyOfficials.panelRepeatingCompanyOfficial
     companyOfficials.toList.map(
       companyOfficial ⇒
@@ -75,7 +75,7 @@ trait FhddsApplicationService {
     }
   }
 
-  def businessDetails(xml: generated.Data, brd: BusinessRegistrationDetails): BusinessDetail = {
+  def businessDetails(xml: generated.limited.Data, brd: BusinessRegistrationDetails): BusinessDetail = {
     BusinessDetail(
       soleProprietor = None,
       nonProprietor = Some(NonProprietor(
@@ -106,7 +106,7 @@ trait FhddsApplicationService {
     )
   }
 
-  def businessAddressForFHDDS(xml: generated.Data, brd: BusinessRegistrationDetails): BusinessAddressForFHDDS = {
+  def businessAddressForFHDDS(xml: generated.limited.Data, brd: BusinessRegistrationDetails): BusinessAddressForFHDDS = {
     val lessThan3Years: Boolean =
       xml.timeAtCurrentAddress.timeOperatedAtCurrentAddress == "Less than 3 years"
 
@@ -200,14 +200,14 @@ trait FhddsApplicationService {
     }
   }
 
-  private def declaration(declaration: generated.Declaration) = {
+  private def declaration(declaration: generated.limited.Declaration) = {
     Declaration(personName = declaration.hide_personName,
       personStatus = declaration.hide_personStatus,
       email = email(declaration),
       isInformationAccurate = true)
   }
 
-  private def email(declaration: generated.Declaration): Option[String] = {
+  private def email(declaration: generated.limited.Declaration): Option[String] = {
     if (declaration.panelHasGGEmail.map(_.hide_GGEmail).getOrElse("").isEmpty) {
       //NO gg email
       declaration.panelNoGGEmail.map(_.hide_confirmNewEmail)
@@ -236,10 +236,11 @@ trait FhddsApplicationService {
     val otherStorageSitesDetail = {
       if (isYes(xml.otherStorageSites.hasOtherStorageSites)) {
         otherStorageSitesDetails(xml)
-      } else List(Premises(address = principalBusinessAddress(brd),
-                           thirdPartyPremises = false,
-                           //todo set modification for amend
-                           modification = None)
+      } else List(Premises(
+        address = principalBusinessAddress(brd),
+        thirdPartyPremises = false,
+        //todo set modification for amend
+        modification = None)
       )
     }
 
@@ -260,7 +261,7 @@ trait FhddsApplicationService {
     )
   }
 
-  def eoriNumber(isVatReg: Boolean)(eori: generated.EORINumber) = {
+  def eoriNumber(isVatReg: Boolean)(eori: generated.limited.EORINumber) = {
     val eoriNumberGoodsImportedOutEORI = isYes(eori.goodsImportedOutEORI)
     if (isVatReg) {
       EORINumberType(
@@ -284,14 +285,8 @@ trait FhddsApplicationService {
       addressLookup ← repeatingPanel.otherTradingPremisesAddressLookup.ukPanel
       blockAddressUKPlus ← addressLookup.blockAddressUKPlus
     } yield {
-      Premises(address =
-        Address(
-          blockAddressUKPlus.line1,
-          blockAddressUKPlus.line2.noneIfBlank,
-          blockAddressUKPlus.line3.noneIfBlank,
-          blockAddressUKPlus.town,
-          Some(blockAddressUKPlus.postcode),
-          "GB"),
+      Premises(
+        address = ukAddressToAddress(blockAddressUKPlus),
         thirdPartyPremises = isYes(thirdPartyPremises),
         //todo set modification for amend
         modification = None

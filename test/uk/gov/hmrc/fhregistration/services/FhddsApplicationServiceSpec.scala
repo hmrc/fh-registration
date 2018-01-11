@@ -78,10 +78,10 @@ class FhddsApplicationServiceSpec extends UnitSpec {
   }
 
 
-  def loadSubmission(file: String): generated.Data = {
+  def loadSubmission(file: String): generated.limited.Data = {
     val xml = XML
-      .load(getClass.getResourceAsStream(s"/xml/valid/$file"))
-    scalaxb.fromXML[generated.Data](xml)
+      .load(getClass.getResourceAsStream(s"/xml/valid/limited-company/$file"))
+    scalaxb.fromXML[generated.limited.Data](xml)
   }
 
 }

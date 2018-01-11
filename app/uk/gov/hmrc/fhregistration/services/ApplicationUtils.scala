@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.fhregistration.services
 
-import generated.{PanelCompany, PanelPerson}
+import generated.limited.{PanelCompany, PanelPerson}
 import org.apache.commons.lang3.StringUtils
 import uk.gov.hmrc.fhregistration.models.des._
 
