@@ -16,9 +16,9 @@
 
 package uk.gov.hmrc.fhregistration.services.submission
 
-import java.io.FileOutputStream
-
 import com.eclipsesource.schema.{SchemaType, SchemaValidator, _}
+import generated.limited.SoleDataFormat
+import org.apache.commons.io.FilenameUtils
 import play.api.libs.json.Json
 import uk.gov.hmrc.fhregistration.models.businessregistration.BusinessRegistrationDetails
 import uk.gov.hmrc.fhregistration.models.des.SubScriptionCreate
@@ -27,8 +27,6 @@ import uk.gov.hmrc.fhregistration.services.CountryCodeLookupImpl
 import uk.gov.hmrc.play.test.UnitSpec
 
 import scala.xml.XML
-import generated.limited.SoleDataFormat
-import org.apache.commons.io.IOUtils
 
 class SoleTraderSubmissionServiceSpec extends UnitSpec {
 
@@ -84,12 +82,22 @@ class SoleTraderSubmissionServiceSpec extends UnitSpec {
     val validationResult = validator(json)
     validationResult.fold(
       invalid = {errors ⇒ println(errors.toJson)},
-      valid = {v ⇒ IOUtils.write(v.toString(), new FileOutputStream(s"/tmp/fhdds/$file.json"))}
+      valid = {v ⇒ }
     )
+
     validationResult.isSuccess shouldEqual true
+
+    val expected = loadExpectedSubscriptionForFile(file)
+    subscrtiptionCreate shouldEqual expected
+
     subscrtiptionCreate
   }
 
+  def loadExpectedSubscriptionForFile(file: String): SubScriptionCreate = {
+    val baseName = FilenameUtils getBaseName file
+    val resource = getClass.getResourceAsStream(s"/json/valid/sole-proprietor/$baseName.json")
+    Json.parse(resource).as[SubScriptionCreate]
+  }
 
   def loadSubmission(file: String): generated.sole.Data = {
     val xml = XML
