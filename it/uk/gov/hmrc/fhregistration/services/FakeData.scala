@@ -19,14 +19,14 @@ object FakeData {
     scala.io.Source.fromFile(s"$directoryPath$file").mkString
   }
 
-  val validFormXMLData: generated.Data = {
+  val validFormXMLData: generated.limited.Data = {
     val xml = XML
       .load(scala.io.Source.fromFile(s"$directoryPath$file").reader())
-    scalaxb.fromXML[generated.Data](xml)
+    scalaxb.fromXML[generated.limited.Data](xml)
   }
 
   val fakeBusinessDetails: String = {
-    scala.io.Source.fromFile(s"${directoryPath}business-registration-details.json").mkString
+    scala.io.Source.fromFile(s"${directoryPath}business-registration-details-limited-company.json").mkString
   }
 
   val validFakeSubmissionRef = "ValidSubmissionRef123"

@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.fhregistration.services
+package uk.gov.hmrc.fhregistration.services.submission
 
-import generated.{PanelCompany, PanelPerson}
+import generated.limited.{PanelCompany, PanelPerson}
 import org.apache.commons.lang3.StringUtils
 import uk.gov.hmrc.fhregistration.models.des._
 
-object ApplicationUtils {
+object SubmissionUtils {
 
   implicit class AddressLineUtils(value: String) {
 

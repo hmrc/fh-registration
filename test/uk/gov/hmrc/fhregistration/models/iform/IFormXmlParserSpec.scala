@@ -21,38 +21,61 @@ import uk.gov.hmrc.play.test.UnitSpec
 import scala.xml.XML
 
 class IFormXmlParserSpec extends UnitSpec {
+  import generated.limited.SoleDataFormat
 
-
-  "test xml parsing" should {
+  "test xml parsing for limited company" should {
     "parse without errors shortest form" in {
       val file = "fhdds-limited-company-minimum.xml"
-      val x = XML.load(getXmlInputStream(s"valid/$file"))
-      scalaxb.fromXML[generated.Data](x) should not be null
+      val x = XML.load(getXmlInputStream(s"valid/limited-company/$file"))
+      scalaxb.fromXML[generated.limited.Data](x) should not be null
 
     }
 
     "parse without errors shortest form with gg email" in {
       val file = "fhdds-limited-company-minimum-with-ggemail.xml"
-      val x = XML.load(getXmlInputStream(s"valid/$file"))
-      scalaxb.fromXML[generated.Data](x) should not be null
+      val x = XML.load(getXmlInputStream(s"valid/limited-company/$file"))
+      scalaxb.fromXML[generated.limited.Data](x) should not be null
 
     }
 
 
     "parse without errors short form with international contact address" in {
       val file = "fhdds-limited-company-minimum-international.xml"
-      val x = XML.load(getXmlInputStream(s"valid/$file"))
-      scalaxb.fromXML[generated.Data](x) should not be null
+      val x = XML.load(getXmlInputStream(s"valid/limited-company/$file"))
+      scalaxb.fromXML[generated.limited.Data](x) should not be null
 
     }
 
     "parse without errors long form with uk contact address" in {
       val file = "fhdds-limited-company-large-uk.xml"
-      val x = XML.load(getXmlInputStream(s"valid/$file"))
-      scalaxb.fromXML[generated.Data](x) should not be null
+      val x = XML.load(getXmlInputStream(s"valid/limited-company/$file"))
+      scalaxb.fromXML[generated.limited.Data](x) should not be null
 
     }
 
+  }
+
+  "test xml parsing for sole proprietor" should {
+    "parse without errors shortest form" in {
+      val file = "sole-proprietor-minimum.xml"
+      val x = XML.load(getXmlInputStream(s"valid/sole-proprietor/$file"))
+      scalaxb.fromXML[generated.sole.Data](x) should not be null
+
+    }
+
+    "parse without errors shortest form with international address" in {
+      val file = "sole-proprietor-minimum-international.xml"
+      val x = XML.load(getXmlInputStream(s"valid/sole-proprietor/$file"))
+      scalaxb.fromXML[generated.sole.Data](x) should not be null
+
+    }
+
+    "parse without errors long form with uk address" in {
+      val file = "sole-proprietor-large-uk.xml"
+      val x = XML.load(getXmlInputStream(s"valid/sole-proprietor/$file"))
+      scalaxb.fromXML[generated.sole.Data](x) should not be null
+
+    }
   }
 
   def getXmlInputStream(name: String) = {

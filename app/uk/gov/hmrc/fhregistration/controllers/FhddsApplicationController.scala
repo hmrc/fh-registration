@@ -34,15 +34,14 @@ import uk.gov.hmrc.play.microservice.controller.BaseController
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.util.{Failure, Success}
-
+import generated.limited.SoleDataFormat
 
 class FhddsApplicationController @Inject()(
-                                            val desConnector: DesConnector,
-                                            val taxEnrolmentConnector: TaxEnrolmentConnector,
-                                            val submissionDataRepository: SubmissionExtraDataRepository,
-                                            val applicationService: FhddsApplicationService,
-                                            val auditService: AuditService
-                                          )
+  val desConnector: DesConnector,
+  val taxEnrolmentConnector: TaxEnrolmentConnector,
+  val submissionDataRepository: SubmissionExtraDataRepository,
+  val applicationService: FhddsApplicationService,
+  val auditService: AuditService)
   extends BaseController {
 
   val auditConnector: AuditConnector = MicroserviceAuditConnector
@@ -73,12 +72,12 @@ class FhddsApplicationController @Inject()(
   }
 
   private def auditSubmission(
-                               submissionRequest: SubmissionRequest,
-                               application: SubScriptionCreate,
-                               extraData: SubmissionExtraData,
-                               desResponse: DesSubmissionResponse,
-                               submissionRef: String
-                             )(implicit hc: HeaderCarrier) = {
+    submissionRequest: SubmissionRequest,
+    application: SubScriptionCreate,
+    extraData: SubmissionExtraData,
+    desResponse: DesSubmissionResponse,
+    submissionRef: String
+  )(implicit hc: HeaderCarrier) = {
 
     Logger.info(s"Sending audit event for submissionRef $submissionRef")
     val event = auditService.buildSubmissionAuditEvent(
@@ -124,8 +123,14 @@ class FhddsApplicationController @Inject()(
 
   private def createDesSubmission(formData: String, extraData: SubmissionExtraData) = {
     val xml = scala.xml.XML.loadString(formData)
-    val data = scalaxb.fromXML[generated.Data](xml)
-    applicationService.iformXmlToApplication(data, extraData.businessRegistrationDetails)
+    extraData.businessRegistrationDetails.businessType.map(_.toLowerCase) match {
+      case Some("sole trader") ⇒
+        val data = scalaxb.fromXML[generated.sole.Data](xml)
+        applicationService.soleTraderSubmission(data, extraData.businessRegistrationDetails)
+      case Some("corporate body") ⇒
+        val data = scalaxb.fromXML[generated.limited.Data](xml)
+        applicationService.limitedCompanySubmission(data, extraData.businessRegistrationDetails)
+    }
   }
 
   private def findSubmissionExtraData(formId: String) = {
