@@ -16,7 +16,10 @@
 
 package uk.gov.hmrc.fhregistration.services.submission
 
+import java.io.FileOutputStream
+
 import com.eclipsesource.schema.{SchemaType, SchemaValidator, _}
+import org.apache.commons.io.IOUtils
 import play.api.libs.json.Json
 import uk.gov.hmrc.fhregistration.models.businessregistration.BusinessRegistrationDetails
 import uk.gov.hmrc.fhregistration.models.des.SubScriptionCreate
@@ -72,7 +75,9 @@ class LimitedCompanySubmissionServiceSpec extends UnitSpec {
     val validationResult = validator(json)
     validationResult.fold(
       invalid = {errors ⇒ println(errors.toJson)},
-      valid = {v ⇒ println("OK")}
+      valid = {v ⇒
+        IOUtils.write(v.toString(), new FileOutputStream(s"/tmp/fhdds/$file.json"))
+      }
     )
     validationResult.isSuccess shouldEqual true
     subscrtiptionCreate
