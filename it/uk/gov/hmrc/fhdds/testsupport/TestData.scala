@@ -2,11 +2,11 @@ package uk.gov.hmrc.fhdds.testsupport
 
 import org.joda.time.DateTime
 import play.api.libs.json.{JsObject, JsString, Json}
-import uk.gov.hmrc.fhdds.models.businessregistration.{Address, BusinessRegistrationDetails}
-import uk.gov.hmrc.fhdds.models.des.DesSubmissionResponse
-import uk.gov.hmrc.fhdds.models.fhdds.SubmissionRequest
-import uk.gov.hmrc.fhdds.repositories.SubmissionExtraData
-import uk.gov.hmrc.fhdds.services.ControllerServices
+import uk.gov.hmrc.fhregistration.models.businessregistration.{Address, BusinessRegistrationDetails}
+import uk.gov.hmrc.fhregistration.models.des.DesSubmissionResponse
+import uk.gov.hmrc.fhregistration.models.fhdds.SubmissionRequest
+import uk.gov.hmrc.fhregistration.repositories.SubmissionExtraData
+import uk.gov.hmrc.fhregistration.services.ControllerServices
 
 import scala.xml.XML
 
@@ -20,10 +20,10 @@ object TestData {
     scala.io.Source.fromFile(s"$directoryPath$file").mkString
   }
 
-  val validFormXMLData: generated.Data = {
+  val validFormXMLData: generated.limited.Data = {
     val xml = XML
       .load(scala.io.Source.fromFile(s"$directoryPath$file").reader())
-    scalaxb.fromXML[generated.Data](xml)
+    scalaxb.fromXML[generated.limited.Data](xml)
   }
 
   val someBusinessDetails: String = {
@@ -75,5 +75,6 @@ object TestData {
 
   val aDesSubmissionResponse: DesSubmissionResponse = DesSubmissionResponse(
     processingDate = DateTime.now().toString,
+    etmpFormBundleNumber = ControllerServices.createSubmissionRef(),
     registrationNumberFHDDS = ControllerServices.createSubmissionRef())
 }

@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<data>
+    <timeAtCurrentAddress>
+        <timeOperatedAtCurrentAddress>Less than 3 years</timeOperatedAtCurrentAddress>
+        <panelAnyPreviousOperatingAddress>
+            <anyPreviousOperatingAddress>Yes</anyPreviousOperatingAddress>
+            <panelPreviousAddress>
+                <ukPanel>
+                    <hide_postcode>ZZ11 1ZZ</hide_postcode>
+                    <hide_houseNameNumber/>
+                    <searchState>manual</searchState>
+                    <block_addressUKPlus data_type="addressUKLookup" line1="Flat 1A" postcode="ZZ11 1ZZ" town="Testtown"
+                                         uprn="manual"/>
+                </ukPanel>
+                <operatingDate>20/03/2015</operatingDate>
+            </panelPreviousAddress>
+        </panelAnyPreviousOperatingAddress>
+    </timeAtCurrentAddress>
+    <contactPerson>
+        <firstName>Cosmin</firstName>
+        <lastName>Marian</lastName>
+        <otherRoleDescription>Director</otherRoleDescription>
+        <telephoneNumber>11123</telephoneNumber>
+        <email>a@w.ro</email>
+        <contactCorrectAddress>No</contactCorrectAddress>
+        <addressLookUpContactAddress>
+            <selectLocation>Yes</selectLocation>
+            <ukPanel>
+                <hide_postcode>ZZ11 1ZZ</hide_postcode>
+                <hide_houseNameNumber/>
+                <searchState>manual</searchState>
+                <blockAddressUKPlus data_type="addressUKLookup" line1="Flat 1B" postcode="ZZ11 1ZZ" town="Testtown"
+                                    uprn="manual"/>
+            </ukPanel>
+            <blockAddressInternationalPlus data_type=""/>
+        </addressLookUpContactAddress>
+    </contactPerson>
+    <businessDetail>
+        <limitedLiabilityPartnershipCorporateBody>
+            <companyRegistrationNumber>12345678</companyRegistrationNumber>
+        </limitedLiabilityPartnershipCorporateBody>
+    </businessDetail>
+    <dateOfIncorporation>
+        <dateOfIncorporation>20/03/2014</dateOfIncorporation>
+    </dateOfIncorporation>
+    <tradingName>
+        <hasTradingName>Yes</hasTradingName>
+        <panelTradingName>
+            <tradingName>DodgyCo</tradingName>
+        </panelTradingName>
+    </tradingName>
+    <vatRegistration>
+        <hasVatRegistrationNumber>Yes</hasVatRegistrationNumber>
+        <panelVatRegistrationNumber>
+            <vatRegistrationNumber>123456789</vatRegistrationNumber>
+        </panelVatRegistrationNumber>
+    </vatRegistration>
+    <companyOfficials>
+        <panelRepeatingCompanyOfficial>
+            <companyOfficerType>Individual</companyOfficerType>
+            <panelPerson>
+                <firstName>Cosmin</firstName>
+                <lastName>M</lastName>
+                <hasNino>Yes</hasNino>
+                <panelNino>
+                    <nino>AA123123A</nino>
+                </panelNino>
+                <role>Secretary</role>
+            </panelPerson>
+        </panelRepeatingCompanyOfficial>
+        <panelRepeatingCompanyOfficial>
+            <companyOfficerType>Individual</companyOfficerType>
+            <panelPerson>
+                <firstName>Vlad</firstName>
+                <lastName>M</lastName>
+                <hasNino>Yes</hasNino>
+                <panelNino>
+                    <nino>AA123231</nino>
+                </panelNino>
+                <role>Director</role>
+            </panelPerson>
+        </panelRepeatingCompanyOfficial>
+        <panelRepeatingCompanyOfficial>
+            <companyOfficerType>Company</companyOfficerType>
+            <panelCompany>
+                <companyName>Some Company</companyName>
+                <hasVat>Yes</hasVat>
+                <panelHasVat>
+                    <vatRegistrationNumber>123456789</vatRegistrationNumber>
+                </panelHasVat>
+                <role>Secretary</role>
+            </panelCompany>
+        </panelRepeatingCompanyOfficial>
+    </companyOfficials>
+    <isNewFulfilmentBusiness>
+        <isNewFulfilmentBusiness>Yes</isNewFulfilmentBusiness>
+        <panelProposedStartDate>
+            <proposedStartDate>30/06/2018</proposedStartDate>
+        </panelProposedStartDate>
+    </isNewFulfilmentBusiness>
+    <eoriStatus>
+        <doesEORIExist>Yes</doesEORIExist>
+        <EORINumber>
+            <EORI>1234123132</EORI>
+            <goodsImportedOutEORI>Yes</goodsImportedOutEORI>
+        </EORINumber>
+    </eoriStatus>
+    <numberOfCustomers>
+        <numberOfCustomers>Over 100</numberOfCustomers>
+    </numberOfCustomers>
+    <otherStorageSites>
+        <hasOtherStorageSites>Yes</hasOtherStorageSites>
+        <panelOtherStorageSites>
+            <repeatingSectionOtherTradingPremises>
+                <repeatingPanel>
+                    <otherTradingPremisesAddressLookup>
+                        <ukPanel>
+                            <hide_postcode>Z99 2YY</hide_postcode>
+                            <searchState>manual</searchState>
+                            <blockAddressUKPlus data_type="addressUKLookup" line1="1 Some High Street"
+                                                postcode="Z99 2YY" town="Sometown" uprn="manual"/>
+                        </ukPanel>
+                    </otherTradingPremisesAddressLookup>
+                </repeatingPanel>
+                <repeatingPanel>
+                    <otherTradingPremisesAddressLookup>
+                        <ukPanel>
+                            <hide_postcode>Z9 3WW</hide_postcode>
+                            <searchState>manual</searchState>
+                            <blockAddressUKPlus data_type="addressUKLookup" line1="25 Testing Close" postcode="Z9 3WW"
+                                                town="Othertown" uprn="manual"/>
+                        </ukPanel>
+                    </otherTradingPremisesAddressLookup>
+                </repeatingPanel>
+                <thirdPartyPremises>No</thirdPartyPremises>
+            </repeatingSectionOtherTradingPremises>
+        </panelOtherStorageSites>
+    </otherStorageSites>
+    <declaration>
+        <hide_personName>C</hide_personName>
+        <hide_personStatus>D</hide_personStatus>
+        <hasGGEmail/>
+        <panelHasGGEmail>
+            <hide_GGEmail>cosmin@cosmin.co.uk</hide_GGEmail>
+            <hide_useGGEmail>No</hide_useGGEmail>
+            <panelAlternateEmail>
+                <hide_confirmationEmail>a@b.co</hide_confirmationEmail>
+                <hide_confirmConfirmationEmail>a@b.co</hide_confirmConfirmationEmail>
+            </panelAlternateEmail>
+        </panelHasGGEmail>
+    </declaration>
+</data>

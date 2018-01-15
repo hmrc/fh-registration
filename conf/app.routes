@@ -1,9 +1,10 @@
 # microservice specific routes
 
-PUT  /submission-extra-data/:userId/:formTypeRef/authorization                   @uk.gov.hmrc.fhdds.controllers.SubmissionExtraDataController.updateAuthorization(userId, formTypeRef)
-PUT  /submission-extra-data/:userId/:formTypeRef/formId                          @uk.gov.hmrc.fhdds.controllers.SubmissionExtraDataController.updateFormId(userId, formTypeRef)
-PUT  /submission-extra-data/:userId/:formTypeRef/businessRegistrationDetails     @uk.gov.hmrc.fhdds.controllers.SubmissionExtraDataController.saveBusinessRegistrationDetails(userId, formTypeRef)
-GET  /submission-extra-data/:userId/:formTypeRef/businessRegistrationDetails     @uk.gov.hmrc.fhdds.controllers.SubmissionExtraDataController.getBusinessRegistrationDetails(userId, formTypeRef)
-POST /application/submit                                                         @uk.gov.hmrc.fhdds.controllers.FhddsApplicationController.submit()
-GET  /tax-enrolment/callback/subscriptions                                       @uk.gov.hmrc.fhdds.controllers.FhddsApplicationController.subscriptionCallback()
-POST /tax-enrolment/callback/subscriptions                                       @uk.gov.hmrc.fhdds.controllers.FhddsApplicationController.subscriptionCallback()
+PUT  /submission-extra-data/:userId/:formTypeRef/authorization                   @uk.gov.hmrc.fhregistration.controllers.SubmissionExtraDataController.updateAuthorization(userId, formTypeRef)
+PUT  /submission-extra-data/:userId/:formTypeRef/formId                          @uk.gov.hmrc.fhregistration.controllers.SubmissionExtraDataController.updateFormId(userId, formTypeRef)
+PUT  /submission-extra-data/:userId/:formTypeRef/businessRegistrationDetails     @uk.gov.hmrc.fhregistration.controllers.SubmissionExtraDataController.saveBusinessRegistrationDetails(userId, formTypeRef)
+GET  /submission-extra-data/:userId/:formTypeRef/businessRegistrationDetails     @uk.gov.hmrc.fhregistration.controllers.SubmissionExtraDataController.getBusinessRegistrationDetails(userId, formTypeRef)
+POST /application/submit                                                         @uk.gov.hmrc.fhregistration.controllers.FhddsApplicationController.submit()
+GET  /tax-enrolment/callback/subscriptions                                       @uk.gov.hmrc.fhregistration.controllers.FhddsApplicationController.subscriptionCallback()
+POST /tax-enrolment/callback/subscriptions                                       @uk.gov.hmrc.fhregistration.controllers.FhddsApplicationController.subscriptionCallback()
+GET  /fulfilment-diligence/subscription/:fhddsRegistrationNumber/status          @uk.gov.hmrc.fhregistration.controllers.FhddsApplicationController.checkStatus(fhddsRegistrationNumber)

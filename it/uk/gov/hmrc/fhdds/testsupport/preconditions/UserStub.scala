@@ -1,11 +1,8 @@
 package uk.gov.hmrc.fhdds.testsupport.preconditions
 
 import com.github.tomakehurst.wiremock.client.WireMock._
-import org.scalatest.GivenWhenThen
 
-case class UserStub
-()
-  (implicit builder: PreconditionBuilder) extends GivenWhenThen { //extends SessionBuilder {
+case class UserStub()(implicit builder: PreconditionBuilder) { //extends SessionBuilder {
 
 //  def isAuthorised(implicit requestHolder: RequestHolder): PreconditionBuilder = {
 //    requestHolder.request = requestWithSession(requestHolder.request, "anyUserId")
