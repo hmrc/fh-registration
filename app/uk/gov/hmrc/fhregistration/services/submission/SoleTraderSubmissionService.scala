@@ -185,21 +185,14 @@ class SoleTraderSubmissionService(countryCodeLookup: CountryCodeLookup) {
   }
 
   private def additionalBusinessInformation(brd: BusinessRegistrationDetails, xml: Data) = {
-    //val numberOfCustomersOutsideOfEU = xml.businessActivities.numberOfCustomersOutsideOfEU
     val numberOfCustomersData = xml.numberOfCustomers.numberOfCustomers
     val isVatReg = isYes(xml.vatRegistration.hasVatRegistrationNumber)
     val eoriStatus = xml.eoriStatus
 
-    // TODO should we always add the principalBusinessAddress(brd) at the beginning of the list?
     val otherStorageSitesDetail = {
       if (isYes(xml.otherStorageSites.hasOtherStorageSites)) {
         otherStorageSitesDetails(xml)
-      } else List(Premises(
-        address = principalBusinessAddress(brd),
-        thirdPartyPremises = false,
-        //todo set modification for amend
-        modification = None)
-      )
+      } else List()
     }
 
     AdditionalBusinessInformationwithType(
@@ -262,7 +255,7 @@ class SoleTraderSubmissionService(countryCodeLookup: CountryCodeLookup) {
         telephone = Some(xml.contactPerson.telephoneNumber),
         mobileNumber = None,
         email = Some(xml.contactPerson.email)),
-      roleInOrganization = None
+      roleInOrganization = Some(RoleInOrganization otherRole xml.contactPerson.otherRoleDescription)
     )
   }
 

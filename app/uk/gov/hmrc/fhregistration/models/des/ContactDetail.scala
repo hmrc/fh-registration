@@ -30,6 +30,19 @@ case class RoleInOrganization(beneficialShareHolder: Boolean,
 
 object RoleInOrganization {
   implicit val format = Json.format[RoleInOrganization]
+  
+  def otherRole(description: String) = RoleInOrganization(
+    beneficialShareHolder = false,
+    director = false,
+    partner = false,
+    internalAccountant = false,
+    soleProprietor = false,
+    nominatedOfficer = false,
+    designatedmember = false,
+    otherRoleType = true,
+    otherRoleDescription = Some(description)
+  )
+  
 }
 
 case class CommonDetails(telephone: Option[String],

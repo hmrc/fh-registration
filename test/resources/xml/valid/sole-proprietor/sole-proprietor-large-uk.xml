@@ -17,7 +17,7 @@
     <contactPerson>
         <firstName>John</firstName>
         <lastName>Snow</lastName>
-        <otherRoleDescription>Director</otherRoleDescription>
+        <otherRoleDescription>A Director</otherRoleDescription>
         <telephoneNumber>1123</telephoneNumber>
         <email>a@a.ro</email>
         <contactCorrectAddress>No</contactCorrectAddress>

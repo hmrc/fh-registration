@@ -9,20 +9,8 @@
       "allOtherInformation": {
         "numberOfCustomers": "11-50",
         "doesEORIExist": false,
-        "numberOfpremises": "1",
-        "premises": [
-          {
-            "address": {
-              "line1": "LINE 1",
-              "line2": "LINE 2",
-              "line3": "LINE 3",
-              "line4": "LINE 4",
-              "postalCode": "M46 0PT",
-              "countryCode": "GB"
-            },
-            "thirdPartyPremises": false
-          }
-        ]
+        "numberOfpremises": "0",
+        "premises": []
       }
     },
     "businessDetail": {
@@ -50,6 +38,18 @@
         "firstName": "John",
         "lastName": "Snow"
       },
+      "roleInOrganization": {
+        "beneficialShareHolder": false,
+        "director": false,
+        "partner": false,
+        "internalAccountant": false,
+        "soleProprietor": false,
+        "nominatedOfficer": false,
+        "designatedmember": false,
+        "otherRoleType": true,
+        "otherRoleDescription": "Director"
+      },
+
       "usingSameContactAddress": true,
       "address": {
         "line1": "LINE 1",
