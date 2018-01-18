@@ -25,7 +25,7 @@
                 <blockAddressUKPlus uprn="" data_type=""/>
             </ukPanel>
             <blockAddressInternationalPlus line2="Georgetown" line1="12 Goose Green" data_type="addressInternational"
-                                           country="Falkland Islands (the) [Malvinas]"/>
+                                           country="Falkland Islands (the) (Malvinas)"/>
         </addressLookUpContactAddress>
     </contactPerson>
     <businessDetail>
@@ -98,5 +98,6 @@
                 <hide_confirmConfirmationEmail>barry@test.com</hide_confirmConfirmationEmail>
             </panelAlternateEmail>
         </panelHasGGEmail>
+        <hide_Email>barry@test.com</hide_Email>
     </declaration>
 </data>

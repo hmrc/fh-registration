@@ -42,6 +42,24 @@ class CountryCodeLookupSpec extends UnitSpec {
     "Return ZW" in {
       countryCodeLookup.countryCode("Zimbabwe") shouldEqual Some("ZW")
     }
+
+    "Return correct value for modified country names" in {
+      countryCodeLookup.countryCode("Aland Islands") shouldEqual Some("AX")
+      countryCodeLookup.countryCode("Congo (the Democratic Republic)") shouldEqual Some("CD")
+      countryCodeLookup.countryCode("Cote d'Ivoire") shouldEqual Some("CI")
+      countryCodeLookup.countryCode("Curacao") shouldEqual Some("CW")
+      countryCodeLookup.countryCode("Western Sahara") shouldEqual Some("EH")
+      countryCodeLookup.countryCode("Falkland Islands (the) (Malvinas)") shouldEqual Some("FK")
+      countryCodeLookup.countryCode("South Georgia and South Sandwich") shouldEqual Some("GS")
+      countryCodeLookup.countryCode("British Indian Ocean Territory") shouldEqual Some("IO")
+      countryCodeLookup.countryCode("Iran (Islamic Republic of)") shouldEqual Some("IR")
+      countryCodeLookup.countryCode("Korea (DPR)") shouldEqual Some("KP")
+      countryCodeLookup.countryCode("Lao People's Democratic Rep") shouldEqual Some("LA")
+      countryCodeLookup.countryCode("Macedonia") shouldEqual Some("MK")
+      countryCodeLookup.countryCode("Reunion") shouldEqual Some("RE")
+      countryCodeLookup.countryCode("Saint Helena, Ascension, Tristan") shouldEqual Some("SH")
+      countryCodeLookup.countryCode("United States Minor Outlying Isl") shouldEqual Some("UM")
+    }
   }
 
 }
