@@ -391,6 +391,7 @@
                 </xs:sequence>
               </xs:complexType>
             </xs:element>
+            <xs:element minOccurs="0" name="hide_Email" type="TextQuestion"/>
           </xs:sequence>
         </xs:complexType>
       </xs:element>

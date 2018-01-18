@@ -87,5 +87,6 @@
             <hide_useGGEmail>Yes</hide_useGGEmail>
 
         </panelHasGGEmail>
+        <hide_Email>cosmin@cosmin.co.uk</hide_Email>
     </declaration>
 </data>
