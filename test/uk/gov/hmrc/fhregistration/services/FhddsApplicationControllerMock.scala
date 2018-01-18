@@ -17,7 +17,7 @@
 package uk.gov.hmrc.fhregistration.services
 
 import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.mock.MockitoSugar
+import org.scalatest.mockito.MockitoSugar
 import org.scalatest.time.{Millis, Seconds, Span}
 import uk.gov.hmrc.fhregistration.connectors._
 import uk.gov.hmrc.fhregistration.controllers.FhddsApplicationController

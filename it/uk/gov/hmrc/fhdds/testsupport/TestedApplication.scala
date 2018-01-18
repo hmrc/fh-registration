@@ -37,10 +37,10 @@ trait TestedApplication
   override implicit lazy val app: Application = new GuiceApplicationBuilder()
     .configure(replaceWithWiremock(Seq(
       "auth",
-      "auth.company-auth",
+      "dfs-store",
+      "des-service",
       "fhdds",
-      "fhdds-dfs-frontend",
-      "business-customer-frontend"
+      "tax-enrolments"
     )))
     .build()
 
@@ -62,6 +62,7 @@ trait TestedApplication
   }
 
   override def beforeEach() = {
+
     resetAllScenarios()
     reset()
   }

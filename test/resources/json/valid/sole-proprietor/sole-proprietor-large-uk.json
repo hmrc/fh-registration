@@ -81,6 +81,17 @@
         "firstName": "John",
         "lastName": "Snow"
       },
+      "roleInOrganization": {
+        "beneficialShareHolder": false,
+        "director": false,
+        "partner": false,
+        "internalAccountant": false,
+        "soleProprietor": false,
+        "nominatedOfficer": false,
+        "designatedmember": false,
+        "otherRoleType": true,
+        "otherRoleDescription": "A Director"
+      },
       "usingSameContactAddress": false,
       "address": {
         "line1": "one flat",

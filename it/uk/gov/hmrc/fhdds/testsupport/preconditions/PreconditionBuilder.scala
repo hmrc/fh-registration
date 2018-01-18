@@ -5,5 +5,7 @@ class PreconditionBuilder {
 
   def audit = AuditStub()
   def user = UserStub()
+  def des = DesStub()
+  def taxEnrolment = TaxEnrolmentStub()
 
 }

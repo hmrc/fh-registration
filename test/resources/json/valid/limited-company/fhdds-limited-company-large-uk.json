@@ -117,6 +117,17 @@
         "firstName": "Cosmin",
         "lastName": "Marian"
       },
+      "roleInOrganization": {
+        "beneficialShareHolder": false,
+        "director": false,
+        "partner": false,
+        "internalAccountant": false,
+        "soleProprietor": false,
+        "nominatedOfficer": false,
+        "designatedmember": false,
+        "otherRoleType": true,
+        "otherRoleDescription": "Director"
+      },
       "usingSameContactAddress": false,
       "address": {
         "line1": "Flat 1B",

@@ -76,6 +76,13 @@ class IFormXmlParserSpec extends UnitSpec {
       scalaxb.fromXML[generated.sole.Data](x) should not be null
 
     }
+
+    "parse without errors long form with third party storage" in {
+      val file = "sole-proprietor-third-party-storage.xml"
+      val x = XML.load(getXmlInputStream(s"valid/sole-proprietor/$file"))
+      scalaxb.fromXML[generated.sole.Data](x) should not be null
+
+    }
   }
 
   def getXmlInputStream(name: String) = {

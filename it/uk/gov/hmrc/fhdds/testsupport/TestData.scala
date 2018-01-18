@@ -26,15 +26,40 @@ object TestData {
     scalaxb.fromXML[generated.limited.Data](xml)
   }
 
-  val someBusinessDetails: String = {
-    scala.io.Source.fromFile(s"${directoryPath}business-registration-details.json").mkString
-  }
+  //  val someBusinessDetails: String = {
+  //    scala.io.Source.fromFile(s"${directoryPath}business-registration-details.json").mkString
+  //  }
 
   val validSubmissionRef = "ValidSubmissionRef123"
 
   val testFormTypeRef = "testFormTypeRef"
-  val testFormId = "testID"
+  val testFormId = "testFormId"
   val testUserId = "testUserId"
+  val testSafeId = "XE0001234567890"
+
+  val invalidUserId = "invalidUserId"
+  val invalidFormTypeRef = "invalidFormTypeRef"
+
+  val fakeBusinessDetailsJson: String =
+    s"""
+       |{
+       |  "business_name":"Real Business Inc",
+       |  "business_type":"corporate body",
+       |  "business_address":{
+       |    "line1":"line1",
+       |    "line2":"line2",
+       |    "postcode":"NE98 1ZZ",
+       |    "country":"GB"
+       |  },
+       |  "sap_number":"1234567890",
+       |  "safe_id":"XE0001234567890",
+       |  "is_a_group":false,
+       |  "direct_match":false,
+       |  "agent_reference_number":"JARN1234567",
+       |  "utr":"1111111111",
+       |  "is_business_details_editable":false
+       |  }
+     """.stripMargin
 
   val anAddress = Address(
     line1 = "line1",
@@ -49,7 +74,7 @@ object TestData {
     businessType = Some("corporate body"),
     businessAddress = anAddress,
     sapNumber = "1234567890",
-    safeId = "XE0001234567890",
+    safeId = s"$testSafeId",
     agentReferenceNumber = Some("JARN1234567"),
     firstName = None,
     lastName = None,

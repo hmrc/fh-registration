@@ -2,10 +2,7 @@ package uk.gov.hmrc.fhdds.testsupport.preconditions
 
 import com.github.tomakehurst.wiremock.client.WireMock._
 
-
-case class UserStub
-()
-  (implicit builder: PreconditionBuilder) { //extends SessionBuilder {
+case class UserStub()(implicit builder: PreconditionBuilder) { //extends SessionBuilder {
 
 //  def isAuthorised(implicit requestHolder: RequestHolder): PreconditionBuilder = {
 //    requestHolder.request = requestWithSession(requestHolder.request, "anyUserId")

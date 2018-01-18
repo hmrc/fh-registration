@@ -212,12 +212,7 @@ class LimitedCompanySubmissionService(countryCodeLookup: CountryCodeLookup) {
     val otherStorageSitesDetail = {
       if (isYes(xml.otherStorageSites.hasOtherStorageSites)) {
         otherStorageSitesDetails(xml)
-      } else List(Premises(
-        address = principalBusinessAddress(brd),
-        thirdPartyPremises = false,
-        //todo set modification for amend
-        modification = None)
-      )
+      } else List()
     }
 
     AdditionalBusinessInformationwithType(
@@ -285,7 +280,7 @@ class LimitedCompanySubmissionService(countryCodeLookup: CountryCodeLookup) {
         telephone = Some(xml.contactPerson.telephoneNumber),
         mobileNumber = None,
         email = Some(xml.contactPerson.email)),
-      roleInOrganization = None
+      roleInOrganization = Some(RoleInOrganization otherRole xml.contactPerson.otherRoleDescription)
     )
   }
 
