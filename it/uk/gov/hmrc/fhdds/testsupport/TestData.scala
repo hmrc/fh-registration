@@ -1,5 +1,6 @@
 package uk.gov.hmrc.fhdds.testsupport
 
+import generated.fhdds.LimitedDataFormat
 import org.joda.time.DateTime
 import play.api.libs.json.{JsObject, JsString, Json}
 import uk.gov.hmrc.fhregistration.models.businessregistration.{Address, BusinessRegistrationDetails}

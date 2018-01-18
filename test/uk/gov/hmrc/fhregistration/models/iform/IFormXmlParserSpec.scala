@@ -21,7 +21,8 @@ import uk.gov.hmrc.play.test.UnitSpec
 import scala.xml.XML
 
 class IFormXmlParserSpec extends UnitSpec {
-  import generated.limited.SoleDataFormat
+  import generated.fhdds.SoleDataFormat
+  import generated.fhdds.LimitedDataFormat
 
   "test xml parsing for limited company" should {
     "parse without errors shortest form" in {

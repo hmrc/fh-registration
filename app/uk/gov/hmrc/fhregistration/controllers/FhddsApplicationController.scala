@@ -34,7 +34,8 @@ import uk.gov.hmrc.play.microservice.controller.BaseController
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.util.{Failure, Success}
-import generated.limited.SoleDataFormat
+import generated.fhdds.SoleDataFormat
+import generated.fhdds.LimitedDataFormat
 
 class FhddsApplicationController @Inject()(
   val desConnector: DesConnector,
