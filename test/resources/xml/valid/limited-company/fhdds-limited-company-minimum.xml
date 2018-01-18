@@ -93,5 +93,6 @@
             <hide_newConfirmationEmail>a@a.ro</hide_newConfirmationEmail>
             <hide_confirmNewEmail>a@a.ro</hide_confirmNewEmail>
         </panelNoGGEmail>
+        <hide_Email>a@a.ro</hide_Email>
     </declaration>
 </data>
