@@ -308,7 +308,7 @@
                         <xs:element minOccurs="0" name="panelNoNino">
                           <xs:complexType>
                             <xs:sequence>
-                              <xs:element name="haVAT" type="RadioQuestion"/>
+                              <xs:element name="hasVAT" type="RadioQuestion"/>
                               <xs:element minOccurs="0" name="panelVAT">
                                 <xs:complexType>
                                   <xs:sequence>
@@ -486,6 +486,7 @@
                 </xs:sequence>
               </xs:complexType>
             </xs:element>
+            <xs:element minOccurs="0" name="hide_Email" type="TextQuestion"/>
           </xs:sequence>
         </xs:complexType>
       </xs:element>
