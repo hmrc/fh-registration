@@ -17,6 +17,7 @@
 package uk.gov.hmrc.fhregistration.services.submission
 
 import com.eclipsesource.schema.{SchemaType, SchemaValidator, _}
+import generated.fhdds.LimitedDataFormat
 import org.apache.commons.io.FilenameUtils
 import play.api.libs.json.Json
 import uk.gov.hmrc.fhregistration.models.businessregistration.BusinessRegistrationDetails

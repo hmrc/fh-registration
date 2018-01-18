@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<xs:schema xmlns="http://iforms.hmrc.gov.uk/fhdds/sole" xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="http://iforms.hmrc.gov.uk/fhdds/sole">
+<xs:schema xmlns="http://iforms.hmrc.gov.uk/fhdds/partnership" xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="http://iforms.hmrc.gov.uk/fhdds/partnership">
 	
 	<!-- ================================================= -->
 	<!-- ====== Component declarations =================== -->
@@ -175,7 +175,7 @@
             <xs:element minOccurs="0" name="panelAnyPreviousOperatingAddress">
               <xs:complexType>
                 <xs:sequence>
-                  <xs:element minOccurs="0" name="anyPreviousOperatingAddress" type="RadioQuestion"/>
+                  <xs:element name="anyPreviousOperatingAddress" type="RadioQuestion"/>
                   <xs:element minOccurs="0" name="panelPreviousAddress">
                     <xs:complexType>
                       <xs:sequence>
@@ -186,12 +186,12 @@
                               <xs:element minOccurs="0" name="hide_houseNameNumber" type="TextQuestion"/>
                               <xs:element minOccurs="0" name="radiobutton_results" type="RadioQuestion"/>
                               <xs:element name="searchState" type="TextQuestion"/>
-                              <xs:element minOccurs="0" name="searchResults" type="TextQuestion"/>
+                              <xs:element name="searchResults" type="TextQuestion"/>
                               <xs:element minOccurs="0" name="block_addressUKPlus" type="AddressUKPlusQuestion"/>
                             </xs:sequence>
                           </xs:complexType>
                         </xs:element>
-                        <xs:element minOccurs="0" name="operatingDate" type="TextQuestion"/>
+                        <xs:element name="operatingDate" type="TextQuestion"/>
                       </xs:sequence>
                     </xs:complexType>
                   </xs:element>
@@ -213,7 +213,7 @@
             <xs:element minOccurs="0" name="addressLookUpContactAddress">
               <xs:complexType>
                 <xs:sequence>
-                  <xs:element minOccurs="0" name="selectLocation" type="RadioQuestion"/>
+                  <xs:element name="selectLocation" type="RadioQuestion"/>
                   <xs:element minOccurs="0" name="ukPanel">
                     <xs:complexType>
                       <xs:sequence>
@@ -221,32 +221,12 @@
                         <xs:element minOccurs="0" name="hide_houseNameNumber" type="TextQuestion"/>
                         <xs:element minOccurs="0" name="radiobutton_results" type="RadioQuestion"/>
                         <xs:element name="searchState" type="TextQuestion"/>
-                        <xs:element minOccurs="0" name="searchResults" type="TextQuestion"/>
+                        <xs:element name="searchResults" type="TextQuestion"/>
                         <xs:element minOccurs="0" name="blockAddressUKPlus" type="AddressUKPlusQuestion"/>
                       </xs:sequence>
                     </xs:complexType>
                   </xs:element>
                   <xs:element minOccurs="0" name="blockAddressInternationalPlus" type="AddressInternationalPlusQuestion"/>
-                </xs:sequence>
-              </xs:complexType>
-            </xs:element>
-          </xs:sequence>
-        </xs:complexType>
-      </xs:element>
-      <xs:element name="businessDetail">
-        <xs:complexType>
-          <xs:sequence>
-            <xs:element name="panelSoleProprietor">
-              <xs:complexType>
-                <xs:sequence>
-                  <xs:element name="hasNino" type="RadioQuestion"/>
-                  <xs:element minOccurs="0" name="panelHasNino">
-                    <xs:complexType>
-                      <xs:sequence>
-                        <xs:element name="nino" type="TextQuestion"/>
-                      </xs:sequence>
-                    </xs:complexType>
-                  </xs:element>
                 </xs:sequence>
               </xs:complexType>
             </xs:element>
@@ -275,6 +255,121 @@
               <xs:complexType>
                 <xs:sequence>
                   <xs:element name="vatRegistrationNumber" type="TextQuestion"/>
+                </xs:sequence>
+              </xs:complexType>
+            </xs:element>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="partners">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element maxOccurs="25" minOccurs="1" name="panelRepeatingPartner">
+              <xs:complexType>
+                <xs:sequence>
+                  <xs:element name="entityType" type="RadioQuestion"/>
+                  <xs:element minOccurs="0" name="panelUnincorporated">
+                    <xs:complexType>
+                      <xs:sequence>
+                        <xs:element name="companyName" type="TextQuestion"/>
+                        <xs:element name="uniqueTaxpayerReference" type="TextQuestion"/>
+                      </xs:sequence>
+                    </xs:complexType>
+                  </xs:element>
+                  <xs:element minOccurs="0" name="panelPartnership">
+                    <xs:complexType>
+                      <xs:sequence>
+                        <xs:element name="companyName" type="TextQuestion"/>
+                        <xs:element name="hasTradingName" type="RadioQuestion"/>
+                        <xs:element minOccurs="0" name="panelTradingName">
+                          <xs:complexType>
+                            <xs:sequence>
+                              <xs:element name="tradingName" type="TextQuestion"/>
+                            </xs:sequence>
+                          </xs:complexType>
+                        </xs:element>
+                        <xs:element name="uniqueTaxpayerReference" type="TextQuestion"/>
+                      </xs:sequence>
+                    </xs:complexType>
+                  </xs:element>
+                  <xs:element minOccurs="0" name="panelPerson">
+                    <xs:complexType>
+                      <xs:sequence>
+                        <xs:element name="firstName" type="TextQuestion"/>
+                        <xs:element name="lastName" type="TextQuestion"/>
+                        <xs:element name="hasNino" type="RadioQuestion"/>
+                        <xs:element minOccurs="0" name="panelNino">
+                          <xs:complexType>
+                            <xs:sequence>
+                              <xs:element name="nino" type="TextQuestion"/>
+                            </xs:sequence>
+                          </xs:complexType>
+                        </xs:element>
+                        <xs:element minOccurs="0" name="panelNoNino">
+                          <xs:complexType>
+                            <xs:sequence>
+                              <xs:element name="haVAT" type="RadioQuestion"/>
+                              <xs:element minOccurs="0" name="panelVAT">
+                                <xs:complexType>
+                                  <xs:sequence>
+                                    <xs:element name="vatRegistrationNumber" type="TextQuestion"/>
+                                  </xs:sequence>
+                                </xs:complexType>
+                              </xs:element>
+                              <xs:element minOccurs="0" name="panelUTR">
+                                <xs:complexType>
+                                  <xs:sequence>
+                                    <xs:element name="uniqueTaxpayerReference" type="TextQuestion"/>
+                                  </xs:sequence>
+                                </xs:complexType>
+                              </xs:element>
+                            </xs:sequence>
+                          </xs:complexType>
+                        </xs:element>
+                      </xs:sequence>
+                    </xs:complexType>
+                  </xs:element>
+                  <xs:element minOccurs="0" name="panelCompany">
+                    <xs:complexType>
+                      <xs:sequence>
+                        <xs:element name="companyName" type="TextQuestion"/>
+                        <xs:element name="companyRegistrationNumber" type="TextQuestion"/>
+                        <xs:element name="hasVat" type="RadioQuestion"/>
+                        <xs:element minOccurs="0" name="panelHasVat">
+                          <xs:complexType>
+                            <xs:sequence>
+                              <xs:element name="vatRegistrationNumber" type="TextQuestion"/>
+                            </xs:sequence>
+                          </xs:complexType>
+                        </xs:element>
+                        <xs:element minOccurs="0" name="panelUtr">
+                          <xs:complexType>
+                            <xs:sequence>
+                              <xs:element name="uniqueTaxpayerReference" type="TextQuestion"/>
+                            </xs:sequence>
+                          </xs:complexType>
+                        </xs:element>
+                      </xs:sequence>
+                    </xs:complexType>
+                  </xs:element>
+                  <xs:element minOccurs="0" name="partnerAddress">
+                    <xs:complexType>
+                      <xs:sequence>
+                        <xs:element minOccurs="0" name="ukPanel">
+                          <xs:complexType>
+                            <xs:sequence>
+                              <xs:element minOccurs="0" name="hide_postcode" type="TextQuestion"/>
+                              <xs:element minOccurs="0" name="hide_houseNameNumber" type="TextQuestion"/>
+                              <xs:element minOccurs="0" name="radiobutton_results" type="RadioQuestion"/>
+                              <xs:element name="searchState" type="TextQuestion"/>
+                              <xs:element name="searchResults" type="TextQuestion"/>
+                              <xs:element minOccurs="0" name="block_addressUKPlus" type="AddressUKPlusQuestion"/>
+                            </xs:sequence>
+                          </xs:complexType>
+                        </xs:element>
+                      </xs:sequence>
+                    </xs:complexType>
+                  </xs:element>
                 </xs:sequence>
               </xs:complexType>
             </xs:element>
@@ -340,7 +435,7 @@
                                           <xs:element minOccurs="0" name="hide_houseNameNumber" type="TextQuestion"/>
                                           <xs:element minOccurs="0" name="radiobutton_results" type="RadioQuestion"/>
                                           <xs:element name="searchState" type="TextQuestion"/>
-                                          <xs:element minOccurs="0" name="searchResults" type="TextQuestion"/>
+                                          <xs:element name="searchResults" type="TextQuestion"/>
                                           <xs:element minOccurs="0" name="blockAddressUKPlus" type="AddressUKPlusQuestion"/>
                                         </xs:sequence>
                                       </xs:complexType>
@@ -348,7 +443,7 @@
                                   </xs:sequence>
                                 </xs:complexType>
                               </xs:element>
-                              <xs:element minOccurs="0" name="thirdPartyPremises" type="RadioQuestion"/>
+                              <xs:element name="thirdPartyPremises" type="RadioQuestion"/>
                             </xs:sequence>
                           </xs:complexType>
                         </xs:element>
@@ -391,7 +486,6 @@
                 </xs:sequence>
               </xs:complexType>
             </xs:element>
-            <xs:element minOccurs="0" name="hide_Email" type="TextQuestion"/>
           </xs:sequence>
         </xs:complexType>
       </xs:element>
