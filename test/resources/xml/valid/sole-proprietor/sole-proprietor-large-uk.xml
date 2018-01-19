@@ -105,5 +105,6 @@
             <hide_newConfirmationEmail>provided@test.com</hide_newConfirmationEmail>
             <hide_confirmNewEmail>provided@test.com</hide_confirmNewEmail>
         </panelNoGGEmail>
+        <hide_Email>provided@test.com</hide_Email>
     </declaration>
 </data>

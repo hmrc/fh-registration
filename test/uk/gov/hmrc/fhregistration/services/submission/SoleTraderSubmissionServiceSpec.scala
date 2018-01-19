@@ -57,6 +57,9 @@ class SoleTraderSubmissionServiceSpec extends UnitSpec {
 
     }
 
+    "Create a correct json for sole-proprietor-third-party-storage.xml" in {
+      validatesFor("sole-proprietor-third-party-storage.xml")
+    }
 
     "Create a correct json for sole-proprietor-minimum.xml" in {
       validatesFor("sole-proprietor-minimum.xml")
@@ -78,7 +81,6 @@ class SoleTraderSubmissionServiceSpec extends UnitSpec {
 
 
     val json = Json.toJson(subscrtiptionCreate)
-
     val validationResult = validator(json)
     validationResult.fold(
       invalid = {errors ⇒ println(errors.toJson)},

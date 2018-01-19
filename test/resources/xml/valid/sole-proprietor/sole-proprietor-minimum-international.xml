@@ -72,5 +72,6 @@
             <hide_newConfirmationEmail>j@co.uk</hide_newConfirmationEmail>
             <hide_confirmNewEmail>j@co.uk</hide_confirmNewEmail>
         </panelNoGGEmail>
+        <hide_Email>j@co.uk</hide_Email>
     </declaration>
 </data>

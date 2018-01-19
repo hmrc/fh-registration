@@ -148,5 +148,6 @@
                 <hide_confirmConfirmationEmail>a@b.co</hide_confirmConfirmationEmail>
             </panelAlternateEmail>
         </panelHasGGEmail>
+        <hide_Email>a@b.co</hide_Email>
     </declaration>
 </data>

@@ -72,5 +72,6 @@
             <hide_GGEmail>user@test.com</hide_GGEmail>
             <hide_useGGEmail>Yes</hide_useGGEmail>
         </panelHasGGEmail>
+        <hide_Email>user@test.com</hide_Email>
     </declaration>
 </data>

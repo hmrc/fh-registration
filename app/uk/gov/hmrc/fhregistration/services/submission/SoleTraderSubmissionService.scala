@@ -168,20 +168,7 @@ class SoleTraderSubmissionService(countryCodeLookup: CountryCodeLookup) {
   }
 
   private def email(declaration: generated.sole.Declaration): Option[String] = {
-    if (declaration.panelHasGGEmail.map(_.hide_GGEmail).getOrElse("").isEmpty) {
-      //NO gg email
-      declaration.panelNoGGEmail.map(_.hide_confirmNewEmail)
-    } else {
-      //HAS gg email
-      declaration.panelHasGGEmail flatMap { ggEmailPanel ⇒
-        if (isYes(ggEmailPanel.hide_useGGEmail))
-          Some(ggEmailPanel.hide_GGEmail)
-        else {
-          ggEmailPanel.panelAlternateEmail.map(_.hide_confirmationEmail)
-        }
-      }
-    }
-
+    declaration.hide_Email
   }
 
   private def additionalBusinessInformation(brd: BusinessRegistrationDetails, xml: Data) = {
