@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<data>
+    <timeAtCurrentAddress>
+        <timeOperatedAtCurrentAddress>3-5 years</timeOperatedAtCurrentAddress>
+        <panelAnyPreviousOperatingAddress>
+            <panelPreviousAddress>
+                <ukPanel>
+                    <searchState>initial</searchState>
+                    <block_addressUKPlus data_type="" uprn=""/>
+                </ukPanel>
+            </panelPreviousAddress>
+        </panelAnyPreviousOperatingAddress>
+    </timeAtCurrentAddress>
+    <contactPerson>
+        <firstName>C</firstName>
+        <lastName>M</lastName>
+        <otherRoleDescription>Director</otherRoleDescription>
+        <telephoneNumber>01111</telephoneNumber>
+        <email>a@a.ro</email>
+        <contactCorrectAddress>Yes</contactCorrectAddress>
+        <addressLookUpContactAddress>
+            <ukPanel>
+                <searchState>initial</searchState>
+                <blockAddressUKPlus data_type="" uprn=""/>
+            </ukPanel>
+            <blockAddressInternationalPlus data_type=""/>
+        </addressLookUpContactAddress>
+    </contactPerson>
+    <tradingName>
+        <hasTradingName>No</hasTradingName>
+    </tradingName>
+    <vatRegistration>
+        <hasVatRegistrationNumber>No</hasVatRegistrationNumber>
+    </vatRegistration>
+    <partners>
+        <panelRepeatingPartner>
+            <entityType>Individual</entityType>
+            <panelIndividual>
+                <firstName>C</firstName>
+                <lastName>M</lastName>
+                <hasNino>No</hasNino>
+            </panelIndividual>
+            <partnerAddress>
+                <ukPanel>
+                    <hide_postcode>AA11 1AA</hide_postcode>
+                    <searchState>manual</searchState>
+                    <block_addressUKPlus data_type="addressUKLookup" line1="line individual" postcode="AA11 1AA"
+                                         town="town individual" uprn="manual"/>
+                </ukPanel>
+            </partnerAddress>
+        </panelRepeatingPartner>
+    </partners>
+    <isNewFulfilmentBusiness>
+        <isNewFulfilmentBusiness>No</isNewFulfilmentBusiness>
+    </isNewFulfilmentBusiness>
+    <eoriStatus>
+        <doesEORIExist>No</doesEORIExist>
+    </eoriStatus>
+    <numberOfCustomers>
+        <numberOfCustomers>11-50</numberOfCustomers>
+    </numberOfCustomers>
+    <otherStorageSites>
+        <hasOtherStorageSites>No</hasOtherStorageSites>
+        <panelOtherStorageSites>
+            <repeatingSectionOtherTradingPremises>
+                <repeatingPanel>
+                    <otherTradingPremisesAddressLookup>
+                        <ukPanel>
+                            <searchState>initial</searchState>
+                            <blockAddressUKPlus data_type="" uprn=""/>
+                        </ukPanel>
+                    </otherTradingPremisesAddressLookup>
+                </repeatingPanel>
+            </repeatingSectionOtherTradingPremises>
+        </panelOtherStorageSites>
+    </otherStorageSites>
+    <declaration>
+        <hide_personName>C</hide_personName>
+        <hide_personStatus>C</hide_personStatus>
+        <hasGGEmail/>
+        <panelHasGGEmail>
+            <hide_GGEmail>user@test.com</hide_GGEmail>
+            <hide_useGGEmail>Yes</hide_useGGEmail>
+        </panelHasGGEmail>
+        <hide_Email>user@test.com</hide_Email>
+    </declaration>
+</data>

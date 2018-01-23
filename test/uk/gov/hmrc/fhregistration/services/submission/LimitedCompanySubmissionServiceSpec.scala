@@ -39,7 +39,7 @@ class LimitedCompanySubmissionServiceSpec extends UnitSpec {
     .parse(getClass.getResourceAsStream("/models/business-registration-details-limited-company.json"))
     .as[BusinessRegistrationDetails]
 
-  "Application service" should {
+  "Limited company submission service" should {
     "Create a correct json for fhdds-limited-company-large-uk.xml" in {
       validatesFor("fhdds-limited-company-large-uk.xml")
     }

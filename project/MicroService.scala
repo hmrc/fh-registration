@@ -53,7 +53,7 @@ trait MicroService {
       dispatchVersion in(Compile, scalaxb) := dispatchV,
 //      protocolFileName in(Compile, scalaxb) := "generated/fhdds/xmlprotocol.scala",
       protocolPackageName in(Compile, scalaxb) := Some("generated.fhdds"),
-      async in(Compile, scalaxb) := true,
+      async in(Compile, scalaxb) := false,
       packageNames in (Compile, scalaxb) := Map(
         uri("http://iforms.hmrc.gov.uk/fhdds/sole") -> "generated.sole",
         uri("http://iforms.hmrc.gov.uk/fhdds/limited") -> "generated.limited",

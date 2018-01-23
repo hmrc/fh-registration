@@ -50,6 +50,17 @@ object SubmissionUtils {
   def isYes(radioButtonAnswer: String): Boolean = radioButtonAnswer equals "Yes"
   def isYes(radioButtonAnswer: Option[String]): Boolean = radioButtonAnswer.filter(isYes).isDefined
 
+  def whenYes(
+    radioButtonAnswer: String,
+    answer: Option[String],
+    default: Option[String] = None
+  ): Option[String] = {
+    if (isYes(radioButtonAnswer))
+      answer
+    else
+      default
+  }
+
   def getCompanyOfficialAsPerson(personPanel: PanelPerson): CompanyOfficial = {
     IndividualAsOfficial(
       role = personPanel.role match {

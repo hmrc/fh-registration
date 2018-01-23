@@ -7,6 +7,7 @@ import play.api.libs.json.Json
 import play.api.test.WsTestClient
 import uk.gov.hmrc.fhdds.testsupport.TestData._
 import uk.gov.hmrc.fhdds.testsupport.TestedApplication
+import uk.gov.hmrc.fhregistration.services.ControllerServices
 
 class FhddsApplicationIntegrationSpecs
   extends WordSpec
@@ -45,11 +46,13 @@ class FhddsApplicationIntegrationSpecs
         responseForUpdateFormId.status shouldBe 202
       }
 
+
       "get DES response" in {
+        val registrationNumber = ControllerServices.createSubmissionRef()
         given()
           .audit.writesAuditOrMerged()
-          .des.sendSubmission(testSafeId)
-          .taxEnrolment.subscribe(testSafeId)
+          .des.acceptsSubscription(testSafeId, registrationNumber)
+          .taxEnrolment.subscribe(registrationNumber)
 
         WsTestClient.withClient { client ⇒
           whenReady(
@@ -59,6 +62,9 @@ class FhddsApplicationIntegrationSpecs
             result.status shouldBe 200
           }
         }
+
+        expect()
+          .des.verifiesSubscriptions()
       }
     }
   }

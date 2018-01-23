@@ -40,7 +40,7 @@ case class PartnerDetail(
   entityType: String,
   partnerAddress: Address,
   partnerTypeDetail: PartnerType,
-  modification: Modification
+  modification: Option[Modification]
 )
 
 object PartnerDetail {
@@ -48,8 +48,8 @@ object PartnerDetail {
 }
 
 case class Partnership(
-  numberOfPartners: String,
-  partnerDetails: List[PartnerDetail])
+  numbersOfPartners: String,
+  partnerDetails   : List[PartnerDetail])
 
 object Partnership {
   implicit val format = Json.format[Partnership]

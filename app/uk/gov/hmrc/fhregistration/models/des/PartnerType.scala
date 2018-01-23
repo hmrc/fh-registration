@@ -33,9 +33,9 @@ case class SoleProprietorPartnerType(
 ) extends PartnerType
 
 case class LimitedLiabilityPartnershipType(
-  names: CompanyName,
-  identification: PartnerIdentification,
-  incorporationDetail: IncorporationDetail
+  names               : CompanyName,
+  identification      : PartnerIdentification,
+  incorporationDetails: IncorporationDetail
 ) extends PartnerType
 
 case class PartnershipOrUnIncorporatedBodyPartnerType(
@@ -69,17 +69,18 @@ object PartnerType {
       case obj: IndividualPartnerType ⇒ Json toJson obj
       case obj: SoleProprietorPartnerType ⇒ Json toJson obj
       case obj: LimitedLiabilityPartnershipType ⇒ Json toJson obj
-      case obj: IndividualPartnerType ⇒ Json toJson obj
+      case obj: PartnershipOrUnIncorporatedBodyPartnerType ⇒ Json toJson obj
     }
   }
 
   val reads: Reads[PartnerType] = new Reads[PartnerType] {
     override def reads(json: JsValue) = json.validate[JsObject].flatMap { o ⇒
-      if ((o \ "name" \ "identificaton").toOption.isDefined) {
+      if ((o \ "name").toOption.isDefined
+        && (o \ "identification").toOption.isDefined) {
         soleProprietorPartnerTypeFormat reads json
       } else if ((o \ "name").toOption.isDefined){
         individualPartnerTypeFormat reads json
-      } else if ((o \ "incorporationDetail").toOption.isDefined) {
+      } else if ((o \ "incorporationDetails").toOption.isDefined) {
         limitedLiabilityPartnershipTypeFormat reads json
       } else {
         partnershipOrUnIncorporatedBodyPartnerTypeFormat reads json

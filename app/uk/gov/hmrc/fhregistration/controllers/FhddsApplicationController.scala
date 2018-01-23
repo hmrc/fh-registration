@@ -18,6 +18,7 @@ package uk.gov.hmrc.fhregistration.controllers
 
 import javax.inject.Inject
 
+import generated.fhdds.{LimitedDataFormat, PartnershipDataFormat, SoleDataFormat}
 import play.api.Logger
 import play.api.libs.json.Json
 import play.api.mvc.Action
@@ -34,8 +35,6 @@ import uk.gov.hmrc.play.microservice.controller.BaseController
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.util.{Failure, Success}
-import generated.fhdds.SoleDataFormat
-import generated.fhdds.LimitedDataFormat
 
 class FhddsApplicationController @Inject()(
   val desConnector: DesConnector,
@@ -131,6 +130,9 @@ class FhddsApplicationController @Inject()(
       case Some("corporate body") ⇒
         val data = scalaxb.fromXML[generated.limited.Data](xml)
         applicationService.limitedCompanySubmission(data, extraData.businessRegistrationDetails)
+      case Some("partnership") ⇒
+        val data = scalaxb.fromXML[generated.partnership.Data](xml)
+        applicationService.partnershipSubmission(data, extraData.businessRegistrationDetails)
     }
   }
 
