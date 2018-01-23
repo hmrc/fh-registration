@@ -1,12 +1,13 @@
 package uk.gov.hmrc.fhdds.testsupport
 
+import generated.fhdds.LimitedDataFormat
 import org.joda.time.DateTime
 import play.api.libs.json.{JsObject, JsString, Json}
 import uk.gov.hmrc.fhregistration.models.businessregistration.{Address, BusinessRegistrationDetails}
 import uk.gov.hmrc.fhregistration.models.des.DesSubmissionResponse
+import uk.gov.hmrc.fhregistration.models.fhdds.SubmissionRequest
 import uk.gov.hmrc.fhregistration.repositories.SubmissionExtraData
 import uk.gov.hmrc.fhregistration.services.ControllerServices
-import uk.gov.hmrc.fhregistration.models.fhdds.SubmissionRequest
 
 import scala.xml.XML
 
@@ -97,6 +98,13 @@ object TestData {
     "etmpId" → JsString("etmpId"))
 
   val aSubmissionRequest: SubmissionRequest = SubmissionRequest(formId = testFormId, formTypeRef = testFormTypeRef, formData = validFormData)
+
+  def desSubmissionResponse(registrationNumberFHDDS: String) = {
+    DesSubmissionResponse(
+      processingDate = DateTime.now().toString,
+      etmpFormBundleNumber = ControllerServices.createSubmissionRef(),
+      registrationNumberFHDDS = registrationNumberFHDDS)
+  }
 
   val aDesSubmissionResponse: DesSubmissionResponse = DesSubmissionResponse(
     processingDate = DateTime.now().toString,

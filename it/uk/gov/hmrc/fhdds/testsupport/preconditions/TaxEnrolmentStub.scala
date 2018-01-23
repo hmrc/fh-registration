@@ -7,11 +7,11 @@ case class TaxEnrolmentStub()(implicit builder: PreconditionBuilder) {
   def subscribe(subscriptionId: String) = {
 
     stubFor(
-      post(
-        urlPathEqualTo(s"/fhdds/tax-enrolments/subscriptions/$subscriptionId/subscriber")
+      put(
+        urlPathEqualTo(s"/tax-enrolments/subscriptions/$subscriptionId/subscriber")
       )
         .willReturn(
-          ok("")
+          ok("{}")
         )
     )
     builder

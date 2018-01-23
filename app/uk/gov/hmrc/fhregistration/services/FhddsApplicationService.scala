@@ -22,7 +22,7 @@ import com.google.inject.ImplementedBy
 import generated.limited.Data
 import generated.sole
 import uk.gov.hmrc.fhregistration.models.businessregistration.BusinessRegistrationDetails
-import uk.gov.hmrc.fhregistration.services.submission.{LimitedCompanySubmissionService, SoleTraderSubmissionService}
+import uk.gov.hmrc.fhregistration.services.submission.{LimitedCompanySubmissionService, PartnershipSubmissionService, SoleTraderSubmissionService}
 
 @Singleton
 class FhddsApplicationServiceImpl @Inject()(val countryCodeLookup: CountryCodeLookup)
@@ -34,6 +34,10 @@ trait FhddsApplicationService {
   protected val countryCodeLookup: CountryCodeLookup
   private val limitedCompanySubmissionService = new LimitedCompanySubmissionService(countryCodeLookup)
   private val soleTraderSubmissionService = new SoleTraderSubmissionService(countryCodeLookup)
+  private val partnershipSubmissionService = new PartnershipSubmissionService(countryCodeLookup)
+
+
+  def partnershipSubmission(xml: generated.partnership.Data, brd: BusinessRegistrationDetails) = partnershipSubmissionService.iformXmlToSubmission(xml, brd)
 
   def limitedCompanySubmission(xml: Data, brd: BusinessRegistrationDetails) = limitedCompanySubmissionService.iformXmlToSubmission(xml, brd)
   def soleTraderSubmission(xml: sole.Data, brd: BusinessRegistrationDetails)  = soleTraderSubmissionService.iformXmlToSubmission(xml, brd)

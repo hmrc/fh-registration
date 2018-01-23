@@ -12,6 +12,7 @@ import uk.gov.hmrc.fhdds.testsupport.preconditions.PreconditionBuilder
 import uk.gov.hmrc.play.it.Port
 import com.github.tomakehurst.wiremock.client.WireMock.{configureFor, reset, resetAllScenarios}
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig
+import uk.gov.hmrc.fhdds.testsupport.verifiers.VerifierBuilder
 
 trait TestedApplication
   extends GuiceOneServerPerSuite
@@ -33,6 +34,8 @@ trait TestedApplication
       interval = Span(50, Millis))
 
   def given() = new PreconditionBuilder
+
+  def expect() = new VerifierBuilder
 
   override implicit lazy val app: Application = new GuiceApplicationBuilder()
     .configure(replaceWithWiremock(Seq(

@@ -17,6 +17,7 @@
 package uk.gov.hmrc.fhregistration.services.submission
 
 import com.eclipsesource.schema.{SchemaType, SchemaValidator, _}
+import generated.fhdds.LimitedDataFormat
 import org.apache.commons.io.FilenameUtils
 import play.api.libs.json.Json
 import uk.gov.hmrc.fhregistration.models.businessregistration.BusinessRegistrationDetails
@@ -38,7 +39,7 @@ class LimitedCompanySubmissionServiceSpec extends UnitSpec {
     .parse(getClass.getResourceAsStream("/models/business-registration-details-limited-company.json"))
     .as[BusinessRegistrationDetails]
 
-  "Application service" should {
+  "Limited company submission service" should {
     "Create a correct json for fhdds-limited-company-large-uk.xml" in {
       validatesFor("fhdds-limited-company-large-uk.xml")
     }

@@ -17,7 +17,7 @@
 package uk.gov.hmrc.fhregistration.services.submission
 
 import com.eclipsesource.schema.{SchemaType, SchemaValidator, _}
-import generated.fhdds.SoleDataFormat
+import generated.fhdds.PartnershipDataFormat
 import org.apache.commons.io.FilenameUtils
 import play.api.libs.json.Json
 import uk.gov.hmrc.fhregistration.models.businessregistration.BusinessRegistrationDetails
@@ -28,50 +28,36 @@ import uk.gov.hmrc.play.test.UnitSpec
 
 import scala.xml.XML
 
-class SoleTraderSubmissionServiceSpec extends UnitSpec {
+class PartnershipSubmissionServiceSpec extends UnitSpec {
 
   val schemaAsJson = Json parse getClass.getResourceAsStream("/schemas/des-schema-r1.json")
   val schema = Json.fromJson[SchemaType](schemaAsJson).get
-  val validator = new SchemaValidator().validate(schema) _
-  val service = new SoleTraderSubmissionService(new CountryCodeLookupImpl)
+  val validator = SchemaValidator().validate(schema) _
+  val service = new PartnershipSubmissionService(new CountryCodeLookupImpl)
 
   val brd: BusinessRegistrationDetails = Json
-    .parse(getClass.getResourceAsStream("/models/business-registration-details-sole-trader.json"))
+    .parse(getClass.getResourceAsStream("/models/business-registration-details-partnership.json"))
     .as[BusinessRegistrationDetails]
 
-  "Sole trader submission service" should {
-    "Create a correct json for sole-proprietor-large-uk.xml" in {
-      val request = validatesFor("sole-proprietor-large-uk.xml")
+  "Partnership submission service" should {
 
+    "Create a correct json for partnership-minimum" in {
+      val request = validatesFor("partnership-minimum.xml")
 
-      request.subScriptionCreate.organizationType shouldBe "Sole Proprietor"
-      request.subScriptionCreate.businessDetail.nonProprietor shouldBe None
-      request.subScriptionCreate.businessDetail.soleProprietor shouldNot(be(None))
-
-      val solePoprietor = request.subScriptionCreate.businessDetail.soleProprietor.get
-      solePoprietor.identification.nino shouldEqual Some("AA123111A")
-      solePoprietor.identification.vatRegistrationNumber shouldEqual Some("123456789")
-      solePoprietor.identification.uniqueTaxpayerReference shouldEqual Some("1111111112")
-
-      request.subScriptionCreate.additionalBusinessInformation.partnerCorporateBody shouldEqual None
+      request.subScriptionCreate.businessDetail.nonProprietor should not be None
+      request.subScriptionCreate.businessDetail.nonProprietor.flatMap(_.identification.uniqueTaxpayerReference) shouldBe Some("1111111113")
 
     }
 
-    "Create a correct json for sole-proprietor-third-party-storage.xml" in {
-      validatesFor("sole-proprietor-third-party-storage.xml")
+    "Create a correct json for partnership-large-int" in {
+      val request = validatesFor("partnership-large-int.xml")
+
+      request.subScriptionCreate.businessDetail.nonProprietor should not be None
+      request.subScriptionCreate.businessDetail.nonProprietor.flatMap(_.identification.uniqueTaxpayerReference) shouldBe Some("1111111113")
+
+      request.subScriptionCreate.businessDetail.partnership.map(_.numbersOfPartners) shouldBe Some("6")
+
     }
-
-    "Create a correct json for sole-proprietor-minimum.xml" in {
-      validatesFor("sole-proprietor-minimum.xml")
-    }
-
-    "Create a correct json for sole-proprietor-minimum-international.xml" in {
-      val request = validatesFor("sole-proprietor-minimum-international.xml")
-
-      request.subScriptionCreate.contactDetail.address.map(_.countryCode) shouldEqual Some("AL")
-      request.subScriptionCreate.contactDetail.address.flatMap(_.line4) shouldEqual Some("Albania")
-    }
-
 
   }
 
@@ -81,6 +67,8 @@ class SoleTraderSubmissionServiceSpec extends UnitSpec {
 
 
     val json = Json.toJson(subscrtiptionCreate)
+
+
     val validationResult = validator(json)
     validationResult.fold(
       invalid = {errors ⇒ println(errors.toJson)},
@@ -92,19 +80,20 @@ class SoleTraderSubmissionServiceSpec extends UnitSpec {
     val expected = loadExpectedSubscriptionForFile(file)
     subscrtiptionCreate shouldEqual expected
 
+
     subscrtiptionCreate
   }
 
   def loadExpectedSubscriptionForFile(file: String): SubScriptionCreate = {
     val baseName = FilenameUtils getBaseName file
-    val resource = getClass.getResourceAsStream(s"/json/valid/sole-proprietor/$baseName.json")
+    val resource = getClass.getResourceAsStream(s"/json/valid/partnership/$baseName.json")
     Json.parse(resource).as[SubScriptionCreate]
   }
 
-  def loadSubmission(file: String): generated.sole.Data = {
+  def loadSubmission(file: String): generated.partnership.Data = {
     val xml = XML
-      .load(getClass.getResourceAsStream(s"/xml/valid/sole-proprietor/$file"))
-    scalaxb.fromXML[generated.sole.Data](xml)
+      .load(getClass.getResourceAsStream(s"/xml/valid/partnership/$file"))
+    scalaxb.fromXML[generated.partnership.Data](xml)
   }
 
 }

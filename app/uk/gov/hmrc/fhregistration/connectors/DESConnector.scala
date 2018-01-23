@@ -31,10 +31,10 @@ import scala.concurrent.Future
 
 class DesConnectorImpl extends DesConnector with ServicesConfig {
 
-  def desServiceUri() = config("des-service").getString("uri").getOrElse("")
+  def desServiceUri = config("des-service").getString("uri").getOrElse("")
   def desServiceBaseUri() = config("des-service").getString("baseuri").getOrElse("")
-  def desServiceStatusUri() = s"${baseUrl("des-service")}${desServiceBaseUri()}"
-  def desSubmissionUrl(safeId: String) =s"${baseUrl("des-service")}${desServiceUri()}/$safeId"
+  def desServiceStatusUri = s"${baseUrl("des-service")}${desServiceBaseUri()}"
+  def desSubmissionUrl(safeId: String) =s"${baseUrl("des-service")}${desServiceUri}/$safeId"
 
   lazy val http: WSHttp = WSHttp
 
