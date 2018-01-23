@@ -1,10 +1,12 @@
 package uk.gov.hmrc.fhdds.testsupport.preconditions
 
+
 import com.github.tomakehurst.wiremock.client.WireMock._
 import play.api.libs.json.Json
 import uk.gov.hmrc.fhdds.testsupport.TestData
 import uk.gov.hmrc.fhregistration.models.des.DesSubmissionResponse
 import play.api.libs.json.{JsObject, JsString, JsValue}
+
 
 case class DesStub()(implicit builder: PreconditionBuilder) {
 
@@ -14,14 +16,14 @@ case class DesStub()(implicit builder: PreconditionBuilder) {
   val processingJson: JsValue = JsObject(Seq("subscriptionStatus" → JsString("Sent to RCM")))
   val successfulJson: JsValue = JsObject(Seq("subscriptionStatus" → JsString("Successful")))
 
-  def sendSubmission(safeId: String) = {
+  def acceptsSubscription(safeId: String, registrationNumber: String) = {
     stubFor(
       post(
         urlPathEqualTo(s"/fhdds-stubs/application/$safeId")
       )
         .willReturn(
           ok(
-            Json.toJson(TestData.aDesSubmissionResponse).toString
+            Json.toJson(TestData.desSubmissionResponse(registrationNumber)).toString
           )
         )
     )
@@ -45,4 +47,6 @@ case class DesStub()(implicit builder: PreconditionBuilder) {
     )
     builder
   }
+
+
 }

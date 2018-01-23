@@ -23,6 +23,7 @@ import scala.xml.XML
 class IFormXmlParserSpec extends UnitSpec {
   import generated.fhdds.SoleDataFormat
   import generated.fhdds.LimitedDataFormat
+  import generated.fhdds.PartnershipDataFormat
 
   "test xml parsing for limited company" should {
     "parse without errors shortest form" in {
@@ -82,6 +83,22 @@ class IFormXmlParserSpec extends UnitSpec {
       val file = "sole-proprietor-third-party-storage.xml"
       val x = XML.load(getXmlInputStream(s"valid/sole-proprietor/$file"))
       scalaxb.fromXML[generated.sole.Data](x) should not be null
+
+    }
+  }
+
+  "test xml parsing for partnership" should {
+    "parse without errors shortest form" in {
+      val file = "partnership-minimum.xml"
+      val x = XML.load(getXmlInputStream(s"valid/partnership/$file"))
+      scalaxb.fromXML[generated.partnership.Data](x) should not be null
+
+    }
+
+    "parse without errors longer form" in {
+      val file = "partnership-large-int.xml"
+      val x = XML.load(getXmlInputStream(s"valid/partnership/$file"))
+      scalaxb.fromXML[generated.partnership.Data](x) should not be null
 
     }
   }

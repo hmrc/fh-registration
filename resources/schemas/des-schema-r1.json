@@ -467,7 +467,7 @@
       "properties": {
         "title": {
           "type": "string",
-          "pattern": "^[a-zA-ZÀ-ÿ'‘’—–‐-]{2,30}$"
+          "pattern": "^[a-zA-ZÀ-ÿ '‘’—–‐-]{2,30}$"
         },
         "names": {
           "$ref": "#/definitions/namesType"
@@ -542,7 +542,7 @@
         },
         "personStatus": {
           "type": "string",
-          "pattern": "^[a-zA-Z0-9À-ÿ!#$%&'‘’\"“”«»()*+,./:;=?@\\[\\]|~£€¥\\u005C—–‐_^`-]{1,140}$"
+          "pattern": "^[a-zA-Z0-9À-ÿ !#$%&'‘’\"“”«»()*+,./:;=?@\\[\\]|~£€¥\\u005C—–‐_^`-]{1,140}$"
         },
         "email": {
           "type": "string",
@@ -602,11 +602,11 @@
       "properties": {
         "telephone": {
           "type": "string",
-          "pattern": "^[0-9 ()+--]{1,24}$"
+          "pattern": "^[0-9 ()+‐-]{1,24}$"
         },
         "mobileNumber": {
           "type": "string",
-          "pattern": "^[0-9 ()+--]{1,24}$"
+          "pattern": "^[0-9 ()+‐-]{1,24}$"
         },
         "email": {
           "type": "string",
@@ -803,7 +803,7 @@
           "properties": {
             "tradingName": {
               "type": "string",
-              "pattern": "^[a-zA-Z0-9À-ÿ!#$%&'‘’\"“”«»()*+,./:;=?@\\[\\]|~£€¥\\u005C—–‐_^`-]{1,120}$"
+              "pattern": "^[a-zA-Z0-9À-ÿ !#$%&'‘’\"“”«»()*+,./:;=?@\\[\\]|~£€¥\\u005C—–‐_^`-]{1,120}$"
             },
             "name": {
               "$ref": "#/definitions/namesType"
@@ -847,7 +847,7 @@
             },
             "tradingName": {
               "type": "string",
-              "pattern": "^[a-zA-Z0-9À-ÿ!#$%&'‘’\"“”«»()*+,./:;=?@\\[\\]|~£€¥\\u005C—–‐_^`-]{1,120}$"
+              "pattern": "^[a-zA-Z0-9À-ÿ !#$%&'‘’\"“”«»()*+,./:;=?@\\[\\]|~£€¥\\u005C—–‐_^`-]{1,120}$"
             }
           },
           "additionalProperties": false

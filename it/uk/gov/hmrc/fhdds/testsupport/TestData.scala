@@ -99,6 +99,13 @@ object TestData {
 
   val aSubmissionRequest: SubmissionRequest = SubmissionRequest(formId = testFormId, formTypeRef = testFormTypeRef, formData = validFormData)
 
+  def desSubmissionResponse(registrationNumberFHDDS: String) = {
+    DesSubmissionResponse(
+      processingDate = DateTime.now().toString,
+      etmpFormBundleNumber = ControllerServices.createSubmissionRef(),
+      registrationNumberFHDDS = registrationNumberFHDDS)
+  }
+
   val aDesSubmissionResponse: DesSubmissionResponse = DesSubmissionResponse(
     processingDate = DateTime.now().toString,
     etmpFormBundleNumber = ControllerServices.createSubmissionRef(),
