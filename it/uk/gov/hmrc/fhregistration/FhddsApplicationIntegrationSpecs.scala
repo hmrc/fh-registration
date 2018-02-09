@@ -49,10 +49,11 @@ class FhddsApplicationIntegrationSpecs
 
       "get DES response" in {
         val registrationNumber = ControllerServices.createSubmissionRef()
+        val etmpFormBundleNumber = Array.fill(9)((math.random * 10).toInt).mkString
         given()
           .audit.writesAuditOrMerged()
-          .des.acceptsSubscription(testSafeId, registrationNumber)
-          .taxEnrolment.subscribe(registrationNumber)
+          .des.acceptsSubscription(testSafeId, registrationNumber, etmpFormBundleNumber)
+          .taxEnrolment.subscribe(etmpFormBundleNumber)
 
         WsTestClient.withClient { client ⇒
           whenReady(
