@@ -16,14 +16,14 @@ case class DesStub()(implicit builder: PreconditionBuilder) {
   val processingJson: JsValue = JsObject(Seq("subscriptionStatus" → JsString("Sent to RCM")))
   val successfulJson: JsValue = JsObject(Seq("subscriptionStatus" → JsString("Successful")))
 
-  def acceptsSubscription(safeId: String, registrationNumber: String) = {
+  def acceptsSubscription(safeId: String, registrationNumber: String, etmpFormNumberBundle: String) = {
     stubFor(
       post(
         urlPathEqualTo(s"/fhdds-stubs/application/$safeId")
       )
         .willReturn(
           ok(
-            Json.toJson(TestData.desSubmissionResponse(registrationNumber)).toString
+            Json.toJson(TestData.desSubmissionResponse(etmpFormNumberBundle, registrationNumber)).toString
           )
         )
     )

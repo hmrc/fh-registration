@@ -63,7 +63,7 @@ class FhddsApplicationController @Inject()(
         desResponse.registrationNumberFHDDS
       )
       subscribeToTaxEnrolment(
-        desResponse.registrationNumberFHDDS,
+        safeId,
         desResponse.etmpFormBundleNumber,
         extraData.authorization)
       auditSubmission(request, application, extraData, desResponse, response.registrationNumber)
@@ -104,13 +104,13 @@ class FhddsApplicationController @Inject()(
       }
   }
 
-  private def subscribeToTaxEnrolment(subscriptionId: String, etmpFormBundleNumber: String, authorization: Option[String])(implicit hc: HeaderCarrier) = {
-    Logger.info(s"Sending subscription $subscriptionId for $etmpFormBundleNumber to tax enrolments")
+  private def subscribeToTaxEnrolment(safeId: String, etmpFormBundleNumber: String, authorization: Option[String])(implicit hc: HeaderCarrier) = {
+    Logger.info(s"Sending subscription for safeId = $safeId for etmpFormBundelNumber = $etmpFormBundleNumber to tax enrolments")
     taxEnrolmentConnector
-     .subscribe(subscriptionId, etmpFormBundleNumber, authorization)(hc)
+     .subscribe(safeId, etmpFormBundleNumber, authorization)(hc)
      .onComplete({
-       case Success(r) ⇒ Logger.info(s"Tax enrolments for subscription $subscriptionId and etmpFormBundleNumber $etmpFormBundleNumber returned $r")
-       case Failure(e) ⇒ Logger.error(s"Tax enrolments for subscription $subscriptionId and etmpFormBundleNumber $etmpFormBundleNumber failed", e)
+       case Success(r) ⇒ Logger.info(s"Tax enrolments for subscription $safeId and etmpFormBundleNumber $etmpFormBundleNumber returned $r")
+       case Failure(e) ⇒ Logger.error(s"Tax enrolments for subscription $safeId and etmpFormBundleNumber $etmpFormBundleNumber failed", e)
      })
 
   }
