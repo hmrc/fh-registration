@@ -53,13 +53,17 @@ trait AuditService {
     val details = JsObject(Seq(
       "authorization" → Json.toJson(extraData.authorization),
       "submissionRef" → JsString(submissionRef),
-      "submissionData" → Json.toJson(application),
+      "submissionData" → Json.toJson(application.subScriptionCreate),
       "businessPartnerRecord" → Json.toJson(extraData.businessRegistrationDetails)
     ))
 
     val customTags = Map(
+      "path" → Some(s"/fulfilment-diligence/subscription/${extraData.businessRegistrationDetails.safeId}"),
       "clientIP" -> hc.trueClientIp,
       "clientPort" -> hc.trueClientPort,
+      "X-Request-Chain" → Some(hc.requestChain.value),
+      "X-Session-ID" → hc.sessionId.map(_.value),
+      "deviceID" → hc.deviceID,
       "transactionName" -> Some(s"FHDDS - $submissionRef")
     ) collect {
       case (key, Some(value)) ⇒ key -> value
