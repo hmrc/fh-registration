@@ -19,7 +19,7 @@ package uk.gov.hmrc.fhregistration.services.submission
 import com.eclipsesource.schema.{SchemaType, SchemaValidator, _}
 import generated.fhdds.LimitedDataFormat
 import org.apache.commons.io.FilenameUtils
-import play.api.libs.json.Json
+import play.api.libs.json.{JsValue, Json}
 import uk.gov.hmrc.fhregistration.models.businessregistration.BusinessRegistrationDetails
 import uk.gov.hmrc.fhregistration.models.des.SubScriptionCreate
 import uk.gov.hmrc.fhregistration.models.des.SubScriptionCreate.format
@@ -30,7 +30,7 @@ import scala.xml.XML
 
 class LimitedCompanySubmissionServiceSpec extends UnitSpec {
 
-  val schemaAsJson = Json parse getClass.getResourceAsStream("/schemas/des-schema-r1.json")
+  val schemaAsJson: JsValue = Json parse getClass.getResourceAsStream("/schemas/des-schema-r1.json")
   val schema = Json.fromJson[SchemaType](schemaAsJson).get
   val validator = new SchemaValidator().validate(schema) _
   val service = new LimitedCompanySubmissionService(new CountryCodeLookupImpl)

@@ -36,7 +36,6 @@ class SubmissionExtraDataMocksFhddsApplication
 
       "retrieve details with valid userId and formTypeRef" in {
 
-        <<<<<<< HEAD
           //  feature("Get Business Registration Details") {
           //
           //    scenario("With valid or not valid userId and formTypeRef") {
@@ -69,7 +68,7 @@ class SubmissionExtraDataMocksFhddsApplication
           //
           //    }
           //  }
-          =======
+
         given().audit.writesAuditOrMerged()
 
         val response = WsTestClient.withClient { client ⇒
@@ -96,7 +95,5 @@ class SubmissionExtraDataMocksFhddsApplication
 
     }
   }
-  >>>>>>>
-  5 bf8803ddd7df45a395d590c647b433917121f4d
 
 }
