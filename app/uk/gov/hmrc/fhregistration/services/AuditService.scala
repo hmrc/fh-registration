@@ -35,12 +35,12 @@ class AuditServiceImpl extends AuditService {
 @ImplementedBy(classOf[AuditServiceImpl])
 trait AuditService {
 
-  val AuditSource = "fhdds"
-  val AuditEmailSource = "fhdds-send-email"
-  val AuditType = "fulfilmentHouseRegistrationSubmission"
+  val auditSource = "fhdds"
+  val auditEmailSource = "fhdds-send-email"
+  val auditType = "fulfilmentHouseRegistrationSubmission"
 
-  val Failed = "fhdds-send-email-Failed"
-  val Successful = "fhdds-send-email-Successful"
+  val failed = "fhdds-send-email-failed"
+  val successful = "fhdds-send-email-successful"
 
   def buildSubmissionAuditEvent(
     submissionRequest: SubmissionRequest,
@@ -66,8 +66,8 @@ trait AuditService {
     }
 
     ExtendedDataEvent(
-      auditSource = AuditSource,
-      auditType = AuditType,
+      auditSource = auditSource,
+      auditType = auditType,
       tags = hc.headers.toMap ++ customTags,
       detail = details
     )
@@ -75,18 +75,19 @@ trait AuditService {
   }
 
   def sendEmailSuccessEvent(userData: UserData)(implicit hc: HeaderCarrier, ec: ExecutionContext) =
-    sendEvent(Successful, Map("user-data" -> userData.toString(), "service-action" -> "send-email"))
+    sendEvent(successful, Map("user-data" -> userData.toString(), "service-action" -> "send-email"))
 
   def sendEmailFailureEvent(userData: UserData, error: Throwable)(implicit hc: HeaderCarrier, ec: ExecutionContext): Unit =
-    sendEvent(Failed, Map("user-data" -> userData.toString(), "error" -> error.toString(), "service-action" -> "send-email"))
+    sendEvent(failed, Map("user-data" -> userData.toString(), "error" -> error.toString(), "service-action" -> "send-email"))
 
   private def sendEvent(auditType: String, detail: Map[String, String])(implicit hc: HeaderCarrier, ec: ExecutionContext) =
     eventFor(auditType, detail)
 
   private def eventFor(auditType: String, detail: Map[String, String])(implicit hc: HeaderCarrier) =
     DataEvent(
-      auditSource = AuditEmailSource,
+      auditSource = auditEmailSource,
       auditType = auditType,
       tags = hc.headers.toMap,
       detail = detail)
+
 }

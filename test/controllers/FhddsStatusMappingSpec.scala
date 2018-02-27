@@ -52,16 +52,16 @@ class FhddsStatusMappingSpec extends UnitSpec with BaseController {
 
     }
 
-    "map MDTP subscription status to Successful from DES status" in {
+    "map MDTP subscription status to successful from DES status" in {
 
-      val json: JsValue = JsObject(Seq("subscriptionStatus" → JsString("Successful")))
+      val json: JsValue = JsObject(Seq("subscriptionStatus" → JsString("successful")))
 
 
       val fakeDesResponse: HttpResponse = HttpResponse(200, Some(json))
 
       val mdtpStatus = fhddsApplicationController.mdtpSubscriptionStatus(fakeDesResponse)
 
-      mdtpStatus shouldBe Ok("Successful")
+      mdtpStatus shouldBe Ok("successful")
 
     }
 

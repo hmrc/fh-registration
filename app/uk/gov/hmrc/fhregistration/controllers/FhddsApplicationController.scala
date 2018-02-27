@@ -33,7 +33,7 @@ import uk.gov.hmrc.play.microservice.controller.BaseController
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.util.{Failure, Success}
-import generated.limited.SoleDataFormat
+
 
 class FhddsApplicationController @Inject()(
   val desConnector: DesConnector,
@@ -63,7 +63,7 @@ class FhddsApplicationController @Inject()(
         desResponse.registrationNumberFHDDS
       )
       subscribeToTaxEnrolment(
-        desResponse.registrationNumberFHDDS,
+        safeId,
         desResponse.etmpFormBundleNumber,
         extraData.authorization)
       auditSubmission(request, application, extraData, desResponse, response.registrationNumber)
@@ -83,7 +83,7 @@ class FhddsApplicationController @Inject()(
             userData = UserData(email = mail, submissionReference = submissionRef))(hc, request, MdcLoggingExecutionContext.fromLoggingDetails)
       }
       case None =>
-        Logger.debug(s"No email confirmation for $submissionRef")
+        Logger.debug(s"Unable to retrieve email address for $submissionRef")
     }
   }
 
@@ -120,13 +120,13 @@ class FhddsApplicationController @Inject()(
       }
   }
 
-  private def subscribeToTaxEnrolment(subscriptionId: String, etmpFormBundleNumber: String, authorization: Option[String])(implicit hc: HeaderCarrier) = {
-    Logger.info(s"Sending subscription $subscriptionId for $etmpFormBundleNumber to tax enrolments")
+  private def subscribeToTaxEnrolment(safeId: String, etmpFormBundleNumber: String, authorization: Option[String])(implicit hc: HeaderCarrier) = {
+    Logger.info(s"Sending subscription for safeId = $safeId for etmpFormBundelNumber = $etmpFormBundleNumber to tax enrolments")
     taxEnrolmentConnector
-     .subscribe(subscriptionId, etmpFormBundleNumber, authorization)(hc)
+     .subscribe(safeId, etmpFormBundleNumber, authorization)(hc)
      .onComplete({
-       case Success(r) ⇒ Logger.info(s"Tax enrolments for subscription $subscriptionId and etmpFormBundleNumber $etmpFormBundleNumber returned $r")
-       case Failure(e) ⇒ Logger.error(s"Tax enrolments for subscription $subscriptionId and etmpFormBundleNumber $etmpFormBundleNumber failed", e)
+       case Success(r) ⇒ Logger.info(s"Tax enrolments for subscription $safeId and etmpFormBundleNumber $etmpFormBundleNumber returned $r")
+       case Failure(e) ⇒ Logger.error(s"Tax enrolments for subscription $safeId and etmpFormBundleNumber $etmpFormBundleNumber failed", e)
      })
 
   }
@@ -174,7 +174,7 @@ class FhddsApplicationController @Inject()(
     (responseInJs \ "subscriptionStatus").as[String] match {
       case ("Reg Form Received") => Ok("Received")
       case ("Sent To DS") | ("DS Outcome In Progress") | ("In processing") | ("Sent to RCM") => Ok("Processing")
-      case ("Successful") => Ok("Successful")
+      case ("successful") => Ok("successful")
       case ("Rejected") => Ok("Rejected")
       case _ => Unauthorized("Unexpected business error received.")
     }

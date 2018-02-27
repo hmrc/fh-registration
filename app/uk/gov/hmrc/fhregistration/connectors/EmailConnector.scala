@@ -21,7 +21,7 @@ import play.api.Logger
 import play.api.mvc.Request
 import uk.gov.hmrc.fhregistration.config.WSHttp
 import uk.gov.hmrc.fhregistration.models.fhdds.UserData
-import uk.gov.hmrc.fhregistration.models.fhdds.SentEmailRequest
+import uk.gov.hmrc.fhregistration.models.fhdds.SendEmailRequest
 import uk.gov.hmrc.fhregistration.services.{AuditService, AuditServiceImpl}
 import uk.gov.hmrc.http.{HeaderCarrier, HttpPost}
 import uk.gov.hmrc.play.config.ServicesConfig
@@ -31,7 +31,7 @@ import scala.concurrent.{ExecutionContext, Future}
 class EmailConnectorImpl extends EmailConnector with ServicesConfig {
   override val httpPost = WSHttp
   override val auditService = new AuditServiceImpl
-  override val emailUrl = baseUrl("email") + "/send-templated-email"
+  override val emailUrl = baseUrl("email") + "/hmrc/email"
   override val defaultEmailTemplateID =  getConfString(s"email.defaultTemplateId", "fhdds_submission_confirmation")
 }
 
@@ -47,11 +47,11 @@ trait EmailConnector {
     Logger.debug(s"User Data submissionReference ===> ${userData.submissionReference}")
     val toList: List[String] = List(userData.email)
 
-    val email: SentEmailRequest = SentEmailRequest(templateId = emailTemplateId, to = toList, force = false)
+    val email: SendEmailRequest = SendEmailRequest(templateId = emailTemplateId, to = toList, force = true)
 
-    Logger.debug(s"Sending email, SentEmailRequest=$email")
+    Logger.debug(s"Sending email, SendEmailRequest=$email")
 
-    httpPost.POST[SentEmailRequest, Int](emailUrl, email) map {
+    httpPost.POST[SendEmailRequest, Int](emailUrl, email) map {
       case res =>
         auditService.sendEmailSuccessEvent(userData).auditType
     } recover {
