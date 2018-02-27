@@ -17,16 +17,14 @@
 package uk.gov.hmrc.fhregistration.controllers
 
 import javax.inject.Inject
-
-import generated.fhdds.{LimitedDataFormat, PartnershipDataFormat, SoleDataFormat}
 import play.api.Logger
 import play.api.libs.json.Json
-import play.api.mvc.Action
+import play.api.mvc.{Action, Request}
 import uk.gov.hmrc.fhregistration.config.MicroserviceAuditConnector
-import uk.gov.hmrc.fhregistration.connectors.{DesConnector, TaxEnrolmentConnector}
+import uk.gov.hmrc.fhregistration.connectors.{DesConnector, EmailConnector, TaxEnrolmentConnector}
 import uk.gov.hmrc.fhregistration.models.des.SubScriptionCreate.format
 import uk.gov.hmrc.fhregistration.models.des.{DesSubmissionResponse, SubScriptionCreate}
-import uk.gov.hmrc.fhregistration.models.fhdds.{SubmissionRequest, SubmissionResponse}
+import uk.gov.hmrc.fhregistration.models.fhdds.{SubmissionRequest, SubmissionResponse, UserData}
 import uk.gov.hmrc.fhregistration.repositories.{SubmissionExtraData, SubmissionExtraDataRepository}
 import uk.gov.hmrc.fhregistration.services.{AuditService, ControllerServices, FhddsApplicationService}
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, NotFoundException}
@@ -35,10 +33,12 @@ import uk.gov.hmrc.play.microservice.controller.BaseController
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.util.{Failure, Success}
+import generated.limited.SoleDataFormat
 
 class FhddsApplicationController @Inject()(
   val desConnector: DesConnector,
   val taxEnrolmentConnector: TaxEnrolmentConnector,
+  val emailConnector: EmailConnector,
   val submissionDataRepository: SubmissionExtraDataRepository,
   val applicationService: FhddsApplicationService,
   val auditService: AuditService)
@@ -63,11 +63,27 @@ class FhddsApplicationController @Inject()(
         desResponse.registrationNumberFHDDS
       )
       subscribeToTaxEnrolment(
-        safeId,
+        desResponse.registrationNumberFHDDS,
         desResponse.etmpFormBundleNumber,
         extraData.authorization)
       auditSubmission(request, application, extraData, desResponse, response.registrationNumber)
       Ok(Json toJson response)
+    }
+  }
+
+  //todo: send email only if an application successfully submitted, and submissionRef returned.
+  def sendEmail(email: Option[String], submissionRef: String)(implicit hc: HeaderCarrier, request: Request[AnyRef]) = {
+    email match {
+      case Some(mail) => {
+        val emailTemplateId = emailConnector.defaultEmailTemplateID
+        import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext
+        emailConnector
+          .sendEmail(
+            emailTemplateId = emailTemplateId,
+            userData = UserData(email = mail, submissionReference = submissionRef))(hc, request, MdcLoggingExecutionContext.fromLoggingDetails)
+      }
+      case None =>
+        Logger.debug(s"No email confirmation for $submissionRef")
     }
   }
 
@@ -104,13 +120,13 @@ class FhddsApplicationController @Inject()(
       }
   }
 
-  private def subscribeToTaxEnrolment(safeId: String, etmpFormBundleNumber: String, authorization: Option[String])(implicit hc: HeaderCarrier) = {
-    Logger.info(s"Sending subscription for safeId = $safeId for etmpFormBundelNumber = $etmpFormBundleNumber to tax enrolments")
+  private def subscribeToTaxEnrolment(subscriptionId: String, etmpFormBundleNumber: String, authorization: Option[String])(implicit hc: HeaderCarrier) = {
+    Logger.info(s"Sending subscription $subscriptionId for $etmpFormBundleNumber to tax enrolments")
     taxEnrolmentConnector
-     .subscribe(safeId, etmpFormBundleNumber, authorization)(hc)
+     .subscribe(subscriptionId, etmpFormBundleNumber, authorization)(hc)
      .onComplete({
-       case Success(r) ⇒ Logger.info(s"Tax enrolments for subscription $safeId and etmpFormBundleNumber $etmpFormBundleNumber returned $r")
-       case Failure(e) ⇒ Logger.error(s"Tax enrolments for subscription $safeId and etmpFormBundleNumber $etmpFormBundleNumber failed", e)
+       case Success(r) ⇒ Logger.info(s"Tax enrolments for subscription $subscriptionId and etmpFormBundleNumber $etmpFormBundleNumber returned $r")
+       case Failure(e) ⇒ Logger.error(s"Tax enrolments for subscription $subscriptionId and etmpFormBundleNumber $etmpFormBundleNumber failed", e)
      })
 
   }
@@ -130,9 +146,6 @@ class FhddsApplicationController @Inject()(
       case Some("corporate body") ⇒
         val data = scalaxb.fromXML[generated.limited.Data](xml)
         applicationService.limitedCompanySubmission(data, extraData.businessRegistrationDetails)
-      case Some("partnership") ⇒
-        val data = scalaxb.fromXML[generated.partnership.Data](xml)
-        applicationService.partnershipSubmission(data, extraData.businessRegistrationDetails)
     }
   }
 
