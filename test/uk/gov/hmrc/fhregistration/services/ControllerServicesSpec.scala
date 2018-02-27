@@ -18,9 +18,14 @@ package uk.gov.hmrc.fhregistration.services
 
 import uk.gov.hmrc.play.test.UnitSpec
 
+import scala.util.Success
 import scala.util.matching.Regex
 
 class ControllerServicesSpec extends UnitSpec {
+
+  val fhddsApplicationController = FhddsApplicationControllerMock.fhddsApplicationController
+  implicit val request = FhddsApplicationControllerMock.request
+  implicit val hc = FhddsApplicationControllerMock.headerCarrier
 
   "createSubmissionRef" should {
     "Generates a submission reference number" in {
@@ -34,4 +39,14 @@ class ControllerServicesSpec extends UnitSpec {
     }
   }
 
+  "emailConnector" should {
+    "send email if there is an email from the user" in {
+      val result = fhddsApplicationController.sendEmail(Some("test@email.com"),"testSubmissionRef")
+      result.value.get shouldBe Success(null)
+    }
+    "no email will send if there is not an email from the user" in {
+      val result = fhddsApplicationController.sendEmail(None,"testSubmissionRef")
+      result.value.get shouldBe Success(())
+    }
+  }
 }

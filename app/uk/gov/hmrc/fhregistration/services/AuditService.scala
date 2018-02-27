@@ -18,13 +18,14 @@ package uk.gov.hmrc.fhregistration.services
 
 import play.api.libs.json.{JsObject, JsString, Json}
 import uk.gov.hmrc.fhregistration.models.des.{DesSubmissionResponse, SubScriptionCreate}
-import uk.gov.hmrc.fhregistration.models.fhdds.SubmissionRequest
+import uk.gov.hmrc.fhregistration.models.fhdds.{SubmissionRequest, UserData}
 import uk.gov.hmrc.fhregistration.repositories.SubmissionExtraData
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.play.audit.model.ExtendedDataEvent
+import uk.gov.hmrc.play.audit.model.{DataEvent, ExtendedDataEvent}
 import javax.inject.Singleton
-
 import com.google.inject.ImplementedBy
+
+import scala.concurrent.ExecutionContext
 
 @Singleton
 class AuditServiceImpl extends AuditService {
@@ -34,8 +35,12 @@ class AuditServiceImpl extends AuditService {
 @ImplementedBy(classOf[AuditServiceImpl])
 trait AuditService {
 
-  val AuditSource = "fhdds"
-  val AuditType = "fulfilmentHouseRegistrationSubmission"
+  val auditSource = "fhdds"
+  val auditEmailSource = "fhdds-send-email"
+  val auditType = "fulfilmentHouseRegistrationSubmission"
+
+  val failed = "fhdds-send-email-failed"
+  val successful = "fhdds-send-email-successful"
 
   def buildSubmissionAuditEvent(
     submissionRequest: SubmissionRequest,
@@ -44,7 +49,6 @@ trait AuditService {
     desResponse: DesSubmissionResponse,
     submissionRef: String
   )(implicit hc: HeaderCarrier): ExtendedDataEvent = {
-
 
     val details = JsObject(Seq(
       "authorization" → Json.toJson(extraData.authorization),
@@ -62,14 +66,28 @@ trait AuditService {
     }
 
     ExtendedDataEvent(
-      auditSource = AuditSource,
-      auditType = AuditType,
+      auditSource = auditSource,
+      auditType = auditType,
       tags = hc.headers.toMap ++ customTags,
       detail = details
     )
 
-
-
   }
+
+  def sendEmailSuccessEvent(userData: UserData)(implicit hc: HeaderCarrier, ec: ExecutionContext) =
+    sendEvent(successful, Map("user-data" -> userData.toString(), "service-action" -> "send-email"))
+
+  def sendEmailFailureEvent(userData: UserData, error: Throwable)(implicit hc: HeaderCarrier, ec: ExecutionContext): Unit =
+    sendEvent(failed, Map("user-data" -> userData.toString(), "error" -> error.toString(), "service-action" -> "send-email"))
+
+  private def sendEvent(auditType: String, detail: Map[String, String])(implicit hc: HeaderCarrier, ec: ExecutionContext) =
+    eventFor(auditType, detail)
+
+  private def eventFor(auditType: String, detail: Map[String, String])(implicit hc: HeaderCarrier) =
+    DataEvent(
+      auditSource = auditEmailSource,
+      auditType = auditType,
+      tags = hc.headers.toMap,
+      detail = detail)
 
 }
