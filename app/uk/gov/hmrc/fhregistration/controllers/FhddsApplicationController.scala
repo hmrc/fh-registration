@@ -90,10 +90,10 @@ class FhddsApplicationController @Inject()(
 
   private def auditSubmission(
     submissionRequest: SubmissionRequest,
-    application      : SubScriptionCreate,
-    extraData        : SubmissionExtraData,
-    desResponse      : DesSubmissionResponse,
-    submissionRef    : String
+    application: SubScriptionCreate,
+    extraData: SubmissionExtraData,
+    desResponse: DesSubmissionResponse,
+    submissionRef: String
   )(implicit hc: HeaderCarrier) = {
 
     Logger.info(s"Sending audit event for submissionRef $submissionRef")
@@ -110,8 +110,8 @@ class FhddsApplicationController @Inject()(
   }
 
   private def storeRegistrationNumberAndBundleNumber(formId: String, submissionRef: String,
-    etmpFormBundleNumber                                   : String,
-    registrationNumberFHDDS                                : String) = {
+                                                     etmpFormBundleNumber: String,
+                                                     registrationNumberFHDDS: String) = {
     submissionDataRepository
       .updateRegistrationNumberWithETMPFormBundleNumber(formId,
         submissionRef, etmpFormBundleNumber, registrationNumberFHDDS)
