@@ -17,6 +17,8 @@
 package uk.gov.hmrc.fhregistration.controllers
 
 import javax.inject.Inject
+
+import generated.fhdds.{LimitedDataFormat, PartnershipDataFormat, SoleDataFormat}
 import play.api.Logger
 import play.api.libs.json.Json
 import play.api.mvc.{Action, Request}
@@ -122,12 +124,11 @@ class FhddsApplicationController @Inject()(
   private def subscribeToTaxEnrolment(safeId: String, etmpFormBundleNumber: String, authorization: Option[String])(implicit hc: HeaderCarrier) = {
     Logger.info(s"Sending subscription for safeId = $safeId for etmpFormBundelNumber = $etmpFormBundleNumber to tax enrolments")
     taxEnrolmentConnector
-      .subscribe(safeId, etmpFormBundleNumber, authorization)(hc)
-      .onComplete({
-        case Success(r) ⇒ Logger.info(s"Tax enrolments for subscription $safeId and etmpFormBundleNumber $etmpFormBundleNumber returned $r")
-        case Failure(e) ⇒ Logger.error(s"Tax enrolments for subscription $safeId and etmpFormBundleNumber $etmpFormBundleNumber failed", e)
-      })
-
+     .subscribe(safeId, etmpFormBundleNumber, authorization)(hc)
+     .onComplete({
+       case Success(r) ⇒ Logger.info(s"Tax enrolments for subscription $safeId and etmpFormBundleNumber $etmpFormBundleNumber returned $r")
+       case Failure(e) ⇒ Logger.error(s"Tax enrolments for subscription $safeId and etmpFormBundleNumber $etmpFormBundleNumber failed", e)
+     })
   }
 
   def subscriptionCallback = Action { request ⇒
