@@ -14,7 +14,7 @@ case class DesStub()(implicit builder: PreconditionBuilder) {
 
   val receivedJson: JsValue = JsObject(Seq("subscriptionStatus" → JsString("Reg Form Received")))
   val processingJson: JsValue = JsObject(Seq("subscriptionStatus" → JsString("Sent to RCM")))
-  val successfulJson: JsValue = JsObject(Seq("subscriptionStatus" → JsString("successful")))
+  val successfulJson: JsValue = JsObject(Seq("subscriptionStatus" → JsString("Successful")))
 
   def acceptsSubscription(safeId: String, registrationNumber: String, etmpFormNumberBundle: String) = {
     stubFor(

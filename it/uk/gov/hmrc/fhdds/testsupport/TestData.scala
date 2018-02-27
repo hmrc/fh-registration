@@ -27,9 +27,9 @@ object TestData {
     scalaxb.fromXML[generated.limited.Data](xml)
   }
 
-  //  val someBusinessDetails: String = {
-  //    scala.io.Source.fromFile(s"${directoryPath}business-registration-details.json").mkString
-  //  }
+//  val someBusinessDetails: String = {
+//    scala.io.Source.fromFile(s"${directoryPath}business-registration-details.json").mkString
+//  }
 
   val validSubmissionRef = "ValidSubmissionRef123"
 

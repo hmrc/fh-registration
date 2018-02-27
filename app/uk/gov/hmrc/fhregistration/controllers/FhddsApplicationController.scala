@@ -71,7 +71,6 @@ class FhddsApplicationController @Inject()(
     }
   }
 
-  //todo: send email only if an application successfully submitted, and submissionRef returned.
   def sendEmail(email: Option[String], submissionRef: String)(implicit hc: HeaderCarrier, request: Request[AnyRef]) = {
     email match {
       case Some(mail) => {
@@ -82,17 +81,17 @@ class FhddsApplicationController @Inject()(
             emailTemplateId = emailTemplateId,
             userData = UserData(email = mail, submissionReference = submissionRef))(hc, request, MdcLoggingExecutionContext.fromLoggingDetails)
       }
-      case None =>
+      case None       =>
         Logger.debug(s"Unable to retrieve email address for $submissionRef")
     }
   }
 
   private def auditSubmission(
     submissionRequest: SubmissionRequest,
-    application: SubScriptionCreate,
-    extraData: SubmissionExtraData,
-    desResponse: DesSubmissionResponse,
-    submissionRef: String
+    application      : SubScriptionCreate,
+    extraData        : SubmissionExtraData,
+    desResponse      : DesSubmissionResponse,
+    submissionRef    : String
   )(implicit hc: HeaderCarrier) = {
 
     Logger.info(s"Sending audit event for submissionRef $submissionRef")
@@ -109,8 +108,8 @@ class FhddsApplicationController @Inject()(
   }
 
   private def storeRegistrationNumberAndBundleNumber(formId: String, submissionRef: String,
-                                                     etmpFormBundleNumber: String,
-                                                     registrationNumberFHDDS: String) = {
+    etmpFormBundleNumber                                   : String,
+    registrationNumberFHDDS                                : String) = {
     submissionDataRepository
       .updateRegistrationNumberWithETMPFormBundleNumber(formId,
         submissionRef, etmpFormBundleNumber, registrationNumberFHDDS)
@@ -123,11 +122,11 @@ class FhddsApplicationController @Inject()(
   private def subscribeToTaxEnrolment(safeId: String, etmpFormBundleNumber: String, authorization: Option[String])(implicit hc: HeaderCarrier) = {
     Logger.info(s"Sending subscription for safeId = $safeId for etmpFormBundelNumber = $etmpFormBundleNumber to tax enrolments")
     taxEnrolmentConnector
-     .subscribe(safeId, etmpFormBundleNumber, authorization)(hc)
-     .onComplete({
-       case Success(r) ⇒ Logger.info(s"Tax enrolments for subscription $safeId and etmpFormBundleNumber $etmpFormBundleNumber returned $r")
-       case Failure(e) ⇒ Logger.error(s"Tax enrolments for subscription $safeId and etmpFormBundleNumber $etmpFormBundleNumber failed", e)
-     })
+      .subscribe(safeId, etmpFormBundleNumber, authorization)(hc)
+      .onComplete({
+        case Success(r) ⇒ Logger.info(s"Tax enrolments for subscription $safeId and etmpFormBundleNumber $etmpFormBundleNumber returned $r")
+        case Failure(e) ⇒ Logger.error(s"Tax enrolments for subscription $safeId and etmpFormBundleNumber $etmpFormBundleNumber failed", e)
+      })
 
   }
 
@@ -140,12 +139,15 @@ class FhddsApplicationController @Inject()(
   private def createDesSubmission(formData: String, extraData: SubmissionExtraData) = {
     val xml = scala.xml.XML.loadString(formData)
     extraData.businessRegistrationDetails.businessType.map(_.toLowerCase) match {
-      case Some("sole trader") ⇒
+      case Some("sole trader")    ⇒
         val data = scalaxb.fromXML[generated.sole.Data](xml)
         applicationService.soleTraderSubmission(data, extraData.businessRegistrationDetails)
       case Some("corporate body") ⇒
         val data = scalaxb.fromXML[generated.limited.Data](xml)
         applicationService.limitedCompanySubmission(data, extraData.businessRegistrationDetails)
+      case Some("partnership")    ⇒
+        val data = scalaxb.fromXML[generated.partnership.Data](xml)
+        applicationService.partnershipSubmission(data, extraData.businessRegistrationDetails)
     }
   }
 
@@ -164,7 +166,7 @@ class FhddsApplicationController @Inject()(
         case 400 ⇒ BadRequest("Submission has not passed validation. Invalid parameter FHDDS Registration Number.")
         case 404 ⇒ NotFound("No SAP Number found for the provided FHDDS Registration Number.")
         case 403 ⇒ Forbidden("Unexpected business error received.")
-        case _ ⇒ InternalServerError("DES is currently experiencing problems that require live service intervention.")
+        case _   ⇒ InternalServerError("DES is currently experiencing problems that require live service intervention.")
       }
     }
   }
@@ -172,11 +174,11 @@ class FhddsApplicationController @Inject()(
   def mdtpSubscriptionStatus(r: HttpResponse) = {
     val responseInJs = r.json
     (responseInJs \ "subscriptionStatus").as[String] match {
-      case ("Reg Form Received") => Ok("Received")
+      case ("Reg Form Received")                                                             => Ok("Received")
       case ("Sent To DS") | ("DS Outcome In Progress") | ("In processing") | ("Sent to RCM") => Ok("Processing")
-      case ("successful") => Ok("successful")
-      case ("Rejected") => Ok("Rejected")
-      case _ => Unauthorized("Unexpected business error received.")
+      case ("Successful")                                                                    => Ok("Successful")
+      case ("Rejected")                                                                      => Ok("Rejected")
+      case _                                                                                 => Unauthorized("Unexpected business error received.")
     }
   }
 

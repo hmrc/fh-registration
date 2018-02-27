@@ -66,7 +66,7 @@ class MdtpSubscriptionStatusSpecs
             .get().futureValue
         }
         response.status shouldBe 200
-        response.body shouldBe "successful"
+        response.body shouldBe "Successful"
       }
 
     }
