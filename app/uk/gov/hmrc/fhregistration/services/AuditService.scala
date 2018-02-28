@@ -44,21 +44,17 @@ trait AuditService {
 
   def buildSubmissionAuditEvent(
     submissionRequest: SubmissionRequest,
-    application: SubScriptionCreate,
-    extraData: SubmissionExtraData,
     desResponse: DesSubmissionResponse,
     submissionRef: String
   )(implicit hc: HeaderCarrier): ExtendedDataEvent = {
 
     val details = JsObject(Seq(
-      "authorization" → Json.toJson(extraData.authorization),
       "submissionRef" → JsString(submissionRef),
-      "submissionData" → Json.toJson(application.subScriptionCreate),
-      "businessPartnerRecord" → Json.toJson(extraData.businessRegistrationDetails)
+      "submissionData" → submissionRequest.submission
     ))
 
     val customTags = Map(
-      "path" → Some(s"/fulfilment-diligence/subscription/${extraData.businessRegistrationDetails.safeId}"),
+      "path" → Some(s"/fulfilment-diligence/subscription/${submissionRequest.safeId}"),
       "clientIP" -> hc.trueClientIp,
       "clientPort" -> hc.trueClientPort,
       "X-Request-Chain" → Some(hc.requestChain.value),

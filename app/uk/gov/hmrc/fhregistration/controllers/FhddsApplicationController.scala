@@ -25,7 +25,7 @@ import play.api.mvc.{Action, Request}
 import uk.gov.hmrc.fhregistration.config.MicroserviceAuditConnector
 import uk.gov.hmrc.fhregistration.connectors.{DesConnector, EmailConnector, TaxEnrolmentConnector}
 import uk.gov.hmrc.fhregistration.models.des.SubScriptionCreate.format
-import uk.gov.hmrc.fhregistration.models.des.{DesSubmissionResponse, SubScriptionCreate}
+import uk.gov.hmrc.fhregistration.models.des.DesSubmissionResponse
 import uk.gov.hmrc.fhregistration.models.fhdds.{SubmissionRequest, SubmissionResponse, UserData}
 import uk.gov.hmrc.fhregistration.repositories.{SubmissionExtraData, SubmissionExtraDataRepository}
 import uk.gov.hmrc.fhregistration.services.{AuditService, ControllerServices, FhddsApplicationService}
@@ -51,24 +51,15 @@ class FhddsApplicationController @Inject()(
   def submit() = Action.async(parse.json[SubmissionRequest]) { implicit r ⇒
     val request = r.body
     for {
-      extraData ← findSubmissionExtraData(request.formId)
-      application = createDesSubmission(request.formData, extraData)
-      safeId = extraData.businessRegistrationDetails.safeId
-      desResponse ← desConnector.sendSubmission(safeId, application)(hc)
+      desResponse ← desConnector.sendSubmission(request.safeId, request.submission)(hc)
       response = SubmissionResponse(ControllerServices.createSubmissionRef())
     } yield {
-      Logger.info(s"Received subscription id ${desResponse.registrationNumberFHDDS} for safeId $safeId")
-      storeRegistrationNumberAndBundleNumber(
-        request.formId,
-        response.registrationNumber,
-        desResponse.etmpFormBundleNumber,
-        desResponse.registrationNumberFHDDS
-      )
+      Logger.info(s"Received subscription id ${desResponse.registrationNumberFHDDS} for safeId ${request.safeId}")
       subscribeToTaxEnrolment(
-        safeId,
-        desResponse.etmpFormBundleNumber,
-        extraData.authorization)
-      auditSubmission(request, application, extraData, desResponse, response.registrationNumber)
+        request.safeId,
+        desResponse.etmpFormBundleNumber)
+
+      auditSubmission(request, desResponse, response.registrationNumber)
       Ok(Json toJson response)
     }
   }
@@ -84,21 +75,19 @@ class FhddsApplicationController @Inject()(
             userData = UserData(email = mail, submissionReference = submissionRef))(hc, request, MdcLoggingExecutionContext.fromLoggingDetails)
       }
       case None       =>
-        Logger.debug(s"Unable to retrieve email address for $submissionRef")
+        Logger.warn(s"Unable to retrieve email address for $submissionRef")
     }
   }
 
   private def auditSubmission(
     submissionRequest: SubmissionRequest,
-    application: SubScriptionCreate,
-    extraData: SubmissionExtraData,
     desResponse: DesSubmissionResponse,
     submissionRef: String
   )(implicit hc: HeaderCarrier) = {
 
     Logger.info(s"Sending audit event for submissionRef $submissionRef")
     val event = auditService.buildSubmissionAuditEvent(
-      submissionRequest, application, extraData, desResponse, submissionRef)
+      submissionRequest, desResponse, submissionRef)
     import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext
     auditConnector
       .sendExtendedEvent(event)(hc, MdcLoggingExecutionContext.fromLoggingDetails)
@@ -121,10 +110,10 @@ class FhddsApplicationController @Inject()(
       }
   }
 
-  private def subscribeToTaxEnrolment(safeId: String, etmpFormBundleNumber: String, authorization: Option[String])(implicit hc: HeaderCarrier) = {
+  private def subscribeToTaxEnrolment(safeId: String, etmpFormBundleNumber: String)(implicit hc: HeaderCarrier) = {
     Logger.info(s"Sending subscription for safeId = $safeId for etmpFormBundelNumber = $etmpFormBundleNumber to tax enrolments")
     taxEnrolmentConnector
-     .subscribe(safeId, etmpFormBundleNumber, authorization)(hc)
+     .subscribe(safeId, etmpFormBundleNumber)(hc)
      .onComplete({
        case Success(r) ⇒ Logger.info(s"Tax enrolments for subscription $safeId and etmpFormBundleNumber $etmpFormBundleNumber returned $r")
        case Failure(e) ⇒ Logger.error(s"Tax enrolments for subscription $safeId and etmpFormBundleNumber $etmpFormBundleNumber failed", e)
