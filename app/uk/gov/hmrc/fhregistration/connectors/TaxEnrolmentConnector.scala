@@ -49,9 +49,8 @@ trait TaxEnrolmentConnector {
     * @param safeId - the id of the entity in ETMP
     * @param etmpFormBundleNumber - use this as the subscription id as requested by ETMP
     */
-  def subscribe(safeId: String, etmpFormBundleNumber: String, authorization: Option[String])(hc: HeaderCarrier): Future[Option[JsObject]] = {
-    val extraHeaders = authorization map ("Authorization" -> _)
-    implicit val hcWithAuthorization = hc.withExtraHeaders(extraHeaders.toSeq: _*)
+  def subscribe(safeId: String, etmpFormBundleNumber: String)(implicit hc: HeaderCarrier): Future[Option[JsObject]] = {
+    Logger.info(s"Request to tax enrolments authorisation header is present: ${hc.authorization.isDefined}")
     http.PUT[JsObject, Option[JsObject]](
       subscriberUrl(etmpFormBundleNumber),
       requestBody(safeId)
