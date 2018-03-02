@@ -50,14 +50,22 @@ trait DesConnector {
   def desServiceUri: String
   def desServiceStatusUri: String
   def desSubmissionUrl(safeId: String): String
+
   def getStatus(fhddsRegistrationNumber: String)(headerCarrier: HeaderCarrier): Future[HttpResponse] = {
     implicit val desHeaders = headerCarrier.copy(authorization = Some(Authorization(s"Bearer $desToken"))).withExtraHeaders("Environment" -> environment)
     http.GET(s"$desServiceStatusUri/fulfilment-diligence/subscription/$fhddsRegistrationNumber/status")
   }
+
+
   def sendSubmission(safeId: String, submission: JsValue)(hc: HeaderCarrier): Future[DesSubmissionResponse] = {
     Logger.info(s"Sending fhdds registration data to DES for safeId $safeId")
 
     implicit val desHeaders = hc.copy(authorization = Some(Authorization(s"Bearer $desToken"))).withExtraHeaders("Environment" -> environment)
     http.POST[JsValue, DesSubmissionResponse](desSubmissionUrl(safeId), submission)
+  }
+
+  def display(fhddsRegistrationNumber: String)(headerCarrier: HeaderCarrier): Future[HttpResponse] = {
+    implicit val desHeaders = headerCarrier.copy(authorization = Some(Authorization(s"Bearer $desToken"))).withExtraHeaders("Environment" -> environment)
+    http.GET(s"$desServiceStatusUri/fulfilment-diligence/subscription/$fhddsRegistrationNumber/get")
   }
 }
