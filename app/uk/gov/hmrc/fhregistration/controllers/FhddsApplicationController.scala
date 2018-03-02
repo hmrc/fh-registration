@@ -52,13 +52,12 @@ class FhddsApplicationController @Inject()(
     val request = r.body
     for {
       desResponse ← desConnector.sendSubmission(request.safeId, request.submission)(hc)
-      response = SubmissionResponse(ControllerServices.createSubmissionRef())
+      response = SubmissionResponse(desResponse.registrationNumberFHDDS, desResponse.processingDate)
     } yield {
       Logger.info(s"Received subscription id ${desResponse.registrationNumberFHDDS} for safeId ${request.safeId}")
       subscribeToTaxEnrolment(
         request.safeId,
         desResponse.etmpFormBundleNumber)
-
       auditSubmission(request, desResponse, response.registrationNumber)
       Ok(Json toJson response)
     }
