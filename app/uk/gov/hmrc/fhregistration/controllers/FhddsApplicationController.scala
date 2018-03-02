@@ -161,6 +161,20 @@ class FhddsApplicationController @Inject()(
     }
   }
 
+  def get(fhddsRegistrationNumber: String) = Action.async { implicit request ⇒
+    desConnector.display(fhddsRegistrationNumber)(hc) map { resp ⇒
+      val dfsResponseStatus = resp.status
+      Logger.info(s"Got back subscription data for $fhddsRegistrationNumber with status $dfsResponseStatus")
+      dfsResponseStatus match {
+        case 200 ⇒ Ok(resp.json)
+        case 400 ⇒ BadRequest("Submission has not passed validation. Invalid parameter FHDDS Registration Number.")
+        case 404 ⇒ NotFound("No SAP Number found for the provided FHDDS Registration Number.")
+        case 403 ⇒ Forbidden("Unexpected business error received.")
+        case _   ⇒ BadGateway("DES is currently experiencing problems that require live service intervention.")
+      }
+    }
+  }
+
   def mdtpSubscriptionStatus(r: HttpResponse) = {
     val responseInJs = r.json
     (responseInJs \ "subscriptionStatus").as[String] match {
