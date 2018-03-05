@@ -54,45 +54,53 @@ class FhddsApplicationController @Inject()(
       desResponse ← desConnector.sendSubmission(request.safeId, request.submission)(hc)
       response = SubmissionResponse(desResponse.registrationNumberFHDDS, desResponse.processingDate)
     } yield {
-      Logger.info(s"Received subscription id ${desResponse.registrationNumberFHDDS} for safeId ${request.safeId}")
+      Logger.info(s"Received registration number ${desResponse.registrationNumberFHDDS} for safeId ${request.safeId}")
+
       subscribeToTaxEnrolment(
         request.safeId,
         desResponse.etmpFormBundleNumber)
+
       auditSubmission(request, desResponse, response.registrationNumber)
+
+      sendEmail(request.emailAddress, response.registrationNumber)
+
       Ok(Json toJson response)
     }
   }
 
-  def sendEmail(email: Option[String], submissionRef: String)(implicit hc: HeaderCarrier, request: Request[AnyRef]) = {
-    email match {
-      case Some(mail) => {
-        val emailTemplateId = emailConnector.defaultEmailTemplateID
-        import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext
-        emailConnector
-          .sendEmail(
-            emailTemplateId = emailTemplateId,
-            userData = UserData(email = mail, submissionReference = submissionRef))(hc, request, MdcLoggingExecutionContext.fromLoggingDetails)
-      }
-      case None       =>
-        Logger.warn(s"Unable to retrieve email address for $submissionRef")
+  def sendEmail(email: String, submissionRef: String)(implicit hc: HeaderCarrier, request: Request[AnyRef]) = {
+    val emailTemplateId = emailConnector.defaultEmailTemplateID
+    import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext
+    val futureResult = emailConnector
+      .sendEmail(
+        emailTemplateId = emailTemplateId,
+        userData = UserData(email = email, submissionReference = submissionRef))(hc, request, MdcLoggingExecutionContext.fromLoggingDetails)
+
+    futureResult.onComplete {
+      case Success(_) ⇒
+        Logger.info(s"Email sent for registration number $submissionRef")
+        auditService.sendEmailSuccessEvent(UserData(email, submissionRef))
+      case Failure(t) ⇒
+        Logger.error(s"Email failure for registration number $submissionRef", t)
+        auditService.sendEmailFailureEvent(UserData(email, submissionRef), t)
     }
   }
 
   private def auditSubmission(
     submissionRequest: SubmissionRequest,
     desResponse: DesSubmissionResponse,
-    submissionRef: String
+    registrationNumber: String
   )(implicit hc: HeaderCarrier) = {
 
-    Logger.info(s"Sending audit event for submissionRef $submissionRef")
+    Logger.info(s"Sending audit event for registrationNumber $registrationNumber")
     val event = auditService.buildSubmissionAuditEvent(
-      submissionRequest, desResponse, submissionRef)
+      submissionRequest, desResponse, registrationNumber)
     import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext
     auditConnector
       .sendExtendedEvent(event)(hc, MdcLoggingExecutionContext.fromLoggingDetails)
-      .map(auditResult ⇒ Logger.info(s"Received audit result $auditResult for submissionRef $submissionRef"))
+      .map(auditResult ⇒ Logger.info(s"Received audit result $auditResult for registrationNumber $registrationNumber"))
       .recover {
-        case t: Throwable ⇒ Logger.error(s"Audit failed for submissionRef $submissionRef $submissionRef", t)
+        case t: Throwable ⇒ Logger.error(s"Audit failed for registrationNumber $registrationNumber", t)
       }
 
   }

@@ -43,13 +43,14 @@ trait AuditService {
   val successful = "fhdds-send-email-successful"
 
   def buildSubmissionAuditEvent(
-    submissionRequest: SubmissionRequest,
-    desResponse: DesSubmissionResponse,
-    submissionRef: String
+    submissionRequest : SubmissionRequest,
+    desResponse       : DesSubmissionResponse,
+    registrationNumber: String
   )(implicit hc: HeaderCarrier): ExtendedDataEvent = {
 
     val details = JsObject(Seq(
-      "submissionRef" → JsString(submissionRef),
+      "authorization" → JsString(hc.authorization map (_.value) getOrElse ""),
+      "submissionRef" → JsString(registrationNumber),
       "submissionData" → submissionRequest.submission
     ))
 
@@ -60,7 +61,7 @@ trait AuditService {
       "X-Request-Chain" → Some(hc.requestChain.value),
       "X-Session-ID" → hc.sessionId.map(_.value),
       "deviceID" → hc.deviceID,
-      "transactionName" -> Some(s"FHDDS - $submissionRef")
+      "transactionName" -> Some(s"FHDDS - $registrationNumber")
     ) collect {
       case (key, Some(value)) ⇒ key -> value
     }
