@@ -43,28 +43,26 @@ trait AuditService {
   val successful = "fhdds-send-email-successful"
 
   def buildSubmissionAuditEvent(
-    submissionRequest: SubmissionRequest,
-    application: SubScriptionCreate,
-    extraData: SubmissionExtraData,
-    desResponse: DesSubmissionResponse,
-    submissionRef: String
+    submissionRequest : SubmissionRequest,
+    desResponse       : DesSubmissionResponse,
+    registrationNumber: String
   )(implicit hc: HeaderCarrier): ExtendedDataEvent = {
 
     val details = JsObject(Seq(
-      "authorization" → Json.toJson(extraData.authorization),
-      "submissionRef" → JsString(submissionRef),
-      "submissionData" → Json.toJson(application.subScriptionCreate),
-      "businessPartnerRecord" → Json.toJson(extraData.businessRegistrationDetails)
+      "authorization" → JsString(hc.authorization map (_.value) getOrElse ""),
+      "submissionRef" → JsString(registrationNumber),
+      "submissionData" → submissionRequest.submission
     ))
 
     val customTags = Map(
-      "path" → Some(s"/fulfilment-diligence/subscription/${extraData.businessRegistrationDetails.safeId}"),
+      "path" → Some(s"/fulfilment-diligence/subscription/${submissionRequest.safeId}"),
       "clientIP" -> hc.trueClientIp,
       "clientPort" -> hc.trueClientPort,
       "X-Request-Chain" → Some(hc.requestChain.value),
       "X-Session-ID" → hc.sessionId.map(_.value),
+      "X-Request-ID" → hc.requestId.map(_.value),
       "deviceID" → hc.deviceID,
-      "transactionName" -> Some(s"FHDDS - $submissionRef")
+      "transactionName" -> Some(s"FHDDS - $registrationNumber")
     ) collect {
       case (key, Some(value)) ⇒ key -> value
     }
