@@ -60,6 +60,7 @@ trait AuditService {
       "clientPort" -> hc.trueClientPort,
       "X-Request-Chain" → Some(hc.requestChain.value),
       "X-Session-ID" → hc.sessionId.map(_.value),
+      "X-Request-ID" → hc.requestId.map(_.value),
       "deviceID" → hc.deviceID,
       "transactionName" -> Some(s"FHDDS - $registrationNumber")
     ) collect {
