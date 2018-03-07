@@ -39,8 +39,8 @@ trait AuditService {
   val auditEmailSource = "fhdds-send-email"
   val auditType = "fulfilmentHouseRegistrationSubmission"
 
-  val failed = "fhdds-send-email-failed"
-  val successful = "fhdds-send-email-successful"
+  val failed = "fulfilmentHouseEmailSentFail"
+  val successful = "fulfilmentHouseEmailSentSuccess"
 
   def buildSubmissionAuditEvent(
     submissionRequest : SubmissionRequest,
