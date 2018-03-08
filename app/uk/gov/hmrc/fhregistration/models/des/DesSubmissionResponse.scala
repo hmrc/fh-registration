@@ -16,9 +16,11 @@
 
 package uk.gov.hmrc.fhregistration.models.des
 
+import java.util.Date
+
 import play.api.libs.json.Json
 
-case class DesSubmissionResponse(processingDate: String, etmpFormBundleNumber: String, registrationNumberFHDDS: String)
+case class DesSubmissionResponse(processingDate: Date, etmpFormBundleNumber: String, registrationNumberFHDDS: String)
 
 object DesSubmissionResponse {
   implicit val submissionResponseFormat = Json.format[DesSubmissionResponse]

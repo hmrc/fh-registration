@@ -18,12 +18,11 @@ package uk.gov.hmrc.fhregistration.connectors
 
 import com.google.inject.ImplementedBy
 import play.api.Logger
-import play.api.libs.json.JsValue
+import play.api.libs.json.{JsObject, JsValue}
 import uk.gov.hmrc.fhregistration.config.WSHttp
-import uk.gov.hmrc.fhregistration.models.des.FormStatus.DesStatusResponse
-import uk.gov.hmrc.fhregistration.models.des.{DesSubmissionResponse, SubScriptionCreate}
-import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
+import uk.gov.hmrc.fhregistration.models.des.DesSubmissionResponse
 import uk.gov.hmrc.http.logging.Authorization
+import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
 import uk.gov.hmrc.play.config.ServicesConfig
 import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
 
@@ -34,7 +33,7 @@ class DesConnectorImpl extends DesConnector with ServicesConfig {
   def desServiceUri = config("des-service").getString("uri").getOrElse("")
   def desServiceBaseUri() = config("des-service").getString("baseuri").getOrElse("")
   def desServiceStatusUri = s"${baseUrl("des-service")}${desServiceBaseUri()}"
-  def desSubmissionUrl(safeId: String) =s"${baseUrl("des-service")}${desServiceUri}/$safeId"
+  def desSubmissionUrl(safeId: String) =s"${baseUrl("des-service")}$desServiceUri/$safeId"
 
   lazy val http: WSHttp = WSHttp
 
@@ -51,15 +50,22 @@ trait DesConnector {
   def desServiceUri: String
   def desServiceStatusUri: String
   def desSubmissionUrl(safeId: String): String
+
   def getStatus(fhddsRegistrationNumber: String)(headerCarrier: HeaderCarrier): Future[HttpResponse] = {
     implicit val desHeaders = headerCarrier.copy(authorization = Some(Authorization(s"Bearer $desToken"))).withExtraHeaders("Environment" -> environment)
     http.GET(s"$desServiceStatusUri/fulfilment-diligence/subscription/$fhddsRegistrationNumber/status")
   }
-  def sendSubmission(safeId: String, application: SubScriptionCreate)(hc: HeaderCarrier): Future[DesSubmissionResponse] = {
+
+
+  def sendSubmission(safeId: String, submission: JsValue)(hc: HeaderCarrier): Future[DesSubmissionResponse] = {
     Logger.info(s"Sending fhdds registration data to DES for safeId $safeId")
-    Logger.debug(s"Sending fhdds registration data to DES with payload $application")
 
     implicit val desHeaders = hc.copy(authorization = Some(Authorization(s"Bearer $desToken"))).withExtraHeaders("Environment" -> environment)
-    http.POST[SubScriptionCreate, DesSubmissionResponse](desSubmissionUrl(safeId), application)
+    http.POST[JsValue, DesSubmissionResponse](desSubmissionUrl(safeId), submission)
+  }
+
+  def display(fhddsRegistrationNumber: String)(headerCarrier: HeaderCarrier): Future[HttpResponse] = {
+    implicit val desHeaders = headerCarrier.copy(authorization = Some(Authorization(s"Bearer $desToken"))).withExtraHeaders("Environment" -> environment)
+    http.GET(s"$desServiceStatusUri/fulfilment-diligence/subscription/$fhddsRegistrationNumber/get")
   }
 }
