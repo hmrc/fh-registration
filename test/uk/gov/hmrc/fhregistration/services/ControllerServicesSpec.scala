@@ -20,12 +20,20 @@ import uk.gov.hmrc.play.test.UnitSpec
 
 import scala.util.Success
 import scala.util.matching.Regex
+import org.mockito.Mockito.when
+import org.mockito.ArgumentMatchers.any
+import scala.concurrent.ExecutionContext.Implicits.global
+
+import scala.concurrent.Future
 
 class ControllerServicesSpec extends UnitSpec {
 
   val fhddsApplicationController = FhddsApplicationControllerMock.fhddsApplicationController
   implicit val request = FhddsApplicationControllerMock.request
   implicit val hc = FhddsApplicationControllerMock.headerCarrier
+
+  when(FhddsApplicationControllerMock.mockEmailConnectorImplConnector.sendEmail(any(), any())(any(), any(),any()))
+    .thenReturn(Future successful null)
 
   "createSubmissionRef" should {
     "Generates a submission reference number" in {
@@ -41,12 +49,12 @@ class ControllerServicesSpec extends UnitSpec {
 
   "emailConnector" should {
     "send email if there is an email from the user" in {
-      val result = fhddsApplicationController.sendEmail(Some("test@email.com"),"testSubmissionRef")
+      val result = fhddsApplicationController.sendEmail("test@email.com","testSubmissionRef")
       result.value.get shouldBe Success(null)
     }
     "no email will send if there is not an email from the user" in {
-      val result = fhddsApplicationController.sendEmail(None,"testSubmissionRef")
-      result.value.get shouldBe Success(())
+      val result = fhddsApplicationController.sendEmail("","testSubmissionRef")
+      result.value.get shouldBe Success(null)
     }
   }
 }

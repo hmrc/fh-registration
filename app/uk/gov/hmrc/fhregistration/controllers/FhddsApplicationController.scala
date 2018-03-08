@@ -71,19 +71,11 @@ class FhddsApplicationController @Inject()(
   def sendEmail(email: String, submissionRef: String)(implicit hc: HeaderCarrier, request: Request[AnyRef]) = {
     val emailTemplateId = emailConnector.defaultEmailTemplateID
     import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext
-    val futureResult = emailConnector
+    emailConnector
       .sendEmail(
         emailTemplateId = emailTemplateId,
         userData = UserData(email = email, submissionReference = submissionRef))(hc, request, MdcLoggingExecutionContext.fromLoggingDetails)
 
-    futureResult.onComplete {
-      case Success(_) ⇒
-        Logger.info(s"Email sent for registration number $submissionRef")
-        auditService.sendEmailSuccessEvent(UserData(email, submissionRef))
-      case Failure(t) ⇒
-        Logger.error(s"Email failure for registration number $submissionRef", t)
-        auditService.sendEmailFailureEvent(UserData(email, submissionRef), t)
-    }
   }
 
   private def auditSubmission(
