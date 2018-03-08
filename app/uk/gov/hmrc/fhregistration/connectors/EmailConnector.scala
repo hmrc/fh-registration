@@ -27,6 +27,7 @@ import uk.gov.hmrc.http.{HeaderCarrier, HttpPost}
 import uk.gov.hmrc.play.config.ServicesConfig
 
 import scala.concurrent.{ExecutionContext, Future}
+import scala.util.{Failure, Success}
 
 class EmailConnectorImpl extends EmailConnector with ServicesConfig {
   override val httpPost = WSHttp
@@ -44,20 +45,25 @@ trait EmailConnector {
   val defaultEmailTemplateID: String
 
   def sendEmail(emailTemplateId:String, userData: UserData)(implicit hc: HeaderCarrier, request: Request[AnyRef], ec: ExecutionContext): Future[Any] = {
-    Logger.debug(s"User Data submissionReference ===> ${userData.submissionReference}")
     val toList: List[String] = List(userData.email)
 
     val email: SendEmailRequest = SendEmailRequest(templateId = emailTemplateId, to = toList, force = true)
 
     Logger.debug(s"Sending email, SendEmailRequest=$email")
 
-    httpPost.POST[SendEmailRequest, Int](emailUrl, email) map {
-      case res =>
-        auditService.sendEmailSuccessEvent(userData).auditType
-    } recover {
-      case error =>
-        auditService.sendEmailFailureEvent(userData, error)
+
+
+    val futureResult = httpPost.POST[SendEmailRequest, Int](emailUrl, email)
+
+    futureResult.onComplete {
+      case Success(_) ⇒
+        Logger.info(s"Email sent for registration number ${userData.submissionReference}")
+        auditService.sendEmailSuccessEvent(userData)
+      case Failure(t) ⇒
+        Logger.error(s"Email failure for registration number ${userData.submissionReference}", t)
+        auditService.sendEmailFailureEvent(userData, t)
     }
+    futureResult
   }
 
 }
