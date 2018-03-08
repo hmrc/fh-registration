@@ -22,7 +22,6 @@ import scala.util.Success
 import scala.util.matching.Regex
 import org.mockito.Mockito.when
 import org.mockito.ArgumentMatchers.any
-import scala.concurrent.ExecutionContext.Implicits.global
 
 import scala.concurrent.Future
 

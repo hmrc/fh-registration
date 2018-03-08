@@ -23,7 +23,7 @@ import uk.gov.hmrc.fhregistration.config.WSHttp
 import uk.gov.hmrc.fhregistration.models.fhdds.UserData
 import uk.gov.hmrc.fhregistration.models.fhdds.SendEmailRequest
 import uk.gov.hmrc.fhregistration.services.{AuditService, AuditServiceImpl}
-import uk.gov.hmrc.http.{HeaderCarrier, HttpPost}
+import uk.gov.hmrc.http.{BadGatewayException, HeaderCarrier, HttpPost}
 import uk.gov.hmrc.play.config.ServicesConfig
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -51,9 +51,12 @@ trait EmailConnector {
 
     Logger.debug(s"Sending email, SendEmailRequest=$email")
 
-
-
-    val futureResult = httpPost.POST[SendEmailRequest, Int](emailUrl, email)
+    val futureResult = httpPost.POST(emailUrl, email).map { response ⇒
+      if (response.status >= 200 && response.status < 300)
+        true
+      else
+        throw new BadGatewayException("Sending email is failed and it not queued for sending.")
+    }
 
     futureResult.onComplete {
       case Success(_) ⇒
