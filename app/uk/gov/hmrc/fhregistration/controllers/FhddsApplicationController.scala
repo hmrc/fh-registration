@@ -89,7 +89,7 @@ class FhddsApplicationController @Inject()(
       submissionRequest, desResponse, registrationNumber)
     import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext
     auditConnector
-      .sendExtendedEvent(event)(hc, MdcLoggingExecutionContext.fromLoggingDetails)
+      .sendEvent(event)(hc, MdcLoggingExecutionContext.fromLoggingDetails)
       .map(auditResult ⇒ Logger.info(s"Received audit result $auditResult for registrationNumber $registrationNumber"))
       .recover {
         case t: Throwable ⇒ Logger.error(s"Audit failed for registrationNumber $registrationNumber", t)

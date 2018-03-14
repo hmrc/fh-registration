@@ -16,16 +16,17 @@
 
 package uk.gov.hmrc.fhregistration.services
 
-import play.api.libs.json.{JsObject, JsString, Json}
-import uk.gov.hmrc.fhregistration.models.des.{DesSubmissionResponse, SubScriptionCreate}
+import javax.inject.Singleton
+
+import com.google.inject.ImplementedBy
+import play.api.libs.json.{JsObject, JsString}
+import uk.gov.hmrc.fhregistration.models.des.DesSubmissionResponse
 import uk.gov.hmrc.fhregistration.models.fhdds.{SubmissionRequest, UserData}
-import uk.gov.hmrc.fhregistration.repositories.SubmissionExtraData
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.audit.model.{DataEvent, ExtendedDataEvent}
-import javax.inject.Singleton
-import com.google.inject.ImplementedBy
 
 import scala.concurrent.ExecutionContext
+import uk.gov.hmrc.play.audit.AuditExtensions.auditHeaderCarrier
 
 @Singleton
 class AuditServiceImpl extends AuditService {
@@ -46,32 +47,18 @@ trait AuditService {
     submissionRequest : SubmissionRequest,
     desResponse       : DesSubmissionResponse,
     registrationNumber: String
-  )(implicit hc: HeaderCarrier): ExtendedDataEvent = {
+  )(implicit hc: HeaderCarrier): DataEvent = {
 
-    val details = JsObject(Seq(
-      "Authorization" → JsString(hc.authorization map (_.value) getOrElse ""),
-      "submissionRef" → JsString(registrationNumber),
-      "submissionData" → submissionRequest.submission
-    ))
+    val additionalDetails: Seq[(String, String)] = Seq(
+      "submissionRef" → registrationNumber,
+      "submissionData" → submissionRequest.submission.toString()
+    )
 
-    val customTags = Map(
-      "path" → Some(s"/fulfilment-diligence/subscription/${submissionRequest.safeId}"),
-      "clientIP" -> hc.trueClientIp.orElse(Some("-")),
-      "clientPort" -> hc.trueClientPort.orElse(Some("-")),
-      "X-Request-Chain" → Some(hc.requestChain.value),
-      "X-Session-ID" → hc.sessionId.map(_.value),
-      "X-Request-ID" → hc.requestId.map(_.value),
-      "deviceID" → hc.deviceID,
-      "transactionName" -> Some(s"FHDDS - $registrationNumber")
-    ) collect {
-      case (key, Some(value)) ⇒ key -> value
-    }
-
-    ExtendedDataEvent(
+    DataEvent(
       auditSource = auditSource,
       auditType = auditType,
-      tags = hc.headers.toMap ++ customTags,
-      detail = details
+      tags = hc.toAuditTags(s"FHDDS - $registrationNumber", s"/fulfilment-diligence/subscription/${submissionRequest.safeId}"),
+      detail = hc.toAuditDetails(additionalDetails:_*)
     )
 
   }
