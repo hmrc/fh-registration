@@ -49,15 +49,15 @@ trait AuditService {
   )(implicit hc: HeaderCarrier): ExtendedDataEvent = {
 
     val details = JsObject(Seq(
-      "authorization" → JsString(hc.authorization map (_.value) getOrElse ""),
+      "Authorization" → JsString(hc.authorization map (_.value) getOrElse ""),
       "submissionRef" → JsString(registrationNumber),
       "submissionData" → submissionRequest.submission
     ))
 
     val customTags = Map(
       "path" → Some(s"/fulfilment-diligence/subscription/${submissionRequest.safeId}"),
-      "clientIP" -> hc.trueClientIp,
-      "clientPort" -> hc.trueClientPort,
+      "clientIP" -> hc.trueClientIp.orElse(Some("-")),
+      "clientPort" -> hc.trueClientPort.orElse(Some("-")),
       "X-Request-Chain" → Some(hc.requestChain.value),
       "X-Session-ID" → hc.sessionId.map(_.value),
       "X-Request-ID" → hc.requestId.map(_.value),
