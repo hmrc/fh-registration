@@ -40,9 +40,6 @@ trait AuditService {
   val auditEmailSource = "fhdds-send-email"
   val auditType = "fulfilmentHouseRegistrationSubmission"
 
-  val failed = "fulfilmentHouseEmailSentFail"
-  val successful = "fulfilmentHouseEmailSentSuccess"
-
   def buildSubmissionAuditEvent(
     submissionRequest : SubmissionRequest,
     desResponse       : DesSubmissionResponse,
@@ -62,12 +59,6 @@ trait AuditService {
     )
 
   }
-
-  def sendEmailSuccessEvent(userData: UserData)(implicit hc: HeaderCarrier, ec: ExecutionContext) =
-    sendEvent(successful, Map("user-data" -> userData.toString(), "service-action" -> "send-email"))
-
-  def sendEmailFailureEvent(userData: UserData, error: Throwable)(implicit hc: HeaderCarrier, ec: ExecutionContext): Unit =
-    sendEvent(failed, Map("user-data" -> userData.toString(), "error" -> error.toString(), "service-action" -> "send-email"))
 
   private def sendEvent(auditType: String, detail: Map[String, String])(implicit hc: HeaderCarrier, ec: ExecutionContext) =
     eventFor(auditType, detail)
