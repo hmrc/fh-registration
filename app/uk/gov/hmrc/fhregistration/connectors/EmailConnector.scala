@@ -61,10 +61,8 @@ trait EmailConnector {
     futureResult.onComplete {
       case Success(_) ⇒
         Logger.info(s"Email sent for registration number ${userData.submissionReference}")
-        auditService.sendEmailSuccessEvent(userData)
       case Failure(t) ⇒
         Logger.error(s"Email failure for registration number ${userData.submissionReference}", t)
-        auditService.sendEmailFailureEvent(userData, t)
     }
     futureResult
   }
