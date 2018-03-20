@@ -31,9 +31,12 @@ import scala.concurrent.Future
 class DesConnectorImpl extends DesConnector with ServicesConfig {
 
   def desServiceUri = config("des-service").getString("uri").getOrElse("")
-  def desServiceBaseUri() = config("des-service").getString("baseuri").getOrElse("")
-  def desServiceStatusUri = s"${baseUrl("des-service")}${desServiceBaseUri()}"
-  def desSubmissionUrl(safeId: String) =s"${baseUrl("des-service")}$desServiceUri/$safeId"
+  def desServiceBaseUri = config("des-service").getString("baseuri").getOrElse("")
+  def desServiceStatusUri = s"${baseUrl("des-service")}$desServiceBaseUri"
+
+  def desSubmissionUrl(safeId: String) =s"${baseUrl("des-service")}$desServiceBaseUri$desServiceUri/$safeId/id-type/safe"
+
+  def desAmendmentUrl(fhddsRegistrationNumber: String) =s"${baseUrl("des-service")}$desServiceBaseUri$desServiceUri/$fhddsRegistrationNumber/id-type/fhdds"
 
   lazy val http: WSHttp = WSHttp
 
@@ -50,6 +53,7 @@ trait DesConnector {
   def desServiceUri: String
   def desServiceStatusUri: String
   def desSubmissionUrl(safeId: String): String
+  def desAmendmentUrl(fhddsRegistrationNumber: String): String
 
   def getStatus(fhddsRegistrationNumber: String)(headerCarrier: HeaderCarrier): Future[HttpResponse] = {
     implicit val desHeaders = headerCarrier.copy(authorization = Some(Authorization(s"Bearer $desToken"))).withExtraHeaders("Environment" -> environment)
@@ -62,6 +66,13 @@ trait DesConnector {
 
     implicit val desHeaders = hc.copy(authorization = Some(Authorization(s"Bearer $desToken"))).withExtraHeaders("Environment" -> environment)
     http.POST[JsValue, DesSubmissionResponse](desSubmissionUrl(safeId), submission)
+  }
+
+  def sendAmendment(fhddsRegistrationNumber: String, submission: JsValue)(hc: HeaderCarrier): Future[DesSubmissionResponse] = {
+    Logger.info(s"Sending fhdds amendment data to DES for regNumber $fhddsRegistrationNumber")
+
+    implicit val desHeaders = hc.copy(authorization = Some(Authorization(s"Bearer $desToken"))).withExtraHeaders("Environment" -> environment)
+    http.POST[JsValue, DesSubmissionResponse](desAmendmentUrl(fhddsRegistrationNumber), submission)
   }
 
   def display(fhddsRegistrationNumber: String)(headerCarrier: HeaderCarrier): Future[HttpResponse] = {

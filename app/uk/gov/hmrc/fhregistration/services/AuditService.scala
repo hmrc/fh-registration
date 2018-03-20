@@ -40,10 +40,40 @@ trait AuditService {
   val auditEmailSource = "fhdds-send-email"
   val auditType = "fulfilmentHouseRegistrationSubmission"
 
-  def buildSubmissionAuditEvent(
+  def buildSubmissionCreateAuditEvent(
+    submissionRequest : SubmissionRequest,
+    desResponse       : DesSubmissionResponse,
+    safeId            : String,
+    registrationNumber: String
+  )(implicit hc: HeaderCarrier): DataEvent = {
+
+    buildSubmissionAuditEvent(
+      submissionRequest,
+      desResponse,
+      registrationNumber,
+      s"/fulfilment-diligence/subscription/$safeId/id-type/safe")
+  }
+
+  def buildSubmissionAmendAuditEvent(
     submissionRequest : SubmissionRequest,
     desResponse       : DesSubmissionResponse,
     registrationNumber: String
+  )(implicit hc: HeaderCarrier): DataEvent = {
+
+    buildSubmissionAuditEvent(
+      submissionRequest,
+      desResponse,
+      registrationNumber,
+      s"/fulfilment-diligence/subscription/$registrationNumber/id-type/fhdds")
+  }
+
+
+  private def buildSubmissionAuditEvent(
+    submissionRequest : SubmissionRequest,
+    desResponse       : DesSubmissionResponse,
+    registrationNumber: String,
+    path              : String
+
   )(implicit hc: HeaderCarrier): DataEvent = {
 
     val additionalDetails: Seq[(String, String)] = Seq(
@@ -54,7 +84,7 @@ trait AuditService {
     DataEvent(
       auditSource = auditSource,
       auditType = auditType,
-      tags = hc.toAuditTags(s"FHDDS - $registrationNumber", s"/fulfilment-diligence/subscription/${submissionRequest.safeId}"),
+      tags = hc.toAuditTags(s"FHDDS - $registrationNumber", path),
       detail = hc.toAuditDetails(additionalDetails:_*)
     )
 
