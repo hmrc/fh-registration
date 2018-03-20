@@ -31,6 +31,7 @@ import uk.gov.hmrc.fhregistration.repositories.{SubmissionExtraData, SubmissionE
 import uk.gov.hmrc.fhregistration.services.{AuditService, ControllerServices, FhddsApplicationService}
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, NotFoundException}
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
+import uk.gov.hmrc.play.audit.model.DataEvent
 import uk.gov.hmrc.play.microservice.controller.BaseController
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -48,25 +49,42 @@ class FhddsApplicationController @Inject()(
 
   val auditConnector: AuditConnector = MicroserviceAuditConnector
 
-  def submit() = Action.async(parse.json[SubmissionRequest]) { implicit r ⇒
+  def subscribe(safeId: String) = Action.async(parse.json[SubmissionRequest]) { implicit r ⇒
     val request = r.body
     for {
-      desResponse ← desConnector.sendSubmission(request.safeId, request.submission)(hc)
+      desResponse ← desConnector.sendSubmission(safeId, request.submission)(hc)
       response = SubmissionResponse(desResponse.registrationNumberFHDDS, desResponse.processingDate)
     } yield {
-      Logger.info(s"Received registration number ${desResponse.registrationNumberFHDDS} for safeId ${request.safeId}")
+      Logger.info(s"Received registration number ${desResponse.registrationNumberFHDDS} for safeId ${safeId}")
 
       subscribeToTaxEnrolment(
-        request.safeId,
+        safeId,
         desResponse.etmpFormBundleNumber)
 
-      auditSubmission(request, desResponse, response.registrationNumber)
-
+      val event = auditService.buildSubmissionCreateAuditEvent(
+        request, desResponse, safeId, response.registrationNumber)
+      auditSubmission(response.registrationNumber, event)
       sendEmail(request.emailAddress, response.registrationNumber)
 
       Ok(Json toJson response)
     }
   }
+
+  def amend(fhddsRegistrationNumber: String) = Action.async(parse.json[SubmissionRequest]) { implicit r ⇒
+    val request = r.body
+    for {
+      desResponse ← desConnector.sendAmendment(fhddsRegistrationNumber, request.submission)(hc)
+      response = SubmissionResponse(desResponse.registrationNumberFHDDS, desResponse.processingDate)
+    } yield {
+      val event = auditService.buildSubmissionAmendAuditEvent(
+        request, desResponse, response.registrationNumber)
+      auditSubmission(response.registrationNumber, event)
+      sendEmail(request.emailAddress, response.registrationNumber)
+
+      Ok(Json toJson response)
+    }
+  }
+
 
   def sendEmail(email: String, submissionRef: String)(implicit hc: HeaderCarrier, request: Request[AnyRef]) = {
     val emailTemplateId = emailConnector.defaultEmailTemplateID
@@ -78,15 +96,10 @@ class FhddsApplicationController @Inject()(
 
   }
 
-  private def auditSubmission(
-    submissionRequest: SubmissionRequest,
-    desResponse: DesSubmissionResponse,
-    registrationNumber: String
-  )(implicit hc: HeaderCarrier) = {
+  private def auditSubmission(registrationNumber: String, event: DataEvent)(implicit hc: HeaderCarrier) = {
 
     Logger.info(s"Sending audit event for registrationNumber $registrationNumber")
-    val event = auditService.buildSubmissionAuditEvent(
-      submissionRequest, desResponse, registrationNumber)
+
     import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext
     auditConnector
       .sendEvent(event)(hc, MdcLoggingExecutionContext.fromLoggingDetails)
@@ -95,18 +108,6 @@ class FhddsApplicationController @Inject()(
         case t: Throwable ⇒ Logger.error(s"Audit failed for registrationNumber $registrationNumber", t)
       }
 
-  }
-
-  private def storeRegistrationNumberAndBundleNumber(formId: String, submissionRef: String,
-                                                     etmpFormBundleNumber: String,
-                                                     registrationNumberFHDDS: String) = {
-    submissionDataRepository
-      .updateRegistrationNumberWithETMPFormBundleNumber(formId,
-        submissionRef, etmpFormBundleNumber, registrationNumberFHDDS)
-      .map(v ⇒ Logger.info(s"Saving registration number yield $v"))
-      .recover {
-        case t: Throwable ⇒ Logger.error("Saving registration number failed", t)
-      }
   }
 
   private def subscribeToTaxEnrolment(safeId: String, etmpFormBundleNumber: String)(implicit hc: HeaderCarrier) = {
