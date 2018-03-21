@@ -45,7 +45,6 @@ trait TaxEnrolmentConnector {
 
   /**
     * Subscribe to tax enrolments
-    * @see https://github.tools.tax.service.gov.uk/HMRC/tax-enrolments#put-tax-enrolmentssubscriptionssubscriptionidsubscriber
     * @param safeId - the id of the entity in ETMP
     * @param etmpFormBundleNumber - use this as the subscription id as requested by ETMP
     */
