@@ -16,19 +16,17 @@
 
 package uk.gov.hmrc.fhregistration.controllers
 
-import javax.inject.Inject
-
 import generated.fhdds.{LimitedDataFormat, PartnershipDataFormat, SoleDataFormat}
+import javax.inject.Inject
 import play.api.Logger
 import play.api.libs.json.Json
 import play.api.mvc.{Action, Request}
 import uk.gov.hmrc.fhregistration.config.MicroserviceAuditConnector
 import uk.gov.hmrc.fhregistration.connectors.{DesConnector, EmailConnector, TaxEnrolmentConnector}
 import uk.gov.hmrc.fhregistration.models.des.SubScriptionCreate.format
-import uk.gov.hmrc.fhregistration.models.des.DesSubmissionResponse
-import uk.gov.hmrc.fhregistration.models.fhdds.{SubmissionRequest, SubmissionResponse, UserData}
+import uk.gov.hmrc.fhregistration.models.fhdds.{SubmissionRequest, SubmissionResponse, UserData, WithdrawalRequest}
 import uk.gov.hmrc.fhregistration.repositories.{SubmissionExtraData, SubmissionExtraDataRepository}
-import uk.gov.hmrc.fhregistration.services.{AuditService, ControllerServices, FhddsApplicationService}
+import uk.gov.hmrc.fhregistration.services.{AuditService, FhddsApplicationService}
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, NotFoundException}
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import uk.gov.hmrc.play.audit.model.DataEvent
@@ -62,7 +60,7 @@ class FhddsApplicationController @Inject()(
         desResponse.etmpFormBundleNumber)
 
       val event = auditService.buildSubmissionCreateAuditEvent(
-        request, desResponse, safeId, response.registrationNumber)
+        request, safeId, response.registrationNumber)
       auditSubmission(response.registrationNumber, event)
       sendEmail(request.emailAddress, response.registrationNumber)
 
@@ -77,7 +75,7 @@ class FhddsApplicationController @Inject()(
       response = SubmissionResponse(desResponse.registrationNumberFHDDS, desResponse.processingDate)
     } yield {
       val event = auditService.buildSubmissionAmendAuditEvent(
-        request, desResponse, response.registrationNumber)
+        request, response.registrationNumber)
       auditSubmission(response.registrationNumber, event)
       sendEmail(request.emailAddress, response.registrationNumber)
 
@@ -85,6 +83,20 @@ class FhddsApplicationController @Inject()(
     }
   }
 
+  def withdrawal(fhddsRegistrationNumber: String) = Action.async(parse.json[WithdrawalRequest]) { implicit r ⇒
+    val request = r.body
+    for {
+      desResponse ← desConnector.sendWithdrawal(fhddsRegistrationNumber, request.withdrawal)(hc)
+      withdrawalResponse = desResponse.processingDate
+    } yield {
+      val event = auditService.buildSubmissionWithdrawalAuditEvent(
+        request, fhddsRegistrationNumber)
+      auditSubmission(fhddsRegistrationNumber, event)
+      sendEmail(request.emailAddress, fhddsRegistrationNumber)
+
+      Ok(Json toJson withdrawalResponse)
+    }
+  }
 
   def sendEmail(email: String, submissionRef: String)(implicit hc: HeaderCarrier, request: Request[AnyRef]) = {
     val emailTemplateId = emailConnector.defaultEmailTemplateID

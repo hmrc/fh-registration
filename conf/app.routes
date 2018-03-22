@@ -6,7 +6,8 @@ POST /tax-enrolment/callback/subscriptions                                      
 GET  /subscription/:fhddsRegistrationNumber/status                               @uk.gov.hmrc.fhregistration.controllers.FhddsApplicationController.checkStatus(fhddsRegistrationNumber)
 GET  /subscription/:fhddsRegistrationNumber/get                                  @uk.gov.hmrc.fhregistration.controllers.FhddsApplicationController.get(fhddsRegistrationNumber)
 POST /subscription/subscribe/:safeId                                             @uk.gov.hmrc.fhregistration.controllers.FhddsApplicationController.subscribe(safeId)
-POST /subscription/amend/:fhddsRegistrationNumber                               @uk.gov.hmrc.fhregistration.controllers.FhddsApplicationController.amend(fhddsRegistrationNumber)
+POST /subscription/amend/:fhddsRegistrationNumber                                @uk.gov.hmrc.fhregistration.controllers.FhddsApplicationController.amend(fhddsRegistrationNumber)
+POST /subscription/withdrawal/:fhddsRegistrationNumber                           @uk.gov.hmrc.fhregistration.controllers.FhddsApplicationController.withdrawal(fhddsRegistrationNumber)
 
 
 PUT  /submission-extra-data/:userId/:formTypeRef/authorization                   @uk.gov.hmrc.fhregistration.controllers.SubmissionExtraDataController.updateAuthorization(userId, formTypeRef)
