@@ -34,9 +34,9 @@ class DesConnectorImpl extends DesConnector with ServicesConfig {
   def desServiceBaseUri = config("des-service").getString("baseuri").getOrElse("")
   def desServiceStatusUri = s"${baseUrl("des-service")}$desServiceBaseUri"
 
-  def desSubmissionUrl(safeId: String) =s"${baseUrl("des-service")}$desServiceBaseUri$desServiceUri/$safeId/id-type/safe"
+  def desSubmissionUrl(safeId: String) =s"${baseUrl("des-service")}$desServiceBaseUri$desServiceUri/id/$safeId/id-type/safe"
 
-  def desAmendmentUrl(fhddsRegistrationNumber: String) =s"${baseUrl("des-service")}$desServiceBaseUri$desServiceUri/$fhddsRegistrationNumber/id-type/fhdds"
+  def desAmendmentUrl(fhddsRegistrationNumber: String) =s"${baseUrl("des-service")}$desServiceBaseUri$desServiceUri/id/$fhddsRegistrationNumber/id-type/fhdds"
 
   lazy val http: WSHttp = WSHttp
 
