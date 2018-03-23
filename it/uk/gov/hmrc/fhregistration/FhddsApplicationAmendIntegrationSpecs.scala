@@ -5,11 +5,11 @@ import play.api.test.WsTestClient
 import uk.gov.hmrc.fhdds.testsupport.TestData._
 import uk.gov.hmrc.fhdds.testsupport.{TestConfigures, TestHelpers}
 
-class FhddsApplicationIntegrationSpecs
+class FhddsApplicationAmendIntegrationSpecs
   extends TestHelpers with TestConfigures {
 
-  "Submit an application" should {
-    "submit an application to DES, and get DES response" when {
+  "Submit an amended application" should {
+    "submit an amended application to DES, and get DES response" when {
 
       "some business registration details was saved" in {
 

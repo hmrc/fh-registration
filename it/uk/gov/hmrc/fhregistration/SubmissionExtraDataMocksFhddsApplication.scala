@@ -1,23 +1,14 @@
 package uk.gov.hmrc.fhregistration
 
-import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.{Matchers, OptionValues, WordSpec, WordSpecLike}
-import org.scalatestplus.play.WsScalaTestClient
 import play.api.libs.json.Json
 import play.api.test.WsTestClient
 import uk.gov.hmrc.fhdds.testsupport.TestData._
-import uk.gov.hmrc.fhdds.testsupport.TestedApplication
+import uk.gov.hmrc.fhdds.testsupport.{TestConfigures, TestHelpers}
 import uk.gov.hmrc.fhregistration.models.businessregistration.BusinessRegistrationDetails
 
 
 class SubmissionExtraDataMocksFhddsApplication
-  extends WordSpec
-    with OptionValues
-    with WsScalaTestClient
-    with TestedApplication
-    with WordSpecLike
-    with Matchers
-    with ScalaFutures {
+  extends TestHelpers with TestConfigures {
 
   "SubmissionExtraDataController" should {
     "save and later retrieve a bussiness registration detail" when {

@@ -1,21 +1,10 @@
 package uk.gov.hmrc.fhregistration
 
-import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.{Matchers, OptionValues, WordSpec, WordSpecLike}
-import org.scalatestplus.play.WsScalaTestClient
-import play.api.libs.json.Json
 import play.api.test.WsTestClient
-import uk.gov.hmrc.fhdds.testsupport.TestData._
-import uk.gov.hmrc.fhdds.testsupport.TestedApplication
+import uk.gov.hmrc.fhdds.testsupport.{TestConfigures, TestHelpers}
 
 class MdtpSubscriptionStatusSpecs
-  extends WordSpec
-    with OptionValues
-    with WsScalaTestClient
-    with TestedApplication
-    with WordSpecLike
-    with Matchers
-    with ScalaFutures {
+  extends TestHelpers with TestConfigures {
 
   val receivedRegistrationNumber = "receivedRegistrationNumber"
   val processingRegistrationNumber = "processingRegistrationNumber"
@@ -32,7 +21,7 @@ class MdtpSubscriptionStatusSpecs
 
         val response = WsTestClient.withClient { client ⇒
           client
-            .url(s"http://localhost:$port/fhdds/fulfilment-diligence/subscription/$receivedRegistrationNumber/status")
+            .url(s"http://localhost:$port/fhdds/subscription/$receivedRegistrationNumber/status")
             .get().futureValue
         }
         response.status shouldBe 200
@@ -47,7 +36,7 @@ class MdtpSubscriptionStatusSpecs
 
         val response = WsTestClient.withClient { client ⇒
           client
-            .url(s"http://localhost:$port/fhdds/fulfilment-diligence/subscription/$processingRegistrationNumber/status")
+            .url(s"http://localhost:$port/fhdds/subscription/$processingRegistrationNumber/status")
             .get().futureValue
         }
         response.status shouldBe 200
@@ -62,7 +51,7 @@ class MdtpSubscriptionStatusSpecs
 
         val response = WsTestClient.withClient { client ⇒
           client
-            .url(s"http://localhost:$port/fhdds/fulfilment-diligence/subscription/$successfulRegistrationNumber/status")
+            .url(s"http://localhost:$port/fhdds/subscription/$successfulRegistrationNumber/status")
             .get().futureValue
         }
         response.status shouldBe 200

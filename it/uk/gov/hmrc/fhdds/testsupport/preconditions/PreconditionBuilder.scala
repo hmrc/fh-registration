@@ -7,5 +7,6 @@ class PreconditionBuilder {
   def user = UserStub()
   def des = DesStub()
   def taxEnrolment = TaxEnrolmentStub()
+  def email = EmailStub()
 
 }
