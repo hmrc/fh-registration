@@ -9,7 +9,7 @@ import scala.collection.JavaConverters._
 case class DesVerifier()(implicit builder: VerifierBuilder) extends Matchers {
 
   def verifiesSubscriptions(): VerifierBuilder = {
-    val requests = findAll(postRequestedFor(urlMatching("/fhdds-stubs/application/.*"))).asScala
+    val requests = findAll(postRequestedFor(urlMatching("/fhdds-stubs/fulfilment-diligence/subscription/.*"))).asScala
     requests.size should not be 0
     for (r ← requests) {
       Json.parse(r.getBody).as[JsObject] should not be null
