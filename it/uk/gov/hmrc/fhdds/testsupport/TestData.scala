@@ -1,42 +1,30 @@
 package uk.gov.hmrc.fhdds.testsupport
 
-import generated.fhdds.LimitedDataFormat
-import org.joda.time.DateTime
-import play.api.libs.json.{JsObject, JsString, Json}
+import java.util.Date
+
+import play.api.libs.json.{JsObject, JsString, JsValue, Json}
 import uk.gov.hmrc.fhregistration.models.businessregistration.{Address, BusinessRegistrationDetails}
-import uk.gov.hmrc.fhregistration.models.des.DesSubmissionResponse
+import uk.gov.hmrc.fhregistration.models.des.{DesSubmissionResponse, DesWithdrawalResponse}
 import uk.gov.hmrc.fhregistration.models.fhdds.SubmissionRequest
 import uk.gov.hmrc.fhregistration.repositories.SubmissionExtraData
-import uk.gov.hmrc.fhregistration.services.ControllerServices
-
-import scala.xml.XML
 
 object TestData {
 
-  val file = "fhdds-limited-company-minimum.xml"
+  val file = "fhdds-limited-company-large-uk.json"
   val directoryPath = s"./it/resources/"
 
-
-  val validFormData: String = {
-    scala.io.Source.fromFile(s"$directoryPath$file").mkString
+  val validFormData: JsValue = {
+    Json.parse(scala.io.Source.fromFile(s"$directoryPath$file").mkString)
   }
-
-  val validFormXMLData: generated.limited.Data = {
-    val xml = XML
-      .load(scala.io.Source.fromFile(s"$directoryPath$file").reader())
-    scalaxb.fromXML[generated.limited.Data](xml)
-  }
-
-//  val someBusinessDetails: String = {
-//    scala.io.Source.fromFile(s"${directoryPath}business-registration-details.json").mkString
-//  }
 
   val validSubmissionRef = "ValidSubmissionRef123"
 
   val testFormTypeRef = "testFormTypeRef"
   val testFormId = "testFormId"
   val testUserId = "testUserId"
+  val testUserEmail = "testUser@email.com"
   val testSafeId = "XE0001234567890"
+  val testRegistrationNumber = "XE0001234567890"
 
   val invalidUserId = "invalidUserId"
   val invalidFormTypeRef = "invalidFormTypeRef"
@@ -61,6 +49,12 @@ object TestData {
        |  "is_business_details_editable":false
        |  }
      """.stripMargin
+
+  val testWithdrawalBody =
+    s"""{"emailAddress": "$testUserEmail", "withdrawal": {"withdrawalDate": "2017-11-29","withdrawalReason": "Applied in Error"}}"""
+
+  val testInvalidWithdrawalBody =
+    s"""{"emailAddress": "$testUserEmail"}"""
 
   val anAddress = Address(
     line1 = "line1",
@@ -97,17 +91,19 @@ object TestData {
     "callback" → JsString("callback"),
     "etmpId" → JsString("etmpId"))
 
-  val aSubmissionRequest: SubmissionRequest = SubmissionRequest(formId = testFormId, formTypeRef = testFormTypeRef, formData = validFormData)
+  val aSubmissionRequest: SubmissionRequest = SubmissionRequest(testUserEmail, validFormData)
 
-  def desSubmissionResponse(etmpFormBundleNumber: String, registrationNumberFHDDS: String) = {
+  def desSubmissionResponse(etmpFormBundleNumber: String, registrationNumberFHDDS: String): DesSubmissionResponse = {
     DesSubmissionResponse(
-      processingDate = DateTime.now().toString,
+      processingDate = new Date(),
       etmpFormBundleNumber = etmpFormBundleNumber,
       registrationNumberFHDDS = registrationNumberFHDDS)
   }
 
-  val aDesSubmissionResponse: DesSubmissionResponse = DesSubmissionResponse(
-    processingDate = DateTime.now().toString,
-    etmpFormBundleNumber = ControllerServices.createSubmissionRef(),
-    registrationNumberFHDDS = ControllerServices.createSubmissionRef())
+  def desWithdrawalResponse: DesWithdrawalResponse = {
+    DesWithdrawalResponse(
+      processingDate = new Date()
+    )
+  }
+
 }
