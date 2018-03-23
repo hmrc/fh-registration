@@ -11,47 +11,20 @@ class FhddsApplicationIntegrationSpecs
   "Submit an application" should {
     "submit an application to DES, and get DES response" when {
 
-      "some business registration details was saved" in {
-
-        given().audit.writesAuditOrMerged()
-
-        val responseForSaveRegistrationDetails = WsTestClient.withClient { client ⇒
-          client
-            .url(s"http://localhost:$port/fhdds/submission-extra-data/$testUserId/$testFormTypeRef/businessRegistrationDetails")
-            .withHeaders("Content-Type" -> "application/json")
-            .put(fakeBusinessDetailsJson).futureValue
-        }
-        responseForSaveRegistrationDetails.status shouldBe 202
-      }
-
-      "the business registration details has formID" in {
-
-        given().audit.writesAuditOrMerged()
-
-        val responseForUpdateFormId = WsTestClient.withClient { client ⇒
-          client
-            .url(s"http://localhost:$port/fhdds/submission-extra-data/$testUserId/$testFormTypeRef/formId")
-            .put(Json.toJson(testFormId)).futureValue
-        }
-        responseForUpdateFormId.status shouldBe 202
-      }
-
-      "get DES response" in {
-
-        val etmpFormBundleNumber = Array.fill(9)((math.random * 10).toInt).mkString
+      "the request has a valid application payload" in {
 
         given()
           .audit.writesAuditOrMerged()
-          .des.acceptsSubscription(testSafeId, testRegistrationNumber, etmpFormBundleNumber)
+          .des.acceptsSubscription(testSafeId, testRegistrationNumber, testEtmpFormBundleNumber)
           .taxEnrolment.subscribe
           .email.sendEmail
 
         WsTestClient.withClient { client ⇒
           whenReady(
             client
-              .url(s"http://localhost:$port/fhdds/subscription/subscribe/$testRegistrationNumber")
+              .url(s"http://localhost:$port/fhdds/subscription/subscribe/$testSafeId")
               .withHeaders("Content-Type" -> "application/json")
-              .post(Json.toJson(aSubmissionRequest)))
+              .post(Json.toJson(validSubmissionRequest)))
           { result ⇒
             result.status shouldBe 200
           }
@@ -60,6 +33,28 @@ class FhddsApplicationIntegrationSpecs
         expect()
           .des.verifiesSubscriptions()
       }
+
+      "the request without a valid application payload" in {
+
+        given()
+          .audit.writesAuditOrMerged()
+          .des.acceptsSubscription(testSafeId, testRegistrationNumber, testEtmpFormBundleNumber)
+          .taxEnrolment.subscribe
+          .email.sendEmail
+
+        WsTestClient.withClient { client ⇒
+          whenReady(
+            client
+              .url(s"http://localhost:$port/fhdds/subscription/subscribe/$testSafeId")
+              .withHeaders("Content-Type" -> "application/json")
+              .post(Json.toJson("")))
+          { result ⇒
+            result.status shouldBe 400
+          }
+        }
+
+      }
+
     }
   }
 

@@ -34,8 +34,6 @@ object FhddsApplicationControllerMock extends ScalaFutures with MockitoSugar {
   var mockDesConnector: DesConnector = mock[DesConnectorImpl]
   var mockTaxEnrolmentConnector: TaxEnrolmentConnector = mock[TaxEnrolmentConnectorImpl]
   var mockEmailConnectorImplConnector: EmailConnector = mock[EmailConnectorImpl]
-  var mockSubmissionExtraDataRepository: SubmissionExtraDataRepository = mock[SubmissionExtraDataRepository]
-  var mockFhddsApplicationService: FhddsApplicationService = new FhddsApplicationServiceImpl(new CountryCodeLookupImpl)
   var auditService: AuditService = new AuditServiceImpl
 
   implicit val request: FakeRequest[AnyContentAsEmpty.type] = FakeRequest().withHeaders(HeaderNames.xSessionId -> "test")
@@ -45,8 +43,6 @@ object FhddsApplicationControllerMock extends ScalaFutures with MockitoSugar {
     mockDesConnector,
     mockTaxEnrolmentConnector,
     mockEmailConnectorImplConnector,
-    mockSubmissionExtraDataRepository,
-    mockFhddsApplicationService,
     auditService
   )
 }

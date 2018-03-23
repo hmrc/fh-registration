@@ -16,7 +16,6 @@
 
 package uk.gov.hmrc.fhregistration.controllers
 
-import generated.fhdds.{LimitedDataFormat, PartnershipDataFormat, SoleDataFormat}
 import javax.inject.Inject
 import play.api.Logger
 import play.api.libs.json.Json
@@ -25,9 +24,8 @@ import uk.gov.hmrc.fhregistration.config.MicroserviceAuditConnector
 import uk.gov.hmrc.fhregistration.connectors.{DesConnector, EmailConnector, TaxEnrolmentConnector}
 import uk.gov.hmrc.fhregistration.models.des.SubScriptionCreate.format
 import uk.gov.hmrc.fhregistration.models.fhdds.{SubmissionRequest, SubmissionResponse, UserData, WithdrawalRequest}
-import uk.gov.hmrc.fhregistration.repositories.{SubmissionExtraData, SubmissionExtraDataRepository}
-import uk.gov.hmrc.fhregistration.services.{AuditService, FhddsApplicationService}
-import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, NotFoundException}
+import uk.gov.hmrc.fhregistration.services.AuditService
+import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import uk.gov.hmrc.play.audit.model.DataEvent
 import uk.gov.hmrc.play.microservice.controller.BaseController
@@ -40,8 +38,6 @@ class FhddsApplicationController @Inject()(
   val desConnector: DesConnector,
   val taxEnrolmentConnector: TaxEnrolmentConnector,
   val emailConnector: EmailConnector,
-  val submissionDataRepository: SubmissionExtraDataRepository,
-  val applicationService: FhddsApplicationService,
   val auditService: AuditService)
   extends BaseController {
 
@@ -53,7 +49,7 @@ class FhddsApplicationController @Inject()(
       desResponse ← desConnector.sendSubmission(safeId, request.submission)(hc)
       response = SubmissionResponse(desResponse.registrationNumberFHDDS, desResponse.processingDate)
     } yield {
-      Logger.info(s"Received registration number ${desResponse.registrationNumberFHDDS} for safeId ${safeId}")
+      Logger.info(s"Received registration number ${desResponse.registrationNumberFHDDS} for safeId $safeId")
 
       subscribeToTaxEnrolment(
         safeId,
@@ -136,27 +132,6 @@ class FhddsApplicationController @Inject()(
     val subscriptionId = request.getQueryString("subscriptionId").getOrElse("N/A")
     Logger.info(s"Received subscription callback for subscriptionId: $subscriptionId with response")
     Ok("")
-  }
-
-  private def createDesSubmission(formData: String, extraData: SubmissionExtraData) = {
-    val xml = scala.xml.XML.loadString(formData)
-    extraData.businessRegistrationDetails.businessType.map(_.toLowerCase) match {
-      case Some("sole trader")    ⇒
-        val data = scalaxb.fromXML[generated.sole.Data](xml)
-        applicationService.soleTraderSubmission(data, extraData.businessRegistrationDetails)
-      case Some("corporate body") ⇒
-        val data = scalaxb.fromXML[generated.limited.Data](xml)
-        applicationService.limitedCompanySubmission(data, extraData.businessRegistrationDetails)
-      case Some("partnership")    ⇒
-        val data = scalaxb.fromXML[generated.partnership.Data](xml)
-        applicationService.partnershipSubmission(data, extraData.businessRegistrationDetails)
-    }
-  }
-
-  private def findSubmissionExtraData(formId: String) = {
-    submissionDataRepository
-      .findSubmissionExtraDataByFormId(formId)
-      .map(_ getOrElse (throw new NotFoundException("extra data not found for formId")))
   }
 
   def checkStatus(fhddsRegistrationNumber: String) = Action.async { implicit request ⇒

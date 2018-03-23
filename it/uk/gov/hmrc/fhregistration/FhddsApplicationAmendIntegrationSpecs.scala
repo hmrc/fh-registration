@@ -2,7 +2,7 @@ package uk.gov.hmrc.fhregistration
 
 import play.api.libs.json.Json
 import play.api.test.WsTestClient
-import uk.gov.hmrc.fhdds.testsupport.TestData._
+import uk.gov.hmrc.fhdds.testsupport.TestData.{testEtmpFormBundleNumber, _}
 import uk.gov.hmrc.fhdds.testsupport.{TestConfigures, TestHelpers}
 
 class FhddsApplicationAmendIntegrationSpecs
@@ -11,47 +11,19 @@ class FhddsApplicationAmendIntegrationSpecs
   "Submit an amended application" should {
     "submit an amended application to DES, and get DES response" when {
 
-      "some business registration details was saved" in {
-
-        given().audit.writesAuditOrMerged()
-
-        val responseForSaveRegistrationDetails = WsTestClient.withClient { client ⇒
-          client
-            .url(s"http://localhost:$port/fhdds/submission-extra-data/$testUserId/$testFormTypeRef/businessRegistrationDetails")
-            .withHeaders("Content-Type" -> "application/json")
-            .put(fakeBusinessDetailsJson).futureValue
-        }
-        responseForSaveRegistrationDetails.status shouldBe 202
-      }
-
-      "the business registration details has formID" in {
-
-        given().audit.writesAuditOrMerged()
-
-        val responseForUpdateFormId = WsTestClient.withClient { client ⇒
-          client
-            .url(s"http://localhost:$port/fhdds/submission-extra-data/$testUserId/$testFormTypeRef/formId")
-            .put(Json.toJson(testFormId)).futureValue
-        }
-        responseForUpdateFormId.status shouldBe 202
-      }
-
-      "get DES response" in {
-
-        val etmpFormBundleNumber = Array.fill(9)((math.random * 10).toInt).mkString
+      "the request has a valid amend payload" in {
 
         given()
           .audit.writesAuditOrMerged()
-          .des.acceptsSubscription(testSafeId, testRegistrationNumber, etmpFormBundleNumber)
-          .taxEnrolment.subscribe
+          .des.acceptsAmendSubscription(testRegistrationNumber, testEtmpFormBundleNumber)
           .email.sendEmail
 
         WsTestClient.withClient { client ⇒
           whenReady(
             client
-              .url(s"http://localhost:$port/fhdds/subscription/subscribe/$testRegistrationNumber")
+              .url(s"http://localhost:$port/fhdds/subscription/amend/$testRegistrationNumber")
               .withHeaders("Content-Type" -> "application/json")
-              .post(Json.toJson(aSubmissionRequest)))
+              .post(Json.toJson(validAmendSubmissionRequest)))
           { result ⇒
             result.status shouldBe 200
           }
@@ -60,7 +32,28 @@ class FhddsApplicationAmendIntegrationSpecs
         expect()
           .des.verifiesSubscriptions()
       }
+
+      "the request without a valid amend payload" in {
+
+        given()
+          .audit.writesAuditOrMerged()
+          .des.acceptsAmendSubscription(testRegistrationNumber, testEtmpFormBundleNumber)
+          .email.sendEmail
+
+        WsTestClient.withClient { client ⇒
+          whenReady(
+            client
+              .url(s"http://localhost:$port/fhdds/subscription/amend/$testRegistrationNumber")
+              .withHeaders("Content-Type" -> "application/json")
+              .post(Json.toJson("")))
+          { result ⇒
+            result.status shouldBe 400
+          }
+        }
+      }
+
     }
+
   }
 
 }
