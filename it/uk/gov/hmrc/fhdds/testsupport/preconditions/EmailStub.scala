@@ -1,16 +1,17 @@
 package uk.gov.hmrc.fhdds.testsupport.preconditions
 
+
 import com.github.tomakehurst.wiremock.client.WireMock._
 
-case class TaxEnrolmentStub()(implicit builder: PreconditionBuilder) {
+case class EmailStub()(implicit builder: PreconditionBuilder) {
 
-  def subscribe = {
+  def sendEmail = {
     stubFor(
-      put(
-        urlPathEqualTo(s"/tax-enrolments/callback/subscriptions")
+      post(
+        urlPathEqualTo(s"/hmrc/email")
       )
         .willReturn(
-          ok("{}")
+          ok()
         )
     )
     builder

@@ -29,6 +29,20 @@ case class DesStub()(implicit builder: PreconditionBuilder) {
     builder
   }
 
+  def acceptsAmendSubscription(registrationNumber: String, etmpFormNumberBundle: String) = {
+    stubFor(
+      post(
+        urlPathEqualTo(s"/fhdds-stubs/fulfilment-diligence/subscription/id/$registrationNumber/id-type/fhdds")
+      )
+        .willReturn(
+          ok(
+            Json.toJson(TestData.desSubmissionResponse(etmpFormNumberBundle, registrationNumber)).toString
+          )
+        )
+    )
+    builder
+  }
+
   def acceptsWithdrawal(registrationNumber: String) = {
     stubFor(
       put(

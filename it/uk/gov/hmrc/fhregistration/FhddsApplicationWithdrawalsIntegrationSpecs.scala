@@ -1,20 +1,11 @@
 package uk.gov.hmrc.fhregistration
 
-import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.{Matchers, OptionValues, WordSpec, WordSpecLike}
-import org.scalatestplus.play.WsScalaTestClient
 import play.api.test.WsTestClient
 import uk.gov.hmrc.fhdds.testsupport.TestData._
-import uk.gov.hmrc.fhdds.testsupport.TestedApplication
+import uk.gov.hmrc.fhdds.testsupport.{TestConfiguration, TestHelpers}
 
 class FhddsApplicationWithdrawalsIntegrationSpecs
-  extends WordSpec
-    with OptionValues
-    with WsScalaTestClient
-    with TestedApplication
-    with WordSpecLike
-    with Matchers
-    with ScalaFutures {
+  extends TestHelpers with TestConfiguration {
 
   "Submit a withdrawal application" should {
 
@@ -24,6 +15,7 @@ class FhddsApplicationWithdrawalsIntegrationSpecs
 
         given().audit.writesAuditOrMerged()
           .des.acceptsWithdrawal(testRegistrationNumber)
+          .email.sendEmail
 
         val responseForWithdrawal = WsTestClient.withClient { client ⇒
           client
@@ -38,6 +30,7 @@ class FhddsApplicationWithdrawalsIntegrationSpecs
 
         given().audit.writesAuditOrMerged()
           .des.acceptsWithdrawal(testRegistrationNumber)
+          .email.sendEmail
 
         val responseForWithdrawal = WsTestClient.withClient { client ⇒
           client
@@ -46,6 +39,7 @@ class FhddsApplicationWithdrawalsIntegrationSpecs
             .post(testInvalidWithdrawalBody).futureValue
         }
         responseForWithdrawal.status shouldBe 400
+
       }
 
     }

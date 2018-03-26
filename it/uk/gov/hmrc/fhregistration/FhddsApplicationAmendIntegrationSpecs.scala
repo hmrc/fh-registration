@@ -2,29 +2,28 @@ package uk.gov.hmrc.fhregistration
 
 import play.api.libs.json.Json
 import play.api.test.WsTestClient
-import uk.gov.hmrc.fhdds.testsupport.TestData._
+import uk.gov.hmrc.fhdds.testsupport.TestData.{testEtmpFormBundleNumber, _}
 import uk.gov.hmrc.fhdds.testsupport.{TestConfiguration, TestHelpers}
 
-class FhddsApplicationIntegrationSpecs
+class FhddsApplicationAmendIntegrationSpecs
   extends TestHelpers with TestConfiguration {
 
-  "Submit an application" should {
-    "submit an application to DES, and get DES response" when {
+  "Submit an amended application" should {
+    "submit an amended application to DES, and get DES response" when {
 
-      "the request has a valid application payload" in {
+      "the request has a valid amend payload" in {
 
         given()
           .audit.writesAuditOrMerged()
-          .des.acceptsSubscription(testSafeId, testRegistrationNumber, testEtmpFormBundleNumber)
-          .taxEnrolment.subscribe
+          .des.acceptsAmendSubscription(testRegistrationNumber, testEtmpFormBundleNumber)
           .email.sendEmail
 
         WsTestClient.withClient { client ⇒
           whenReady(
             client
-              .url(s"http://localhost:$port/fhdds/subscription/subscribe/$testSafeId")
+              .url(s"http://localhost:$port/fhdds/subscription/amend/$testRegistrationNumber")
               .withHeaders("Content-Type" -> "application/json")
-              .post(Json.toJson(validSubmissionRequest)))
+              .post(Json.toJson(validAmendSubmissionRequest)))
           { result ⇒
             result.status shouldBe 200
           }
@@ -34,28 +33,27 @@ class FhddsApplicationIntegrationSpecs
           .des.verifiesSubscriptions()
       }
 
-      "the request without a valid application payload" in {
+      "the request without a valid amend payload" in {
 
         given()
           .audit.writesAuditOrMerged()
-          .des.acceptsSubscription(testSafeId, testRegistrationNumber, testEtmpFormBundleNumber)
-          .taxEnrolment.subscribe
+          .des.acceptsAmendSubscription(testRegistrationNumber, testEtmpFormBundleNumber)
           .email.sendEmail
 
         WsTestClient.withClient { client ⇒
           whenReady(
             client
-              .url(s"http://localhost:$port/fhdds/subscription/subscribe/$testSafeId")
+              .url(s"http://localhost:$port/fhdds/subscription/amend/$testRegistrationNumber")
               .withHeaders("Content-Type" -> "application/json")
               .post(Json.toJson("")))
           { result ⇒
             result.status shouldBe 400
           }
         }
-
       }
 
     }
+
   }
 
 }
