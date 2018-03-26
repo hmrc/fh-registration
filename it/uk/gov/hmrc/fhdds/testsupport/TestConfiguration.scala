@@ -14,7 +14,7 @@ import com.github.tomakehurst.wiremock.client.WireMock.{configureFor, reset, res
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig
 import uk.gov.hmrc.fhdds.testsupport.verifiers.VerifierBuilder
 
-trait TestConfigures
+trait TestConfiguration
   extends GuiceOneServerPerSuite
     with IntegrationPatience
     with PatienceConfiguration

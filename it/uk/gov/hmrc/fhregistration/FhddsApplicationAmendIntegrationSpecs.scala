@@ -3,10 +3,10 @@ package uk.gov.hmrc.fhregistration
 import play.api.libs.json.Json
 import play.api.test.WsTestClient
 import uk.gov.hmrc.fhdds.testsupport.TestData.{testEtmpFormBundleNumber, _}
-import uk.gov.hmrc.fhdds.testsupport.{TestConfigures, TestHelpers}
+import uk.gov.hmrc.fhdds.testsupport.{TestConfiguration, TestHelpers}
 
 class FhddsApplicationAmendIntegrationSpecs
-  extends TestHelpers with TestConfigures {
+  extends TestHelpers with TestConfiguration {
 
   "Submit an amended application" should {
     "submit an amended application to DES, and get DES response" when {

@@ -1,10 +1,10 @@
 package uk.gov.hmrc.fhregistration
 
 import play.api.test.WsTestClient
-import uk.gov.hmrc.fhdds.testsupport.{TestConfigures, TestHelpers}
+import uk.gov.hmrc.fhdds.testsupport.{TestConfiguration, TestHelpers}
 
 class MdtpSubscriptionStatusSpecs
-  extends TestHelpers with TestConfigures {
+  extends TestHelpers with TestConfiguration {
 
   val receivedRegistrationNumber = "receivedRegistrationNumber"
   val processingRegistrationNumber = "processingRegistrationNumber"

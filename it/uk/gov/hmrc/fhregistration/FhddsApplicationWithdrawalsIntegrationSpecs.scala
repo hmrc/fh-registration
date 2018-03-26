@@ -2,10 +2,10 @@ package uk.gov.hmrc.fhregistration
 
 import play.api.test.WsTestClient
 import uk.gov.hmrc.fhdds.testsupport.TestData._
-import uk.gov.hmrc.fhdds.testsupport.{TestConfigures, TestHelpers}
+import uk.gov.hmrc.fhdds.testsupport.{TestConfiguration, TestHelpers}
 
 class FhddsApplicationWithdrawalsIntegrationSpecs
-  extends TestHelpers with TestConfigures {
+  extends TestHelpers with TestConfiguration {
 
   "Submit a withdrawal application" should {
 

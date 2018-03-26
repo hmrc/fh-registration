@@ -3,10 +3,10 @@ package uk.gov.hmrc.fhregistration
 import play.api.libs.json.Json
 import play.api.test.WsTestClient
 import uk.gov.hmrc.fhdds.testsupport.TestData._
-import uk.gov.hmrc.fhdds.testsupport.{TestConfigures, TestHelpers}
+import uk.gov.hmrc.fhdds.testsupport.{TestConfiguration, TestHelpers}
 
 class FhddsApplicationIntegrationSpecs
-  extends TestHelpers with TestConfigures {
+  extends TestHelpers with TestConfiguration {
 
   "Submit an application" should {
     "submit an application to DES, and get DES response" when {
