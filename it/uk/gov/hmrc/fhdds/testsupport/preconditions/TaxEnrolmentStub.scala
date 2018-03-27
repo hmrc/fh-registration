@@ -7,7 +7,7 @@ case class TaxEnrolmentStub()(implicit builder: PreconditionBuilder) {
   def subscribe = {
     stubFor(
       put(
-        urlPathEqualTo(s"/tax-enrolments/callback/subscriptions")
+        urlMatching(s"/tax-enrolments/subscriptions/([0-9a-zA-Z]+)/subscriber")
       )
         .willReturn(
           ok("{}")
