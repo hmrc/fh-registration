@@ -8,7 +8,7 @@ case class TaxEnrolmentStub()(implicit builder: PreconditionBuilder) {
 
     stubFor(
       put(
-        urlPathEqualTo(s"/tax-enrolments/subscriptions/$subscriptionId/subscriber")
+        urlMatching(s"/tax-enrolments/subscriptions/([0-9a-zA-Z]+)/subscriber")
       )
         .willReturn(
           ok("{}")

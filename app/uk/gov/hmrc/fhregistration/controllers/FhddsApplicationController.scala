@@ -24,10 +24,12 @@ import play.api.mvc.{Action, Request}
 import uk.gov.hmrc.fhregistration.actions.UserAction
 import uk.gov.hmrc.fhregistration.config.MicroserviceAuditConnector
 import uk.gov.hmrc.fhregistration.connectors.{DesConnector, EmailConnector, TaxEnrolmentConnector}
+
 import uk.gov.hmrc.fhregistration.models.TaxEnrolmentsCallback
 import uk.gov.hmrc.fhregistration.models.fhdds.{EnrolmentProgress, SubmissionRequest, SubmissionResponse, UserData}
 import uk.gov.hmrc.fhregistration.repositories.{SubmissionTracking, SubmissionTrackingRepository}
-import uk.gov.hmrc.fhregistration.services.{AuditService, FhddsApplicationService}
+import uk.gov.hmrc.fhregistration.services.AuditService
+
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import uk.gov.hmrc.play.audit.model.DataEvent
@@ -43,7 +45,6 @@ class FhddsApplicationController @Inject()(
   val taxEnrolmentConnector: TaxEnrolmentConnector,
   val emailConnector: EmailConnector,
   val submissionTrackingRepository: SubmissionTrackingRepository,
-  val applicationService: FhddsApplicationService,
   val auditService: AuditService)
   extends BaseController {
 
@@ -123,7 +124,6 @@ class FhddsApplicationController @Inject()(
       Ok(Json toJson response)
     }
   }
-
 
   def sendEmail(email: String)(implicit hc: HeaderCarrier, request: Request[AnyRef]) = {
     val emailTemplateId = emailConnector.defaultEmailTemplateID
@@ -239,7 +239,7 @@ class FhddsApplicationController @Inject()(
       case ("Sent To DS") | ("DS Outcome In Progress") | ("In processing") | ("Sent to RCM") => Ok("Processing")
       case ("Successful")                                                                    => Ok("Successful")
       case ("Rejected")                                                                      => Ok("Rejected")
-      case _                                                                                 => Unauthorized("Unexpected business error received.")
+      case _                                                                                 => BadGateway("Unexpected business error received.")
     }
   }
 

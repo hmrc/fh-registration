@@ -23,7 +23,7 @@ import play.api.mvc.AnyContentAsEmpty
 import play.api.test.FakeRequest
 import uk.gov.hmrc.fhregistration.connectors._
 import uk.gov.hmrc.fhregistration.controllers.FhddsApplicationController
-import uk.gov.hmrc.fhregistration.repositories.{SubmissionExtraDataRepository, SubmissionTrackingRepository}
+import uk.gov.hmrc.fhregistration.repositories.SubmissionTrackingRepository
 import uk.gov.hmrc.http.{HeaderCarrier, HeaderNames}
 import uk.gov.hmrc.play.HeaderCarrierConverter
 
@@ -35,7 +35,6 @@ object FhddsApplicationControllerMock extends ScalaFutures with MockitoSugar {
   var mockTaxEnrolmentConnector: TaxEnrolmentConnector = mock[TaxEnrolmentConnectorImpl]
   var mockEmailConnectorImplConnector: EmailConnector = mock[EmailConnectorImpl]
   var mockSubmissionTrackingRepository: SubmissionTrackingRepository = mock[SubmissionTrackingRepository]
-  var mockFhddsApplicationService: FhddsApplicationService = new FhddsApplicationServiceImpl(new CountryCodeLookupImpl)
   var auditService: AuditService = new AuditServiceImpl
 
   implicit val request: FakeRequest[AnyContentAsEmpty.type] = FakeRequest().withHeaders(HeaderNames.xSessionId -> "test")
@@ -46,7 +45,6 @@ object FhddsApplicationControllerMock extends ScalaFutures with MockitoSugar {
     mockTaxEnrolmentConnector,
     mockEmailConnectorImplConnector,
     mockSubmissionTrackingRepository,
-    mockFhddsApplicationService,
     auditService
   )
 }
