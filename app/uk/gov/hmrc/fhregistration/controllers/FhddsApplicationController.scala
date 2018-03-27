@@ -22,7 +22,6 @@ import play.api.libs.json.Json
 import play.api.mvc.{Action, Request}
 import uk.gov.hmrc.fhregistration.config.MicroserviceAuditConnector
 import uk.gov.hmrc.fhregistration.connectors.{DesConnector, EmailConnector, TaxEnrolmentConnector}
-import uk.gov.hmrc.fhregistration.models.des.SubScriptionCreate.format
 import uk.gov.hmrc.fhregistration.models.fhdds.{SubmissionRequest, SubmissionResponse, UserData, WithdrawalRequest}
 import uk.gov.hmrc.fhregistration.services.AuditService
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
@@ -83,14 +82,14 @@ class FhddsApplicationController @Inject()(
     val request = r.body
     for {
       desResponse ← desConnector.sendWithdrawal(fhddsRegistrationNumber, request.withdrawal)(hc)
-      withdrawalResponse = desResponse.processingDate
+      processingDate = desResponse.processingDate
     } yield {
       val event = auditService.buildSubmissionWithdrawalAuditEvent(
         request, fhddsRegistrationNumber)
       auditSubmission(fhddsRegistrationNumber, event)
       sendEmail(request.emailAddress, fhddsRegistrationNumber)
 
-      Ok(Json toJson withdrawalResponse)
+      Ok(Json toJson processingDate)
     }
   }
 
@@ -169,7 +168,7 @@ class FhddsApplicationController @Inject()(
       case ("Sent To DS") | ("DS Outcome In Progress") | ("In processing") | ("Sent to RCM") => Ok("Processing")
       case ("Successful")                                                                    => Ok("Successful")
       case ("Rejected")                                                                      => Ok("Rejected")
-      case _                                                                                 => Unauthorized("Unexpected business error received.")
+      case _                                                                                 => BadGateway("Unexpected business error received.")
     }
   }
 
