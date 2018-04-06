@@ -17,30 +17,32 @@
 package uk.gov.hmrc.fhregistration.connectors
 
 import com.google.inject.ImplementedBy
-import play.api.Logger
+import javax.inject.Inject
+import play.api.Mode.Mode
 import play.api.mvc.Request
-import uk.gov.hmrc.fhregistration.config.WSHttp
-import uk.gov.hmrc.fhregistration.models.fhdds.UserData
-import uk.gov.hmrc.fhregistration.models.fhdds.SendEmailRequest
-import uk.gov.hmrc.fhregistration.services.{AuditService, AuditServiceImpl}
-import uk.gov.hmrc.http.{BadGatewayException, HeaderCarrier, HttpPost}
+import play.api.{Configuration, Environment, Logger}
+import uk.gov.hmrc.fhregistration.models.fhdds.{SendEmailRequest, UserData}
+import uk.gov.hmrc.http.{BadGatewayException, HeaderCarrier}
+import uk.gov.hmrc.play.bootstrap.http.HttpClient
 import uk.gov.hmrc.play.config.ServicesConfig
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success}
 
-class EmailConnectorImpl extends EmailConnector with ServicesConfig {
-  override val httpPost = WSHttp
-  override val auditService = new AuditServiceImpl
-  override val emailUrl = baseUrl("email") + "/hmrc/email"
-  override val defaultEmailTemplateID =  getConfString(s"email.defaultTemplateId", "fhdds_submission_confirmation")
+class EmailConnectorImpl @Inject() (
+  val http: HttpClient,
+  val runModeConfiguration: Configuration,
+  environment: Environment
+) extends EmailConnector with ServicesConfig {
+
+  override val emailUrl: String = baseUrl("email") + "/hmrc/email"
+  override val defaultEmailTemplateID: String =  getConfString(s"email.defaultTemplateId", "fhdds_submission_confirmation")
+  override protected def mode: Mode = environment.mode
 }
 
 @ImplementedBy(classOf[EmailConnectorImpl])
 trait EmailConnector {
-  val httpPost: HttpPost
-  
-  val auditService: AuditService
+  val http: HttpClient
   val emailUrl: String
   val defaultEmailTemplateID: String
 
@@ -51,7 +53,7 @@ trait EmailConnector {
 
     Logger.debug(s"Sending email, SendEmailRequest=$email")
 
-    val futureResult = httpPost.POST(emailUrl, email).map { response ⇒
+    val futureResult = http.POST(emailUrl, email).map { response ⇒
       if (response.status >= 200 && response.status < 300)
         true
       else

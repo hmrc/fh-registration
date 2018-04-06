@@ -30,10 +30,10 @@ object FhddsApplicationControllerMock extends ScalaFutures with MockitoSugar {
 
   implicit override val patienceConfig: PatienceConfig = PatienceConfig(timeout = Span(10, Seconds), interval = Span(10, Millis))
 
-  var mockDesConnector: DesConnector = mock[DesConnectorImpl]
+  var mockDesConnector: DesConnector = mock[DesConnector]
   var mockTaxEnrolmentConnector: TaxEnrolmentConnector = mock[TaxEnrolmentConnectorImpl]
   var mockEmailConnectorImplConnector: EmailConnector = mock[EmailConnectorImpl]
-  var auditService: AuditService = new AuditServiceImpl
+  var auditService: AuditService = mock[AuditService]
 
   implicit val request: FakeRequest[AnyContentAsEmpty.type] = FakeRequest().withHeaders(HeaderNames.xSessionId -> "test")
   implicit val headerCarrier: HeaderCarrier = HeaderCarrierConverter.fromHeadersAndSession(request.headers)

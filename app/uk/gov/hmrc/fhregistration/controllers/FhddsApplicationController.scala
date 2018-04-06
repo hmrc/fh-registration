@@ -20,12 +20,10 @@ import javax.inject.Inject
 import play.api.Logger
 import play.api.libs.json.Json
 import play.api.mvc.{Action, Request}
-import uk.gov.hmrc.fhregistration.config.MicroserviceAuditConnector
 import uk.gov.hmrc.fhregistration.connectors.{DesConnector, EmailConnector, TaxEnrolmentConnector}
 import uk.gov.hmrc.fhregistration.models.fhdds.{SubmissionRequest, SubmissionResponse, UserData, WithdrawalRequest}
 import uk.gov.hmrc.fhregistration.services.AuditService
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
-import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import uk.gov.hmrc.play.audit.model.DataEvent
 import uk.gov.hmrc.play.bootstrap.controller.BaseController
 
@@ -40,8 +38,6 @@ class FhddsApplicationController @Inject()(
   val auditService: AuditService)
   extends BaseController {
 
-  val auditConnector: AuditConnector = MicroserviceAuditConnector
-
   def subscribe(safeId: String) = Action.async(parse.json[SubmissionRequest]) { implicit r ⇒
     val request = r.body
     for {
@@ -50,13 +46,12 @@ class FhddsApplicationController @Inject()(
     } yield {
       Logger.info(s"Received registration number ${desResponse.registrationNumberFHDDS} for safeId $safeId")
 
-      subscribeToTaxEnrolment(
-        safeId,
-        desResponse.etmpFormBundleNumber)
+      subscribeToTaxEnrolment(safeId, desResponse.etmpFormBundleNumber)
 
-      val event = auditService.buildSubmissionCreateAuditEvent(
-        request, safeId, response.registrationNumber)
+      val event: DataEvent = auditService.buildSubmissionCreateAuditEvent(request, safeId, response.registrationNumber)
+
       auditSubmission(response.registrationNumber, event)
+
       sendEmail(request.emailAddress, response.registrationNumber)
 
       Ok(Json toJson response)
@@ -108,7 +103,7 @@ class FhddsApplicationController @Inject()(
     Logger.info(s"Sending audit event for registrationNumber $registrationNumber")
 
     import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext
-    auditConnector
+    auditService
       .sendEvent(event)(hc, MdcLoggingExecutionContext.fromLoggingDetails)
       .map(auditResult ⇒ Logger.info(s"Received audit result $auditResult for registrationNumber $registrationNumber"))
       .recover {
