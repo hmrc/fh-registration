@@ -17,8 +17,8 @@
 package uk.gov.hmrc.fhregistration.services
 
 import javax.inject.{Inject, Singleton}
-import play.api.{Configuration, Environment}
 import play.api.Mode.Mode
+import play.api.{Configuration, Environment}
 import uk.gov.hmrc.fhregistration.models.fhdds.{SubmissionRequest, WithdrawalRequest}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.audit.AuditExtensions.auditHeaderCarrier
@@ -27,8 +27,6 @@ import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import uk.gov.hmrc.play.audit.model.DataEvent
 import uk.gov.hmrc.play.bootstrap.http.HttpClient
 import uk.gov.hmrc.play.config.ServicesConfig
-
-import scala.concurrent.ExecutionContext
 
 @Singleton
 class AuditService @Inject() (
