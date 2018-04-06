@@ -16,26 +16,42 @@
 
 package uk.gov.hmrc.fhregistration.services
 
-import com.google.inject.ImplementedBy
-import javax.inject.Singleton
+import javax.inject.{Inject, Singleton}
+import play.api.{Configuration, Environment}
+import play.api.Mode.Mode
 import uk.gov.hmrc.fhregistration.models.fhdds.{SubmissionRequest, WithdrawalRequest}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.audit.AuditExtensions.auditHeaderCarrier
+import uk.gov.hmrc.play.audit.http.config.{AuditingConfig, BaseUri, Consumer}
+import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import uk.gov.hmrc.play.audit.model.DataEvent
+import uk.gov.hmrc.play.bootstrap.http.HttpClient
+import uk.gov.hmrc.play.config.ServicesConfig
 
 import scala.concurrent.ExecutionContext
 
 @Singleton
-class AuditServiceImpl extends AuditService {
+class AuditService @Inject() (
+  val http: HttpClient,
+  val runModeConfiguration: Configuration,
+  environment: Environment
+) extends AuditConnector with ServicesConfig {
 
-}
-
-@ImplementedBy(classOf[AuditServiceImpl])
-trait AuditService {
+  override protected def mode: Mode = environment.mode
 
   val auditSource = "fhdds"
   val auditEmailSource = "fhdds-send-email"
   val auditType = "fulfilmentHouseRegistrationSubmission"
+
+  val enableAuditing: Boolean = getBoolean(s"$env.auditing.enabled")
+
+  val dataStreamHost: String = getString(s"$env.auditing.consumer.baseUri.host")
+  val dataStreamPort: Int = getInt(s"$env.auditing.consumer.baseUri.port")
+  val dataStreamProtocol: String = "http"
+
+  val dataStreamBaseUri = BaseUri(dataStreamHost, dataStreamPort, dataStreamProtocol)
+
+  override def auditingConfig: AuditingConfig = AuditingConfig(Some(Consumer(dataStreamBaseUri)), enableAuditing)
 
   def buildSubmissionCreateAuditEvent(
     submissionRequest : SubmissionRequest,
@@ -96,15 +112,5 @@ trait AuditService {
     )
 
   }
-
-  private def sendEvent(auditType: String, detail: Map[String, String])(implicit hc: HeaderCarrier, ec: ExecutionContext) =
-    eventFor(auditType, detail)
-
-  private def eventFor(auditType: String, detail: Map[String, String])(implicit hc: HeaderCarrier) =
-    DataEvent(
-      auditSource = auditEmailSource,
-      auditType = auditType,
-      tags = hc.headers.toMap,
-      detail = detail)
 
 }

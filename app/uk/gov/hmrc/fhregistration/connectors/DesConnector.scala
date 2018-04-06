@@ -16,75 +16,68 @@
 
 package uk.gov.hmrc.fhregistration.connectors
 
-import com.google.inject.ImplementedBy
-import play.api.Logger
-import play.api.libs.json.{JsObject, JsValue}
-import uk.gov.hmrc.fhregistration.config.WSHttp
+import javax.inject.{Inject, Singleton}
+import play.api.Mode.Mode
+import play.api.libs.json.JsValue
+import play.api.{Configuration, Environment, Logger}
 import uk.gov.hmrc.fhregistration.models.des.{DesSubmissionResponse, DesWithdrawalResponse}
 import uk.gov.hmrc.http.logging.Authorization
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
+import uk.gov.hmrc.play.bootstrap.http.HttpClient
 import uk.gov.hmrc.play.config.ServicesConfig
 import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
 
 import scala.concurrent.Future
 
-class DesConnectorImpl extends DesConnector with ServicesConfig {
+@Singleton
+class DesConnector @Inject() (
+  val http: HttpClient,
+  val runModeConfiguration: Configuration,
+  environment: Environment
+) extends ServicesConfig {
 
-  def desServiceUri = config("des-service").getString("uri").getOrElse("")
-  def desServiceBaseUri = config("des-service").getString("baseuri").getOrElse("")
+  def desServiceUri: String = config("des-service").getString("uri").getOrElse("")
+  def desServiceBaseUri: String = config("des-service").getString("baseuri").getOrElse("")
   def desServiceStatusUri = s"${baseUrl("des-service")}$desServiceBaseUri"
 
   def desSubmissionUrl(safeId: String) =s"${baseUrl("des-service")}$desServiceBaseUri$desServiceUri/id/$safeId/id-type/safe"
   def desAmendmentUrl(fhddsRegistrationNumber: String) =s"${baseUrl("des-service")}$desServiceBaseUri$desServiceUri/id/$fhddsRegistrationNumber/id-type/fhdds"
   def desWithdrawalUrl(fhddsRegistrationNumber: String) =s"${baseUrl("des-service")}$desServiceBaseUri$desServiceUri/$fhddsRegistrationNumber/withdrawal"
 
-  lazy val http: WSHttp = WSHttp
+  val desToken: String = config("des-service").getString("authorization-token").getOrElse("")
+  val environmentKey: String = config("des-service").getString("environment").getOrElse("")
 
-  override val desToken = config("des-service").getString("authorization-token").getOrElse("")
-  override val environment = config("des-service").getString("environment").getOrElse("")
-}
+  override protected def mode: Mode = environment.mode
 
-@ImplementedBy(classOf[DesConnectorImpl])
-trait DesConnector {
+  private def headerCarrierBuilder(hc: HeaderCarrier) = {
+    hc.copy(authorization = Some(Authorization(s"Bearer $desToken"))).withExtraHeaders("Environment" -> environmentKey)
+  }
 
-  val http: WSHttp
-  val environment: String
-  val desToken: String
-  def desServiceUri: String
-  def desServiceStatusUri: String
-  def desSubmissionUrl(safeId: String): String
-  def desAmendmentUrl(fhddsRegistrationNumber: String): String
-  def desWithdrawalUrl(fhddsRegistrationNumber: String): String
-
-  def getStatus(fhddsRegistrationNumber: String)(headerCarrier: HeaderCarrier): Future[HttpResponse] = {
-    implicit val desHeaders = headerCarrier.copy(authorization = Some(Authorization(s"Bearer $desToken"))).withExtraHeaders("Environment" -> environment)
+  def getStatus(fhddsRegistrationNumber: String)(hc: HeaderCarrier): Future[HttpResponse] = {
+    implicit val desHeaders: HeaderCarrier = headerCarrierBuilder(hc)
     http.GET(s"$desServiceStatusUri/fulfilment-diligence/subscription/$fhddsRegistrationNumber/status")
   }
 
-
   def sendSubmission(safeId: String, submission: JsValue)(hc: HeaderCarrier): Future[DesSubmissionResponse] = {
     Logger.info(s"Sending fhdds registration data to DES for safeId $safeId")
-
-    implicit val desHeaders = hc.copy(authorization = Some(Authorization(s"Bearer $desToken"))).withExtraHeaders("Environment" -> environment)
+    implicit val desHeaders: HeaderCarrier = headerCarrierBuilder(hc)
     http.POST[JsValue, DesSubmissionResponse](desSubmissionUrl(safeId), submission)
   }
 
   def sendAmendment(fhddsRegistrationNumber: String, submission: JsValue)(hc: HeaderCarrier): Future[DesSubmissionResponse] = {
     Logger.info(s"Sending fhdds amendment data to DES for regNumber $fhddsRegistrationNumber")
-
-    implicit val desHeaders = hc.copy(authorization = Some(Authorization(s"Bearer $desToken"))).withExtraHeaders("Environment" -> environment)
+    implicit val desHeaders: HeaderCarrier = headerCarrierBuilder(hc)
     http.POST[JsValue, DesSubmissionResponse](desAmendmentUrl(fhddsRegistrationNumber), submission)
   }
 
   def sendWithdrawal(fhddsRegistrationNumber: String, submission: JsValue)(hc: HeaderCarrier): Future[DesWithdrawalResponse] = {
     Logger.info(s"Sending fhdds withdrawal data to DES for regNumber $fhddsRegistrationNumber")
-
-    implicit val desHeaders = hc.copy(authorization = Some(Authorization(s"Bearer $desToken"))).withExtraHeaders("Environment" -> environment)
+    implicit val desHeaders: HeaderCarrier = headerCarrierBuilder(hc)
     http.PUT[JsValue, DesWithdrawalResponse](desWithdrawalUrl(fhddsRegistrationNumber), submission)
   }
 
-  def display(fhddsRegistrationNumber: String)(headerCarrier: HeaderCarrier): Future[HttpResponse] = {
-    implicit val desHeaders = headerCarrier.copy(authorization = Some(Authorization(s"Bearer $desToken"))).withExtraHeaders("Environment" -> environment)
+  def display(fhddsRegistrationNumber: String)(hc: HeaderCarrier): Future[HttpResponse] = {
+    implicit val desHeaders: HeaderCarrier = headerCarrierBuilder(hc)
     http.GET(s"$desServiceStatusUri/fulfilment-diligence/subscription/$fhddsRegistrationNumber/get")
   }
 }

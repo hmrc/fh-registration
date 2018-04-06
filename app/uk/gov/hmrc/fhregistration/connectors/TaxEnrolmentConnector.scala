@@ -17,27 +17,34 @@
 package uk.gov.hmrc.fhregistration.connectors
 
 import com.google.inject.ImplementedBy
-import play.api.Logger
+import javax.inject.Inject
+import play.api.Mode.Mode
 import play.api.libs.json.{JsObject, JsString, Json}
-import uk.gov.hmrc.fhregistration.config.WSHttp
+import play.api.{Configuration, Environment, Logger}
 import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.play.bootstrap.http.HttpClient
 import uk.gov.hmrc.play.config.ServicesConfig
 import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
 
 import scala.concurrent.Future
 
-class TaxEnrolmentConnectorImpl extends TaxEnrolmentConnector with ServicesConfig {
-  lazy val http: WSHttp = WSHttp
+class TaxEnrolmentConnectorImpl @Inject() (
+  val http: HttpClient,
+  val runModeConfiguration: Configuration,
+  environment: Environment) extends TaxEnrolmentConnector with ServicesConfig {
 
-  val callback = config("tax-enrolments").getString("callback").getOrElse("http://")
-  val serviceName = config("tax-enrolments").getString("serviceName").getOrElse("HMRC-OBTDS-ORG")
+  val callback: String = config("tax-enrolments").getString("callback").getOrElse("http://")
+  val serviceName: String = config("tax-enrolments").getString("serviceName").getOrElse("HMRC-OBTDS-ORG")
+
   override def subscriberUrl(etmpFormBundleId: String) =
     s"${baseUrl("tax-enrolments")}/tax-enrolments/subscriptions/$etmpFormBundleId/subscriber"
+
+  override protected def mode: Mode = environment.mode
 }
 
 @ImplementedBy(classOf[TaxEnrolmentConnectorImpl])
 trait TaxEnrolmentConnector {
-  val http: WSHttp
+  val http: HttpClient
   val callback: String
   val serviceName: String
 
