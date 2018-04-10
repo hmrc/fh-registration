@@ -24,6 +24,7 @@ import uk.gov.hmrc.fhregistration.connectors.{DesConnector, EmailConnector, TaxE
 import uk.gov.hmrc.fhregistration.models.fhdds.{SubmissionRequest, SubmissionResponse, UserData, WithdrawalRequest}
 import uk.gov.hmrc.fhregistration.services.AuditService
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
+import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import uk.gov.hmrc.play.audit.model.DataEvent
 import uk.gov.hmrc.play.bootstrap.controller.BaseController
 
@@ -35,7 +36,8 @@ class FhddsApplicationController @Inject()(
   val desConnector: DesConnector,
   val taxEnrolmentConnector: TaxEnrolmentConnector,
   val emailConnector: EmailConnector,
-  val auditService: AuditService)
+  val auditService: AuditService,
+  val auditConnector: AuditConnector)
   extends BaseController {
 
   def subscribe(safeId: String) = Action.async(parse.json[SubmissionRequest]) { implicit r ⇒
@@ -103,7 +105,7 @@ class FhddsApplicationController @Inject()(
     Logger.info(s"Sending audit event for registrationNumber $registrationNumber")
 
     import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext
-    auditService
+    auditConnector
       .sendEvent(event)(hc, MdcLoggingExecutionContext.fromLoggingDetails)
       .map(auditResult ⇒ Logger.info(s"Received audit result $auditResult for registrationNumber $registrationNumber"))
       .recover {
