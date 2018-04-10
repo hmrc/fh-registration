@@ -25,6 +25,7 @@ import uk.gov.hmrc.fhregistration.connectors._
 import uk.gov.hmrc.fhregistration.controllers.FhddsApplicationController
 import uk.gov.hmrc.http.{HeaderCarrier, HeaderNames}
 import uk.gov.hmrc.play.HeaderCarrierConverter
+import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 
 object FhddsApplicationControllerMock extends ScalaFutures with MockitoSugar {
 
@@ -34,6 +35,7 @@ object FhddsApplicationControllerMock extends ScalaFutures with MockitoSugar {
   var mockTaxEnrolmentConnector: TaxEnrolmentConnector = mock[TaxEnrolmentConnectorImpl]
   var mockEmailConnectorImplConnector: EmailConnector = mock[EmailConnectorImpl]
   var auditService: AuditService = mock[AuditService]
+  var auditConnector: AuditConnector = mock[AuditConnector]
 
   implicit val request: FakeRequest[AnyContentAsEmpty.type] = FakeRequest().withHeaders(HeaderNames.xSessionId -> "test")
   implicit val headerCarrier: HeaderCarrier = HeaderCarrierConverter.fromHeadersAndSession(request.headers)
@@ -42,6 +44,7 @@ object FhddsApplicationControllerMock extends ScalaFutures with MockitoSugar {
     mockDesConnector,
     mockTaxEnrolmentConnector,
     mockEmailConnectorImplConnector,
-    auditService
+    auditService,
+    auditConnector
   )
 }

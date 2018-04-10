@@ -22,8 +22,6 @@ import play.api.{Configuration, Environment}
 import uk.gov.hmrc.fhregistration.models.fhdds.{SubmissionRequest, WithdrawalRequest}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.audit.AuditExtensions.auditHeaderCarrier
-import uk.gov.hmrc.play.audit.http.config.{AuditingConfig, BaseUri, Consumer}
-import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import uk.gov.hmrc.play.audit.model.DataEvent
 import uk.gov.hmrc.play.bootstrap.http.HttpClient
 import uk.gov.hmrc.play.config.ServicesConfig
@@ -33,23 +31,13 @@ class AuditService @Inject() (
   val http: HttpClient,
   val runModeConfiguration: Configuration,
   environment: Environment
-) extends AuditConnector with ServicesConfig {
+) extends ServicesConfig {
 
   override protected def mode: Mode = environment.mode
 
   val auditSource = "fhdds"
   val auditEmailSource = "fhdds-send-email"
   val auditType = "fulfilmentHouseRegistrationSubmission"
-
-  val enableAuditing: Boolean = getBoolean(s"$env.auditing.enabled")
-
-  val dataStreamHost: String = getString(s"$env.auditing.consumer.baseUri.host")
-  val dataStreamPort: Int = getInt(s"$env.auditing.consumer.baseUri.port")
-  val dataStreamProtocol: String = "http"
-
-  val dataStreamBaseUri = BaseUri(dataStreamHost, dataStreamPort, dataStreamProtocol)
-
-  override def auditingConfig: AuditingConfig = AuditingConfig(Some(Consumer(dataStreamBaseUri)), enableAuditing)
 
   def buildSubmissionCreateAuditEvent(
     submissionRequest : SubmissionRequest,
