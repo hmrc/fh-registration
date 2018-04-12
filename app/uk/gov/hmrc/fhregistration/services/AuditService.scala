@@ -17,23 +17,19 @@
 package uk.gov.hmrc.fhregistration.services
 
 import javax.inject.{Inject, Singleton}
-import play.api.Mode.Mode
 import play.api.{Configuration, Environment}
 import uk.gov.hmrc.fhregistration.models.fhdds.{SubmissionRequest, WithdrawalRequest}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.audit.AuditExtensions.auditHeaderCarrier
 import uk.gov.hmrc.play.audit.model.DataEvent
 import uk.gov.hmrc.play.bootstrap.http.HttpClient
-import uk.gov.hmrc.play.config.ServicesConfig
 
 @Singleton
 class AuditService @Inject() (
   val http: HttpClient,
   val runModeConfiguration: Configuration,
   environment: Environment
-) extends ServicesConfig {
-
-  override protected def mode: Mode = environment.mode
+) {
 
   val auditSource = "fhdds"
   val auditEmailSource = "fhdds-send-email"
