@@ -1,5 +1,7 @@
 package uk.gov.hmrc.fhdds.testsupport
 
+import java.util.Date
+
 import generated.fhdds.LimitedDataFormat
 import org.joda.time.DateTime
 import play.api.libs.json.{JsObject, JsString, Json}
@@ -97,17 +99,19 @@ object TestData {
     "callback" → JsString("callback"),
     "etmpId" → JsString("etmpId"))
 
-  val aSubmissionRequest: SubmissionRequest = SubmissionRequest(formId = testFormId, formTypeRef = testFormTypeRef, formData = validFormData)
+  val aSubmissionRequest: SubmissionRequest = SubmissionRequest(
+    emailAddress = "a@a.test",
+    submission = Json.parse(validFormData))
 
   def desSubmissionResponse(etmpFormBundleNumber: String, registrationNumberFHDDS: String) = {
     DesSubmissionResponse(
-      processingDate = DateTime.now().toString,
+      processingDate = new Date(),
       etmpFormBundleNumber = etmpFormBundleNumber,
       registrationNumberFHDDS = registrationNumberFHDDS)
   }
 
   val aDesSubmissionResponse: DesSubmissionResponse = DesSubmissionResponse(
-    processingDate = DateTime.now().toString,
+    processingDate = new Date(),
     etmpFormBundleNumber = ControllerServices.createSubmissionRef(),
     registrationNumberFHDDS = ControllerServices.createSubmissionRef())
 }
