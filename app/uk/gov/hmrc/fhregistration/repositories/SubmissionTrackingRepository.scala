@@ -21,10 +21,9 @@ import javax.inject.Inject
 import play.modules.reactivemongo.ReactiveMongoComponent
 import reactivemongo.api.indexes.{Index, IndexType}
 import reactivemongo.bson.{BSONDocument, BSONObjectID}
+import reactivemongo.play.json.ImplicitBSONHandlers._
 import uk.gov.hmrc.mongo.json.ReactiveMongoFormats
 import uk.gov.hmrc.mongo.{AtomicUpdate, ReactiveRepository}
-
-import reactivemongo.play.json.ImplicitBSONHandlers._
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{ExecutionContext, Future}
@@ -35,14 +34,8 @@ class SubmissionTrackingRepository @Inject() (implicit rmc: ReactiveMongoCompone
     rmc.mongoConnector.db,
     SubmissionTracking.formats,
     ReactiveMongoFormats.objectIdFormats)
-
-    with AtomicUpdate[SubmissionTracking]
 {
 
-  override def isInsertion(newRecordId: BSONObjectID, oldRecord: SubmissionTracking): Boolean = oldRecord.id match {
-    case null ⇒ false
-    case id   ⇒ newRecordId.equals(id)
-  }
 
   import SubmissionTracking.{FormBundleIdField, UserIdField}
 
@@ -54,8 +47,10 @@ class SubmissionTrackingRepository @Inject() (implicit rmc: ReactiveMongoCompone
     collection.find(BSONDocument(FormBundleIdField → formBundleId)).one[SubmissionTracking]
   }
 
-  def deleteSubmissionTackingByFormBundleId(formBundleId: String) = {
-    collection remove BSONDocument(FormBundleIdField → formBundleId)
+  def deleteSubmissionTackingByFormBundleId(formBundleId: String): Future[Int] = {
+    collection
+      .remove(BSONDocument(FormBundleIdField → formBundleId))
+      .map( _.n)
   }
 
   def insertSubmissionTracking(submissionTracking: SubmissionTracking) = {
@@ -69,7 +64,7 @@ class SubmissionTrackingRepository @Inject() (implicit rmc: ReactiveMongoCompone
       collection.indexesManager.ensure(
         Index(Seq(UserIdField -> IndexType.Ascending), name = Some("userIdIdx"), unique = false, sparse = true)),
       collection.indexesManager.ensure(
-        Index(Seq(FormBundleIdField -> IndexType.Ascending), name = Some("formBundleIdIdx"), unique = true, sparse = true))
+        Index(Seq(FormBundleIdField -> IndexType.Ascending), name = Some("formBundleIdIdx"), unique = false, sparse = true))
     )
 
     for {

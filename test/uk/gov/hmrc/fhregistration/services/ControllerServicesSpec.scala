@@ -48,11 +48,11 @@ class ControllerServicesSpec extends UnitSpec {
 
   "emailConnector" should {
     "send email if there is an email from the user" in {
-      val result = fhddsApplicationController.sendEmail("test@email.com","testSubmissionRef")
+      val result = fhddsApplicationController.sendEmail("test@email.com")
       result.value.get shouldBe Success(null)
     }
     "no email will send if there is not an email from the user" in {
-      val result = fhddsApplicationController.sendEmail("","testSubmissionRef")
+      val result = fhddsApplicationController.sendEmail("")
       result.value.get shouldBe Success(null)
     }
   }

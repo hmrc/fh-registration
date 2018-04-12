@@ -14,23 +14,11 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.fhregistration.repositories
+package uk.gov.hmrc.fhregistration.models.fhdds
 
-import play.api.libs.json._
+object EnrolmentProgress extends Enumeration {
 
-case class SubmissionTracking(
-  userId: String,
-  formBundleId: String,
-  email: String,
-  submissionTime: Long
-)
-
-object SubmissionTracking {
-  implicit val formats = Json.format[SubmissionTracking]
-
-
-  val UserIdField = "userId"
-  val FormBundleIdField = "formBundleId"
-
+  type EnrolmentProgress = Value
+  val Pending, Unknown = Value
 
 }

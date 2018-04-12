@@ -14,23 +14,19 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.fhregistration.repositories
+package uk.gov.hmrc.fhregistration.models
 
-import play.api.libs.json._
+import play.api.libs.json.Json
 
-case class SubmissionTracking(
-  userId: String,
-  formBundleId: String,
-  email: String,
-  submissionTime: Long
-)
+case class TaxEnrolmentsCallback(
+  url: String,
+  state: String,
+  errorResponse: String
+) {
 
-object SubmissionTracking {
-  implicit val formats = Json.format[SubmissionTracking]
+  val succeeded = state == "SUCCEEDED"
+}
 
-
-  val UserIdField = "userId"
-  val FormBundleIdField = "formBundleId"
-
-
+object TaxEnrolmentsCallback {
+  implicit val format = Json.format[TaxEnrolmentsCallback]
 }

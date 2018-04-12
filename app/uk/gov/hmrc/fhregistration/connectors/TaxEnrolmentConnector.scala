@@ -29,7 +29,10 @@ import scala.concurrent.Future
 class TaxEnrolmentConnectorImpl extends TaxEnrolmentConnector with ServicesConfig {
   lazy val http: WSHttp = WSHttp
 
-  val callback = config("tax-enrolments").getString("callback").getOrElse("http://")
+
+  val callbackBase = config("tax-enrolments").getString("callback").getOrElse("http://fh-registration.protected.mdtp:80/fhdds/tax-enrolment/callback/subscriptions")
+  def callback(formBundleId: String) = s"$callbackBase/$formBundleId"
+
   val serviceName = config("tax-enrolments").getString("serviceName").getOrElse("HMRC-OBTDS-ORG")
   override def subscriberUrl(etmpFormBundleId: String) =
     s"${baseUrl("tax-enrolments")}/tax-enrolments/subscriptions/$etmpFormBundleId/subscriber"
@@ -38,7 +41,7 @@ class TaxEnrolmentConnectorImpl extends TaxEnrolmentConnector with ServicesConfi
 @ImplementedBy(classOf[TaxEnrolmentConnectorImpl])
 trait TaxEnrolmentConnector {
   val http: WSHttp
-  val callback: String
+  def callback(formBundleId: String): String
   val serviceName: String
 
   def subscriberUrl(subscriptionId: String): String
@@ -52,14 +55,14 @@ trait TaxEnrolmentConnector {
     Logger.info(s"Request to tax enrolments authorisation header is present: ${hc.authorization.isDefined}")
     http.PUT[JsObject, Option[JsObject]](
       subscriberUrl(etmpFormBundleNumber),
-      requestBody(safeId)
+      requestBody(safeId, etmpFormBundleNumber)
     )
   }
 
-  def requestBody(etmpId: String): JsObject = {
+  def requestBody(etmpId: String, etmpFormBundleNumber: String): JsObject = {
     Json.obj(
       "serviceName" → JsString(serviceName),
-      "callback" → JsString(callback),
+      "callback" → JsString(callback(etmpFormBundleNumber)),
       "etmpId" → JsString(etmpId)
     )
   }
