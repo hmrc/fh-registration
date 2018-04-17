@@ -23,6 +23,7 @@ object MicroServiceBuild extends Build with MicroService {
     "uk.gov.hmrc"             %% "hmrctest"                     % "3.0.0"   % scope,
     "org.scalatest"           %% "scalatest"                    % "2.2.6"   % scope,
     "org.scalatestplus.play"  %% "scalatestplus-play"           % "2.0.0"   % scope,
+    "org.scoverage"           %  "scalac-scoverage-runtime_2.11"% "1.3.1"   % scope,
     "org.mockito"              % "mockito-core"                 % "2.7.22"  % scope,
     "org.pegdown"              % "pegdown"                      % "1.6.0"   % scope,
     "com.typesafe.play"       %% "play-test"                    % PlayVersion.current % scope,
