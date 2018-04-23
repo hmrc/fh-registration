@@ -26,7 +26,6 @@ trait MicroService {
   lazy val plugins : Seq[Plugins] = Seq.empty
   lazy val playSettings : Seq[Setting[_]] = Seq.empty
 
-  lazy val scalaXml = "org.scala-lang.modules" %% "scala-xml" % "1.0.2"
   lazy val scalaParser = "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.1"
   lazy val dispatchV = "0.11.2"
   lazy val dispatch = "net.databinder.dispatch" %% "dispatch-core" % dispatchV
@@ -48,18 +47,6 @@ trait MicroService {
     .configs(IntegrationTest)
     .settings(inConfig(IntegrationTest)(Defaults.itSettings): _*)
     .settings(sbtscalaxb.Plugin.scalaxbSettings: _*)
-    .settings(
-      sourceGenerators in Compile += (scalaxb in Compile).taskValue,
-      dispatchVersion in(Compile, scalaxb) := dispatchV,
-      protocolPackageName in(Compile, scalaxb) := Some("generated.fhdds"),
-      async in(Compile, scalaxb) := false,
-      packageNames in (Compile, scalaxb) := Map(
-        uri("http://iforms.hmrc.gov.uk/fhdds/sole") -> "generated.sole",
-        uri("http://iforms.hmrc.gov.uk/fhdds/limited") -> "generated.limited",
-        uri("http://iforms.hmrc.gov.uk/fhdds/partnership") -> "generated.partnership"
-      ),
-      xsdSource in(Compile, scalaxb) := file("resources/schemas/"),
-      ignoreUnknown in(Compile, scalaxb) := true) // to ignore unknown XML elements, as well as order in which they are arrived
     .settings(
       Keys.fork in IntegrationTest := false,
       resourceDirectory in IntegrationTest := baseDirectory.value / "it/resources",

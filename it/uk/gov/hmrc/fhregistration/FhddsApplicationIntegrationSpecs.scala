@@ -7,7 +7,6 @@ import play.api.libs.json.Json
 import play.api.test.WsTestClient
 import uk.gov.hmrc.fhdds.testsupport.TestData._
 import uk.gov.hmrc.fhdds.testsupport.TestedApplication
-import uk.gov.hmrc.fhregistration.services.ControllerServices
 
 class FhddsApplicationIntegrationSpecs
   extends WordSpec
@@ -48,7 +47,7 @@ class FhddsApplicationIntegrationSpecs
 
 
       "get DES response" in {
-        val registrationNumber = ControllerServices.createSubmissionRef()
+        val registrationNumber = Array.fill(9)((math.random * 10).toInt).mkString
         val etmpFormBundleNumber = Array.fill(9)((math.random * 10).toInt).mkString
         given()
           .audit.writesAuditOrMerged()
