@@ -87,7 +87,7 @@ class FhddsStatusMappingSpec extends UnitSpec with BaseController {
 
       val mdtpStatus = fhddsApplicationController.mdtpSubscriptionStatus(fakeDesResponse)
 
-      mdtpStatus shouldBe Unauthorized("Unexpected business error received.")
+      mdtpStatus shouldBe BadGateway("Unexpected business error received.")
 
     }
   }

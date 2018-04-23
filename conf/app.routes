@@ -7,9 +7,3 @@ GET  /subscription/:fhddsRegistrationNumber/get                                 
 POST /subscription/subscribe/:safeId                                             @uk.gov.hmrc.fhregistration.controllers.FhddsApplicationController.subscribe(safeId)
 POST /subscription/amend/:fhddsRegistrationNumber                                @uk.gov.hmrc.fhregistration.controllers.FhddsApplicationController.amend(fhddsRegistrationNumber)
 GET  /subscription/enrolmentProgress                                             @uk.gov.hmrc.fhregistration.controllers.FhddsApplicationController.enrolmentProgress
-
-
-PUT  /submission-extra-data/:userId/:formTypeRef/authorization                   @uk.gov.hmrc.fhregistration.controllers.SubmissionExtraDataController.updateAuthorization(userId, formTypeRef)
-PUT  /submission-extra-data/:userId/:formTypeRef/formId                          @uk.gov.hmrc.fhregistration.controllers.SubmissionExtraDataController.updateFormId(userId, formTypeRef)
-PUT  /submission-extra-data/:userId/:formTypeRef/businessRegistrationDetails     @uk.gov.hmrc.fhregistration.controllers.SubmissionExtraDataController.saveBusinessRegistrationDetails(userId, formTypeRef)
-GET  /submission-extra-data/:userId/:formTypeRef/businessRegistrationDetails     @uk.gov.hmrc.fhregistration.controllers.SubmissionExtraDataController.getBusinessRegistrationDetails(userId, formTypeRef)
