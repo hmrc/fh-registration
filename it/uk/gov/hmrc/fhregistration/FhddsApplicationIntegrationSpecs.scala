@@ -18,14 +18,14 @@ class FhddsApplicationIntegrationSpecs
           .des.acceptsSubscription(testSafeId, testRegistrationNumber, testEtmpFormBundleNumber)
           .taxEnrolment.subscribe
           .email.sendEmail
+          .user.isAuthorised()
 
         WsTestClient.withClient { client ⇒
           whenReady(
             client
               .url(s"http://localhost:$port/fhdds/subscription/subscribe/$testSafeId")
               .withHeaders("Content-Type" -> "application/json")
-              .post(Json.toJson(validSubmissionRequest)))
-          { result ⇒
+              .post(Json.toJson(validSubmissionRequest))) { result ⇒
             result.status shouldBe 200
           }
         }
@@ -36,6 +36,9 @@ class FhddsApplicationIntegrationSpecs
 
       "the request without a valid application payload" in {
 
+
+        val registrationNumber = Array.fill(9)((math.random * 10).toInt).mkString
+        val etmpFormBundleNumber = Array.fill(9)((math.random * 10).toInt).mkString
         given()
           .audit.writesAuditOrMerged()
           .des.acceptsSubscription(testSafeId, testRegistrationNumber, testEtmpFormBundleNumber)
@@ -47,15 +50,14 @@ class FhddsApplicationIntegrationSpecs
             client
               .url(s"http://localhost:$port/fhdds/subscription/subscribe/$testSafeId")
               .withHeaders("Content-Type" -> "application/json")
-              .post(Json.toJson("")))
-          { result ⇒
+              .post(Json.toJson(""))) { result ⇒
             result.status shouldBe 400
           }
         }
 
+
       }
-
     }
-  }
 
+  }
 }
