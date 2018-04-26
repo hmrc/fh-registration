@@ -33,9 +33,10 @@ class TaxEnrolmentConnectorImpl @Inject() (
   val runModeConfiguration: Configuration,
   environment: Environment) extends TaxEnrolmentConnector with ServicesConfig {
 
-  val callback: String = config("tax-enrolments").getString("callback").getOrElse("http://")
-  val serviceName: String = config("tax-enrolments").getString("serviceName").getOrElse("HMRC-OBTDS-ORG")
+  val callbackBase = config("tax-enrolments").getString("callback").getOrElse("http://fh-registration.protected.mdtp:80/fhdds/tax-enrolment/callback/subscriptions")
+  def callback(formBundleId: String) = s"$callbackBase/$formBundleId"
 
+  val serviceName = config("tax-enrolments").getString("serviceName").getOrElse("HMRC-OBTDS-ORG")
   override def subscriberUrl(etmpFormBundleId: String) =
     s"${baseUrl("tax-enrolments")}/tax-enrolments/subscriptions/$etmpFormBundleId/subscriber"
 
@@ -45,7 +46,7 @@ class TaxEnrolmentConnectorImpl @Inject() (
 @ImplementedBy(classOf[TaxEnrolmentConnectorImpl])
 trait TaxEnrolmentConnector {
   val http: HttpClient
-  val callback: String
+  def callback(formBundleId: String): String
   val serviceName: String
 
   def subscriberUrl(subscriptionId: String): String
@@ -59,14 +60,14 @@ trait TaxEnrolmentConnector {
     Logger.info(s"Request to tax enrolments authorisation header is present: ${hc.authorization.isDefined}")
     http.PUT[JsObject, Option[JsObject]](
       subscriberUrl(etmpFormBundleNumber),
-      requestBody(safeId)
+      requestBody(safeId, etmpFormBundleNumber)
     )
   }
 
-  def requestBody(etmpId: String): JsObject = {
+  def requestBody(etmpId: String, etmpFormBundleNumber: String): JsObject = {
     Json.obj(
       "serviceName" → JsString(serviceName),
-      "callback" → JsString(callback),
+      "callback" → JsString(callback(etmpFormBundleNumber)),
       "etmpId" → JsString(etmpId)
     )
   }

@@ -2,11 +2,14 @@ package uk.gov.hmrc.fhdds.testsupport
 
 import java.util.Date
 
-import play.api.libs.json.{JsValue, Json}
+import play.api.libs.json.{JsObject, JsString, JsValue, Json}
 import uk.gov.hmrc.fhregistration.models.des.{DesSubmissionResponse, DesWithdrawalResponse}
 import uk.gov.hmrc.fhregistration.models.fhdds.SubmissionRequest
 
+
 object TestData {
+
+  val file = "fhdds-limited-company-minimum.json"
 
   val directoryPath = s"./it/resources/"
 
@@ -19,10 +22,21 @@ object TestData {
   }
 
   val testUserEmail = "testUser@email.com"
+//  val someBusinessDetails: String = {
+//    scala.io.Source.fromFile(s"${directoryPath}business-registration-details.json").mkString
+//  }
+
+  val validSubmissionRef = "ValidSubmissionRef123"
+
+  val testFormTypeRef = "testFormTypeRef"
+  val testFormId = "testFormId"
+  val testUserId = "testUserId"
   val testSafeId = "XE0001234567890"
   val testRegistrationNumber = "XE0001234567890"
   val testEtmpFormBundleNumber: String = Array.fill(9)((math.random * 10).toInt).mkString
-
+  val validFormData: String = {
+    scala.io.Source.fromFile(s"$directoryPath$file").mkString
+  }
   val testWithdrawalBody =
     s"""{"emailAddress": "$testUserEmail", "withdrawal": {"withdrawalDate": "2017-11-29","withdrawalReason": "Applied in Error"}}"""
 
@@ -33,7 +47,16 @@ object TestData {
 
   val validAmendSubmissionRequest: SubmissionRequest = SubmissionRequest(testUserEmail, validAmendFormData)
 
-  def desSubmissionResponse(etmpFormBundleNumber: String, registrationNumberFHDDS: String): DesSubmissionResponse = {
+  val someTaxEnrolmentResponse: JsObject = Json.obj(
+    "serviceName" → JsString("serviceName"),
+    "callback" → JsString("callback"),
+    "etmpId" → JsString("etmpId"))
+
+  val aSubmissionRequest: SubmissionRequest = SubmissionRequest(
+    emailAddress = "a@a.test",
+    submission = Json.parse(validFormData))
+
+  def desSubmissionResponse(etmpFormBundleNumber: String, registrationNumberFHDDS: String) = {
     DesSubmissionResponse(
       processingDate = new Date(),
       etmpFormBundleNumber = etmpFormBundleNumber,
