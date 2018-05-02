@@ -22,7 +22,6 @@ import play.api.Logger
 import play.api.mvc._
 import uk.gov.hmrc.auth.core._
 import uk.gov.hmrc.auth.core.retrieve.Retrievals.internalId
-import uk.gov.hmrc.http.HeaderCarrier
 
 import scala.concurrent.Future
 
@@ -40,17 +39,15 @@ class UserAction @Inject()(val authConnector: AuthConnector)
   override protected def refine[A](request: Request[A]): Future[Either[Result, UserRequest[A]]] = {
     implicit val r = request
 
-    val hc1 = implicitly[HeaderCarrier]
-
     authorised().retrieve(internalId) {
       case Some(id) ⇒
         Future successful Right(new UserRequest(id, request))
       case _     ⇒
-        throw AuthorisationException.fromString("Can not find user id")
+        Future successful error(BadRequest, "Can not find user id")
 
     } recover { case e ⇒
       Logger.warn("Unauthorized user", e)
-      Left(Unauthorized(e.getMessage))
+      error(Unauthorized, s"Unauthorized: ${e.getMessage}")
     }
   }
 }

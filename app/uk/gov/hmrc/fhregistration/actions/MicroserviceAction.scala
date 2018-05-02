@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.fhregistration.actions
 
+import play.api.libs.json.{JsObject, JsString}
 import play.api.mvc.{Request, Results}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.http.logging.LoggingDetails
@@ -29,5 +30,15 @@ trait MicroserviceAction extends Results {
   implicit def hc(implicit request: Request[_]): HeaderCarrier = HeaderCarrierConverter.fromHeadersAndSession(request.headers)
 
   implicit def mdcExecutionContext(implicit loggingDetails: LoggingDetails): ExecutionContext = MdcLoggingExecutionContext.fromLoggingDetails
+
+  def error(status: Status, message: String) = {
+    val body = JsObject(
+      Seq(
+        "reason" → JsString(message)
+      )
+    )
+
+    Left(status(body))
+  }
 
 }

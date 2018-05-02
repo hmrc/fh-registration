@@ -27,7 +27,7 @@ case class UserStub()(implicit builder: PreconditionBuilder) { //extends Session
 //    builder
 //  }
 
-  def isAuthorised() = {
+  def isAuthorisedWithNoGroup() = {
     stubFor(
       post(urlPathEqualTo("/auth/authorise"))
         .willReturn(
@@ -47,6 +47,29 @@ case class UserStub()(implicit builder: PreconditionBuilder) { //extends Session
     builder
 
   }
+
+  def isAuthorised() = {
+    stubFor(
+      post(urlPathEqualTo("/auth/authorise"))
+        .willReturn(
+          ok(
+            s"""
+               |{
+               |  "internalId": "some-id",
+               |  "groupIdentifier": "some-group",
+               |  "loginTimes": {
+               |     "currentLogin": "2016-11-27T09:00:00.000Z",
+               |     "previousLogin": "2016-11-01T12:00:00.000Z"
+               |  }
+               |}
+             """.stripMargin
+          )
+        )
+    )
+    builder
+
+  }
+
 
   def isNotAuthorised(reason: String = "MissingBearerToken") = {
     stubFor(

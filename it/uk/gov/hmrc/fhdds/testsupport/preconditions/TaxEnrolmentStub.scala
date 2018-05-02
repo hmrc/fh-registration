@@ -16,4 +16,14 @@ case class TaxEnrolmentStub()(implicit builder: PreconditionBuilder) {
     builder
   }
 
+  def acceptsDeEnrolment() = {
+    stubFor(
+      delete(
+        urlMatching("/tax-enrolments/groups/([0-9a-zA-Z\\-~]+)/enrolments/([0-9a-zA-Z\\-~]+)"))
+      .willReturn((noContent()))
+    )
+
+    builder
+  }
+
 }

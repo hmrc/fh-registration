@@ -21,7 +21,7 @@ import org.scalatest.mockito.MockitoSugar
 import org.scalatest.time.{Millis, Seconds, Span}
 import play.api.mvc.AnyContentAsEmpty
 import play.api.test.FakeRequest
-import uk.gov.hmrc.fhregistration.actions.UserAction
+import uk.gov.hmrc.fhregistration.actions.{Actions, UserAction}
 import uk.gov.hmrc.fhregistration.connectors._
 import uk.gov.hmrc.fhregistration.controllers.FhddsApplicationController
 import uk.gov.hmrc.fhregistration.repositories.SubmissionTrackingRepository
@@ -39,7 +39,7 @@ object FhddsApplicationControllerMock extends ScalaFutures with MockitoSugar {
   var auditService: AuditService = mock[AuditService]
   var auditConnector: AuditConnector = mock[AuditConnector]
   var mockSubmissionTrackingRepository: SubmissionTrackingRepository = mock[SubmissionTrackingRepository]
-  var mockUserAction = mock[UserAction]
+  var mockActions = mock[Actions]
   implicit val request: FakeRequest[AnyContentAsEmpty.type] = FakeRequest().withHeaders(HeaderNames.xSessionId -> "test")
   implicit val headerCarrier: HeaderCarrier = HeaderCarrierConverter.fromHeadersAndSession(request.headers)
 
@@ -50,6 +50,6 @@ object FhddsApplicationControllerMock extends ScalaFutures with MockitoSugar {
     mockSubmissionTrackingRepository,
     auditService,
     auditConnector,
-    mockUserAction
+    mockActions
   )
 }
