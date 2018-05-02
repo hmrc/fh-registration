@@ -21,7 +21,7 @@ import javax.inject.Inject
 import play.api.Logger
 import play.api.libs.json.Json
 import play.api.mvc.{Action, Request}
-import uk.gov.hmrc.fhregistration.actions.UserAction
+import uk.gov.hmrc.fhregistration.actions.{Actions, UserAction}
 import uk.gov.hmrc.fhregistration.connectors.{DesConnector, EmailConnector, TaxEnrolmentConnector}
 import uk.gov.hmrc.fhregistration.models.TaxEnrolmentsCallback
 import uk.gov.hmrc.fhregistration.models.fhdds._
@@ -44,8 +44,10 @@ class FhddsApplicationController @Inject()(
   val submissionTrackingRepository: SubmissionTrackingRepository,
   val auditService: AuditService,
   val auditConnector: AuditConnector,
-  val userAction: UserAction)
+  val actions: Actions)
   extends BaseController {
+
+  import actions._
 
   val SubmissionTrackingAgeThresholdMs = 60 * 60 * 1000L
 
@@ -122,11 +124,12 @@ class FhddsApplicationController @Inject()(
     }
   }
 
-  def withdrawal(fhddsRegistrationNumber: String) = Action.async(parse.json[WithdrawalRequest]) { implicit r ⇒
+  def withdrawal(fhddsRegistrationNumber: String) = userGroupAction.async(parse.json[WithdrawalRequest]) { implicit r ⇒
     val request = r.body
     for {
       desResponse ← desConnector.sendWithdrawal(fhddsRegistrationNumber, request.withdrawal)(hc)
       processingDate = desResponse.processingDate
+      _ ← taxEnrolmentConnector.deleteGroupEnrolment(r.groupId, fhddsRegistrationNumber)
     } yield {
       val event = auditService.buildSubmissionWithdrawalAuditEvent(
         request, fhddsRegistrationNumber)
