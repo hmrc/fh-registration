@@ -16,13 +16,14 @@
 
 package uk.gov.hmrc.fhregistration.controllers
 
-import java.text.SimpleDateFormat
+import java.time.{LocalDateTime, ZoneId}
+import java.time.format.DateTimeFormatter
 
 import javax.inject.Inject
 import play.api.Logger
 import play.api.libs.json.Json
 import play.api.mvc.{Action, Request}
-import uk.gov.hmrc.fhregistration.actions.{Actions, UserAction}
+import uk.gov.hmrc.fhregistration.actions.Actions
 import uk.gov.hmrc.fhregistration.connectors.{DesConnector, EmailConnector, TaxEnrolmentConnector}
 import uk.gov.hmrc.fhregistration.models.TaxEnrolmentsCallback
 import uk.gov.hmrc.fhregistration.models.fhdds._
@@ -137,20 +138,19 @@ class FhddsApplicationController @Inject()(
       auditSubmission(fhddsRegistrationNumber, event)
       sendEmail(
         request.emailAddress,
-        isWithdrawal = true,
-        emailParameters = Map("withdrawalDate" → new SimpleDateFormat("dd MMMM yyyy").format(processingDate)))
+        emailTemplateId = emailConnector.withdrawalEmailTemplateID,
+        emailParameters = Map("withdrawalDate" → LocalDateTime.ofInstant(processingDate.toInstant,ZoneId.systemDefault()).format(DateTimeFormatter.ofPattern("dd MMMM yyyy"))))
 
       Ok(Json toJson processingDate)
     }
   }
 
-  def sendEmail(email: String, isWithdrawal: Boolean = false, emailParameters: Map[String, String] = Map.empty)(implicit hc: HeaderCarrier, request: Request[AnyRef]) = {
-    val emailTemplateId = if (isWithdrawal) emailConnector.withdrawalEmailTemplateID else emailConnector.defaultEmailTemplateID
+  def sendEmail(email: String, emailTemplateId: String = emailConnector.defaultEmailTemplateID, emailParameters: Map[String, String] = Map.empty)(implicit hc: HeaderCarrier, request: Request[AnyRef]) = {
     import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext
     emailConnector
       .sendEmail(
         emailTemplateId = emailTemplateId,
-        userData = UserData(email = email, submissionReference = ""),
+        userData = UserData(email),
         emailParameters)(hc, request, MdcLoggingExecutionContext.fromLoggingDetails)
   }
 

@@ -18,7 +18,7 @@ package uk.gov.hmrc.fhregistration.models.fhdds
 
 import play.api.libs.json.Json
 
-case class UserData(email: String, submissionReference: String)
+case class UserData(email: String)
 
 object UserData {
   implicit val formats = Json.format[UserData]
