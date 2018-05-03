@@ -19,14 +19,15 @@ package uk.gov.hmrc.fhregistration.models.fhdds
 import play.api.libs.functional.syntax.toFunctionalBuilderOps
 import play.api.libs.json._
 
-case class SendEmailRequest(to: List[String], templateId: String, force: Boolean)
+case class SendEmailRequest(to: List[String], templateId: String, parameters: Map[String, String], force: Boolean)
 
 object SendEmailRequest {
   implicit val format = new Format[SendEmailRequest] {
     def reads(json: JsValue): JsResult[SendEmailRequest] = (
       (__ \ "to").read[List[String]] and
-        (__ \ "templateId").read[String] and
-        (__ \ "force").readNullable[Boolean].map(_.getOrElse(false))) (SendEmailRequest.apply _).reads(json)
+      (__ \ "templateId").read[String] and
+      (__ \ "parameters").readNullable[Map[String, String]].map(_.getOrElse(Map.empty)) and
+      (__ \ "force").readNullable[Boolean].map(_.getOrElse(false))) (SendEmailRequest.apply _).reads(json)
 
     def writes(o: SendEmailRequest): JsValue = Json.writes[SendEmailRequest].writes(o)
   }

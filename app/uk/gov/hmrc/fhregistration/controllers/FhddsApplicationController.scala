@@ -16,8 +16,9 @@
 
 package uk.gov.hmrc.fhregistration.controllers
 
-import javax.inject.Inject
+import java.text.SimpleDateFormat
 
+import javax.inject.Inject
 import play.api.Logger
 import play.api.libs.json.Json
 import play.api.mvc.{Action, Request}
@@ -134,20 +135,23 @@ class FhddsApplicationController @Inject()(
       val event = auditService.buildSubmissionWithdrawalAuditEvent(
         request, fhddsRegistrationNumber)
       auditSubmission(fhddsRegistrationNumber, event)
-      sendEmail(request.emailAddress)
+      sendEmail(
+        request.emailAddress,
+        isWithdrawal = true,
+        emailParameters = Map("withdrawalDate" → new SimpleDateFormat("dd MMMM yyyy").format(processingDate)))
 
       Ok(Json toJson processingDate)
     }
   }
 
-  def sendEmail(email: String)(implicit hc: HeaderCarrier, request: Request[AnyRef]) = {
-    val emailTemplateId = emailConnector.defaultEmailTemplateID
+  def sendEmail(email: String, isWithdrawal: Boolean = false, emailParameters: Map[String, String] = Map.empty)(implicit hc: HeaderCarrier, request: Request[AnyRef]) = {
+    val emailTemplateId = if (isWithdrawal) emailConnector.withdrawalEmailTemplateID else emailConnector.defaultEmailTemplateID
     import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext
     emailConnector
       .sendEmail(
         emailTemplateId = emailTemplateId,
-        userData = UserData(email = email, submissionReference = ""))(hc, request, MdcLoggingExecutionContext.fromLoggingDetails)
-
+        userData = UserData(email = email, submissionReference = ""),
+        emailParameters)(hc, request, MdcLoggingExecutionContext.fromLoggingDetails)
   }
 
   private def auditSubmission(registrationNumber: String, event: DataEvent)(implicit hc: HeaderCarrier) = {
