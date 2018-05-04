@@ -16,8 +16,7 @@
 
 package uk.gov.hmrc.fhregistration.controllers
 
-import java.time.{LocalDateTime, ZoneId}
-import java.time.format.DateTimeFormatter
+import java.text.SimpleDateFormat
 
 import javax.inject.Inject
 import play.api.Logger
@@ -139,7 +138,7 @@ class FhddsApplicationController @Inject()(
       sendEmail(
         request.emailAddress,
         emailTemplateId = emailConnector.withdrawalEmailTemplateID,
-        emailParameters = Map("withdrawalDate" → LocalDateTime.ofInstant(processingDate.toInstant,ZoneId.systemDefault()).format(DateTimeFormatter.ofPattern("dd MMMM yyyy"))))
+        emailParameters = Map("withdrawalDate" → new SimpleDateFormat("dd MMMM yyyy").format(processingDate)))
 
       Ok(Json toJson processingDate)
     }
