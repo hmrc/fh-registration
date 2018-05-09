@@ -19,7 +19,7 @@ package controllers
 import play.api.libs.json._
 import uk.gov.hmrc.fhregistration.services.FhddsApplicationControllerMock
 import uk.gov.hmrc.http.HttpResponse
-import uk.gov.hmrc.play.microservice.controller.BaseController
+import uk.gov.hmrc.play.bootstrap.controller.BaseController
 import uk.gov.hmrc.play.test.UnitSpec
 
 class FhddsStatusMappingSpec extends UnitSpec with BaseController {

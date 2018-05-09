@@ -14,12 +14,15 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.fhregistration.models.fhdds
+package uk.gov.hmrc.fhregistration.actions
 
-import play.api.libs.json._
+import javax.inject.Inject
 
-case class SendEmailRequest(to: List[String], templateId: String, parameters: Map[String, String], force: Boolean)
+import uk.gov.hmrc.auth.core.AuthConnector
 
-object SendEmailRequest {
-  implicit val format = Json.format[SendEmailRequest]
+class Actions @Inject()(val authConnector: AuthConnector) {
+
+  def userAction = new UserAction(authConnector)
+  def userGroupAction = new UserGroupAction(authConnector)
+
 }

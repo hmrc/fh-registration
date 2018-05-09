@@ -14,7 +14,7 @@ import com.github.tomakehurst.wiremock.client.WireMock.{configureFor, reset, res
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig
 import uk.gov.hmrc.fhdds.testsupport.verifiers.VerifierBuilder
 
-trait TestedApplication
+trait TestConfiguration
   extends GuiceOneServerPerSuite
     with IntegrationPatience
     with PatienceConfiguration
@@ -40,10 +40,10 @@ trait TestedApplication
   override implicit lazy val app: Application = new GuiceApplicationBuilder()
     .configure(replaceWithWiremock(Seq(
       "auth",
-      "dfs-store",
       "des-service",
       "fhdds",
-      "tax-enrolments"
+      "tax-enrolments",
+      "email"
     )))
     .build()
 
@@ -82,6 +82,5 @@ trait TestedApplication
       .foreach(println)
     println("===== END =====")
   }
-
 
 }

@@ -16,10 +16,13 @@
 
 package uk.gov.hmrc.fhregistration.models.fhdds
 
-import play.api.libs.json._
+import play.api.libs.json.{JsValue, Json}
 
-case class SendEmailRequest(to: List[String], templateId: String, parameters: Map[String, String], force: Boolean)
+case class WithdrawalRequest(
+  emailAddress: String,
+  withdrawal: JsValue
+)
 
-object SendEmailRequest {
-  implicit val format = Json.format[SendEmailRequest]
+object WithdrawalRequest {
+  implicit val withdrawalRequestFormat = Json.format[WithdrawalRequest]
 }

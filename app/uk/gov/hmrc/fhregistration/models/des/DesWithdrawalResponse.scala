@@ -14,12 +14,14 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.fhregistration.models.fhdds
+package uk.gov.hmrc.fhregistration.models.des
 
-import play.api.libs.json._
+import java.util.Date
 
-case class SendEmailRequest(to: List[String], templateId: String, parameters: Map[String, String], force: Boolean)
+import play.api.libs.json.Json
 
-object SendEmailRequest {
-  implicit val format = Json.format[SendEmailRequest]
+case class DesWithdrawalResponse (processingDate: Date)
+
+object DesWithdrawalResponse {
+  implicit val submissionResponseFormat = Json.format[DesWithdrawalResponse]
 }

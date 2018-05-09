@@ -21,22 +21,25 @@ import org.scalatest.mockito.MockitoSugar
 import org.scalatest.time.{Millis, Seconds, Span}
 import play.api.mvc.AnyContentAsEmpty
 import play.api.test.FakeRequest
+import uk.gov.hmrc.fhregistration.actions.{Actions, UserAction}
 import uk.gov.hmrc.fhregistration.connectors._
 import uk.gov.hmrc.fhregistration.controllers.FhddsApplicationController
 import uk.gov.hmrc.fhregistration.repositories.SubmissionTrackingRepository
 import uk.gov.hmrc.http.{HeaderCarrier, HeaderNames}
 import uk.gov.hmrc.play.HeaderCarrierConverter
+import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 
 object FhddsApplicationControllerMock extends ScalaFutures with MockitoSugar {
 
   implicit override val patienceConfig: PatienceConfig = PatienceConfig(timeout = Span(10, Seconds), interval = Span(10, Millis))
 
-  var mockDesConnector: DesConnector = mock[DesConnectorImpl]
+  var mockDesConnector: DesConnector = mock[DesConnector]
   var mockTaxEnrolmentConnector: TaxEnrolmentConnector = mock[TaxEnrolmentConnectorImpl]
   var mockEmailConnectorImplConnector: EmailConnector = mock[EmailConnectorImpl]
+  var auditService: AuditService = mock[AuditService]
+  var auditConnector: AuditConnector = mock[AuditConnector]
   var mockSubmissionTrackingRepository: SubmissionTrackingRepository = mock[SubmissionTrackingRepository]
-  var auditService: AuditService = new AuditServiceImpl
-
+  var mockActions = mock[Actions]
   implicit val request: FakeRequest[AnyContentAsEmpty.type] = FakeRequest().withHeaders(HeaderNames.xSessionId -> "test")
   implicit val headerCarrier: HeaderCarrier = HeaderCarrierConverter.fromHeadersAndSession(request.headers)
 
@@ -45,6 +48,8 @@ object FhddsApplicationControllerMock extends ScalaFutures with MockitoSugar {
     mockTaxEnrolmentConnector,
     mockEmailConnectorImplConnector,
     mockSubmissionTrackingRepository,
-    auditService
+    auditService,
+    auditConnector,
+    mockActions
   )
 }

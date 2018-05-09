@@ -16,24 +16,22 @@
 
 package uk.gov.hmrc.fhregistration.controllers
 
-import javax.inject.Inject
+import java.text.SimpleDateFormat
 
+import javax.inject.Inject
 import play.api.Logger
 import play.api.libs.json.Json
 import play.api.mvc.{Action, Request}
-import uk.gov.hmrc.fhregistration.actions.UserAction
-import uk.gov.hmrc.fhregistration.config.MicroserviceAuditConnector
+import uk.gov.hmrc.fhregistration.actions.Actions
 import uk.gov.hmrc.fhregistration.connectors.{DesConnector, EmailConnector, TaxEnrolmentConnector}
-
 import uk.gov.hmrc.fhregistration.models.TaxEnrolmentsCallback
-import uk.gov.hmrc.fhregistration.models.fhdds.{EnrolmentProgress, SubmissionRequest, SubmissionResponse, UserData}
+import uk.gov.hmrc.fhregistration.models.fhdds._
 import uk.gov.hmrc.fhregistration.repositories.{SubmissionTracking, SubmissionTrackingRepository}
 import uk.gov.hmrc.fhregistration.services.AuditService
-
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import uk.gov.hmrc.play.audit.model.DataEvent
-import uk.gov.hmrc.play.microservice.controller.BaseController
+import uk.gov.hmrc.play.bootstrap.controller.BaseController
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -45,20 +43,24 @@ class FhddsApplicationController @Inject()(
   val taxEnrolmentConnector: TaxEnrolmentConnector,
   val emailConnector: EmailConnector,
   val submissionTrackingRepository: SubmissionTrackingRepository,
-  val auditService: AuditService)
+  val auditService: AuditService,
+  val auditConnector: AuditConnector,
+  val actions: Actions)
   extends BaseController {
 
-  val auditConnector: AuditConnector = MicroserviceAuditConnector
-  val SubmissionTrackingAgeThresholdMs = 60 * 60 * 1000
+  import actions._
 
-  def subscribe(safeId: String) = UserAction().async(parse.json[SubmissionRequest]) { implicit r ⇒
+  val SubmissionTrackingAgeThresholdMs = 60 * 60 * 1000L
+
+  def subscribe(safeId: String) = userAction.async(parse.json[SubmissionRequest]) { implicit r ⇒
     val request = r.body
     for {
       desResponse ← desConnector.sendSubmission(safeId, request.submission)(hc)
       response = SubmissionResponse(desResponse.registrationNumberFHDDS, desResponse.processingDate)
     } yield {
-      Logger.info(s"Received registration number ${desResponse.registrationNumberFHDDS} for safeId ${safeId}")
+      Logger.info(s"Received registration number ${desResponse.registrationNumberFHDDS} for safeId $safeId")
 
+      val event: DataEvent = auditService.buildSubmissionCreateAuditEvent(request, safeId, response.registrationNumber)
       saveSubscriptionTracking(
         safeId,
         r.userId,
@@ -68,15 +70,13 @@ class FhddsApplicationController @Inject()(
         subscribeToTaxEnrolment(safeId, desResponse.etmpFormBundleNumber)
       }
 
-      val event = auditService.buildSubmissionCreateAuditEvent(
-        request, desResponse, safeId, response.registrationNumber)
       auditSubmission(response.registrationNumber, event)
 
       Ok(Json toJson response)
     }
   }
 
-  def enrolmentProgress() = UserAction().async { implicit request ⇒
+  def enrolmentProgress() = userAction.async { implicit request ⇒
     val now = System.currentTimeMillis
     submissionTrackingRepository
       .findSubmissionTrackingByUserId(request.userId)
@@ -117,7 +117,7 @@ class FhddsApplicationController @Inject()(
       response = SubmissionResponse(desResponse.registrationNumberFHDDS, desResponse.processingDate)
     } yield {
       val event = auditService.buildSubmissionAmendAuditEvent(
-        request, desResponse, response.registrationNumber)
+        request, response.registrationNumber)
       auditSubmission(response.registrationNumber, event)
       sendEmail(request.emailAddress)
 
@@ -125,14 +125,32 @@ class FhddsApplicationController @Inject()(
     }
   }
 
-  def sendEmail(email: String)(implicit hc: HeaderCarrier, request: Request[AnyRef]) = {
-    val emailTemplateId = emailConnector.defaultEmailTemplateID
+  def withdrawal(fhddsRegistrationNumber: String) = userGroupAction.async(parse.json[WithdrawalRequest]) { implicit r ⇒
+    val request = r.body
+    for {
+      desResponse ← desConnector.sendWithdrawal(fhddsRegistrationNumber, request.withdrawal)(hc)
+      processingDate = desResponse.processingDate
+      _ ← taxEnrolmentConnector.deleteGroupEnrolment(r.groupId, fhddsRegistrationNumber)
+    } yield {
+      val event = auditService.buildSubmissionWithdrawalAuditEvent(
+        request, fhddsRegistrationNumber)
+      auditSubmission(fhddsRegistrationNumber, event)
+      sendEmail(
+        request.emailAddress,
+        emailTemplateId = emailConnector.withdrawalEmailTemplateID,
+        emailParameters = Map("withdrawalDate" → new SimpleDateFormat("dd MMMM yyyy").format(processingDate)))
+
+      Ok(Json toJson processingDate)
+    }
+  }
+
+  def sendEmail(email: String, emailTemplateId: String = emailConnector.defaultEmailTemplateID, emailParameters: Map[String, String] = Map.empty)(implicit hc: HeaderCarrier, request: Request[AnyRef]) = {
     import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext
     emailConnector
       .sendEmail(
         emailTemplateId = emailTemplateId,
-        userData = UserData(email = email, submissionReference = ""))(hc, request, MdcLoggingExecutionContext.fromLoggingDetails)
-
+        userData = UserData(email),
+        emailParameters)(hc, request, MdcLoggingExecutionContext.fromLoggingDetails)
   }
 
   private def auditSubmission(registrationNumber: String, event: DataEvent)(implicit hc: HeaderCarrier) = {

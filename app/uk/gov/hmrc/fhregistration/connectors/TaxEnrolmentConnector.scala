@@ -17,34 +17,49 @@
 package uk.gov.hmrc.fhregistration.connectors
 
 import com.google.inject.ImplementedBy
-import play.api.Logger
+import javax.inject.Inject
+
+import play.api.Mode.Mode
 import play.api.libs.json.{JsObject, JsString, Json}
-import uk.gov.hmrc.fhregistration.config.WSHttp
-import uk.gov.hmrc.http.HeaderCarrier
+import play.api.{Configuration, Environment, Logger}
+import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
+import uk.gov.hmrc.play.bootstrap.http.HttpClient
 import uk.gov.hmrc.play.config.ServicesConfig
 import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
+import uk.gov.hmrc.http._
 
 import scala.concurrent.Future
 
-class TaxEnrolmentConnectorImpl extends TaxEnrolmentConnector with ServicesConfig {
-  lazy val http: WSHttp = WSHttp
-
+class TaxEnrolmentConnectorImpl @Inject() (
+  val http: HttpClient,
+  val runModeConfiguration: Configuration,
+  environment: Environment) extends TaxEnrolmentConnector with ServicesConfig {
 
   val callbackBase = config("tax-enrolments").getString("callback").getOrElse("http://fh-registration.protected.mdtp:80/fhdds/tax-enrolment/callback/subscriptions")
   def callback(formBundleId: String) = s"$callbackBase/$formBundleId"
 
+  val serviceBaseUrl =  s"${baseUrl("tax-enrolments")}/tax-enrolments"
   val serviceName = config("tax-enrolments").getString("serviceName").getOrElse("HMRC-OBTDS-ORG")
+
   override def subscriberUrl(etmpFormBundleId: String) =
-    s"${baseUrl("tax-enrolments")}/tax-enrolments/subscriptions/$etmpFormBundleId/subscriber"
+   s"$serviceBaseUrl/subscriptions/$etmpFormBundleId/subscriber"
+
+  override def groupEnrolmentUrl(groupId: String, registrationNumber: String) = {
+    val enrolmentKey = s"$serviceName~ETMPREGISTRATIONNUMBER~$registrationNumber"
+    s"$serviceBaseUrl/groups/$groupId/enrolments/$enrolmentKey"
+  }
+
+  override protected def mode: Mode = environment.mode
 }
 
 @ImplementedBy(classOf[TaxEnrolmentConnectorImpl])
-trait TaxEnrolmentConnector {
-  val http: WSHttp
+trait TaxEnrolmentConnector extends HttpErrorFunctions {
+  val http: HttpClient
   def callback(formBundleId: String): String
   val serviceName: String
 
   def subscriberUrl(subscriptionId: String): String
+  def groupEnrolmentUrl(groupId: String, registrationNumber: String): String
 
   /**
     * Subscribe to tax enrolments
@@ -57,6 +72,14 @@ trait TaxEnrolmentConnector {
       subscriberUrl(etmpFormBundleNumber),
       requestBody(safeId, etmpFormBundleNumber)
     )
+  }
+
+  def deleteGroupEnrolment(groupId: String, registrationNumber: String)(implicit hc: HeaderCarrier): Future[_] = {
+    http.DELETE[HttpResponse](groupEnrolmentUrl(groupId, registrationNumber)).map { response ⇒
+      if (is2xx(response.status)) response.body
+      else throw new RuntimeException(s"Unexpected response code '${response.status}'")
+
+    }
   }
 
   def requestBody(etmpId: String, etmpFormBundleNumber: String): JsObject = {

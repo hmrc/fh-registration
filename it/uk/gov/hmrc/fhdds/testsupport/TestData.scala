@@ -2,23 +2,26 @@ package uk.gov.hmrc.fhdds.testsupport
 
 import java.util.Date
 
-import org.joda.time.DateTime
-import play.api.libs.json.{JsObject, JsString, Json}
-import uk.gov.hmrc.fhregistration.models.businessregistration.{Address, BusinessRegistrationDetails}
-import uk.gov.hmrc.fhregistration.models.des.DesSubmissionResponse
+import play.api.libs.json.{JsObject, JsString, JsValue, Json}
+import uk.gov.hmrc.fhregistration.models.des.{DesSubmissionResponse, DesWithdrawalResponse}
 import uk.gov.hmrc.fhregistration.models.fhdds.SubmissionRequest
 
 
 object TestData {
 
   val file = "fhdds-limited-company-minimum.json"
+
   val directoryPath = s"./it/resources/"
 
-
-  val validFormData: String = {
-    scala.io.Source.fromFile(s"$directoryPath$file").mkString
+  val validNewFormData: JsValue = {
+    Json.parse(scala.io.Source.fromFile(s"${directoryPath}fhdds-limited-company-large-uk.json").mkString)
   }
 
+  val validAmendFormData: JsValue = {
+    Json.parse(scala.io.Source.fromFile(s"${directoryPath}fhdds-limited-company-large-uk-amendment.json").mkString)
+  }
+
+  val testUserEmail = "testUser@email.com"
 //  val someBusinessDetails: String = {
 //    scala.io.Source.fromFile(s"${directoryPath}business-registration-details.json").mkString
 //  }
@@ -29,50 +32,20 @@ object TestData {
   val testFormId = "testFormId"
   val testUserId = "testUserId"
   val testSafeId = "XE0001234567890"
+  val testRegistrationNumber = "XE0001234567890"
+  val testEtmpFormBundleNumber: String = Array.fill(9)((math.random * 10).toInt).mkString
+  val validFormData: String = {
+    scala.io.Source.fromFile(s"$directoryPath$file").mkString
+  }
+  val testWithdrawalBody =
+    s"""{"emailAddress": "$testUserEmail", "withdrawal": {"withdrawalDate": "2017-11-29","withdrawalReason": "Applied in Error"}}"""
 
-  val invalidUserId = "invalidUserId"
-  val invalidFormTypeRef = "invalidFormTypeRef"
+  val testInvalidWithdrawalBody =
+    s"""{"emailAddress": "$testUserEmail"}"""
 
-  val fakeBusinessDetailsJson: String =
-    s"""
-       |{
-       |  "business_name":"Real Business Inc",
-       |  "business_type":"corporate body",
-       |  "business_address":{
-       |    "line1":"line1",
-       |    "line2":"line2",
-       |    "postcode":"NE98 1ZZ",
-       |    "country":"GB"
-       |  },
-       |  "sap_number":"1234567890",
-       |  "safe_id":"XE0001234567890",
-       |  "is_a_group":false,
-       |  "direct_match":false,
-       |  "agent_reference_number":"JARN1234567",
-       |  "utr":"1111111111",
-       |  "is_business_details_editable":false
-       |  }
-     """.stripMargin
+  val validSubmissionRequest: SubmissionRequest = SubmissionRequest(testUserEmail, validNewFormData)
 
-  val anAddress = Address(
-    line1 = "line1",
-    line2 = "line2",
-    line3 = None,
-    line4 = None,
-    postcode = Some("NE98 1ZZ"),
-    country = "GB")
-
-  val someBusinessRegistrationDetails = BusinessRegistrationDetails(
-    businessName = "Real Business Inc",
-    businessType = Some("corporate body"),
-    businessAddress = anAddress,
-    sapNumber = "1234567890",
-    safeId = s"$testSafeId",
-    agentReferenceNumber = Some("JARN1234567"),
-    firstName = None,
-    lastName = None,
-    utr = Some("1111111111"),
-    identification = None)
+  val validAmendSubmissionRequest: SubmissionRequest = SubmissionRequest(testUserEmail, validAmendFormData)
 
   val someTaxEnrolmentResponse: JsObject = Json.obj(
     "serviceName" → JsString("serviceName"),
@@ -88,6 +61,12 @@ object TestData {
       processingDate = new Date(),
       etmpFormBundleNumber = etmpFormBundleNumber,
       registrationNumberFHDDS = registrationNumberFHDDS)
+  }
+
+  def desWithdrawalResponse: DesWithdrawalResponse = {
+    DesWithdrawalResponse(
+      processingDate = new Date()
+    )
   }
 
 }

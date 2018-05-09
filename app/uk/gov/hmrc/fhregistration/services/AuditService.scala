@@ -16,25 +16,20 @@
 
 package uk.gov.hmrc.fhregistration.services
 
-import javax.inject.Singleton
-
-import com.google.inject.ImplementedBy
-import play.api.libs.json.{JsObject, JsString}
-import uk.gov.hmrc.fhregistration.models.des.DesSubmissionResponse
-import uk.gov.hmrc.fhregistration.models.fhdds.{SubmissionRequest, UserData}
+import javax.inject.{Inject, Singleton}
+import play.api.{Configuration, Environment}
+import uk.gov.hmrc.fhregistration.models.fhdds.{SubmissionRequest, WithdrawalRequest}
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.play.audit.model.{DataEvent, ExtendedDataEvent}
-
-import scala.concurrent.ExecutionContext
 import uk.gov.hmrc.play.audit.AuditExtensions.auditHeaderCarrier
+import uk.gov.hmrc.play.audit.model.DataEvent
+import uk.gov.hmrc.play.bootstrap.http.HttpClient
 
 @Singleton
-class AuditServiceImpl extends AuditService {
-
-}
-
-@ImplementedBy(classOf[AuditServiceImpl])
-trait AuditService {
+class AuditService @Inject() (
+  val http: HttpClient,
+  val runModeConfiguration: Configuration,
+  environment: Environment
+) {
 
   val auditSource = "fhdds"
   val auditEmailSource = "fhdds-send-email"
@@ -42,35 +37,40 @@ trait AuditService {
 
   def buildSubmissionCreateAuditEvent(
     submissionRequest : SubmissionRequest,
-    desResponse       : DesSubmissionResponse,
     safeId            : String,
     registrationNumber: String
   )(implicit hc: HeaderCarrier): DataEvent = {
 
     buildSubmissionAuditEvent(
-      submissionRequest,
-      desResponse,
+      Left(submissionRequest),
       registrationNumber,
       s"/fulfilment-diligence/subscription/$safeId/id-type/safe")
   }
 
   def buildSubmissionAmendAuditEvent(
     submissionRequest : SubmissionRequest,
-    desResponse       : DesSubmissionResponse,
     registrationNumber: String
   )(implicit hc: HeaderCarrier): DataEvent = {
 
     buildSubmissionAuditEvent(
-      submissionRequest,
-      desResponse,
+      Left(submissionRequest),
       registrationNumber,
       s"/fulfilment-diligence/subscription/$registrationNumber/id-type/fhdds")
   }
 
+  def buildSubmissionWithdrawalAuditEvent(
+    withdrawalRequest : WithdrawalRequest,
+    registrationNumber: String
+  )(implicit hc: HeaderCarrier): DataEvent = {
+
+    buildSubmissionAuditEvent(
+      Right(withdrawalRequest),
+      registrationNumber,
+      s"/fulfilment-diligence/subscription/$registrationNumber/withdrawal")
+  }
 
   private def buildSubmissionAuditEvent(
-    submissionRequest : SubmissionRequest,
-    desResponse       : DesSubmissionResponse,
+    submissionRequest : Either[SubmissionRequest, WithdrawalRequest],
     registrationNumber: String,
     path              : String
 
@@ -78,7 +78,12 @@ trait AuditService {
 
     val additionalDetails: Seq[(String, String)] = Seq(
       "submissionRef" → registrationNumber,
-      "submissionData" → submissionRequest.submission.toString()
+      "submissionData" → {
+        submissionRequest.fold(
+          submissionRequest ⇒ submissionRequest.submission.toString(),
+          withdrawalRequest ⇒ withdrawalRequest.withdrawal.toString()
+        )
+      }
     )
 
     DataEvent(
@@ -89,15 +94,5 @@ trait AuditService {
     )
 
   }
-
-  private def sendEvent(auditType: String, detail: Map[String, String])(implicit hc: HeaderCarrier, ec: ExecutionContext) =
-    eventFor(auditType, detail)
-
-  private def eventFor(auditType: String, detail: Map[String, String])(implicit hc: HeaderCarrier) =
-    DataEvent(
-      auditSource = auditEmailSource,
-      auditType = auditType,
-      tags = hc.headers.toMap,
-      detail = detail)
 
 }
