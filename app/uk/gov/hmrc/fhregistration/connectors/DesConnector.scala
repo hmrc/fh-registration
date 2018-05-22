@@ -17,10 +17,11 @@
 package uk.gov.hmrc.fhregistration.connectors
 
 import javax.inject.{Inject, Singleton}
+
 import play.api.Mode.Mode
 import play.api.libs.json.JsValue
 import play.api.{Configuration, Environment, Logger}
-import uk.gov.hmrc.fhregistration.models.des.{DesSubmissionResponse, DesWithdrawalResponse}
+import uk.gov.hmrc.fhregistration.models.des.{DesSubmissionResponse, DesWithdrawalResponse, StatusResponse}
 import uk.gov.hmrc.http.logging.Authorization
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
 import uk.gov.hmrc.play.bootstrap.http.HttpClient
@@ -53,9 +54,9 @@ class DesConnector @Inject() (
     hc.copy(authorization = Some(Authorization(s"Bearer $desToken"))).withExtraHeaders("Environment" -> environmentKey)
   }
 
-  def getStatus(fhddsRegistrationNumber: String)(hc: HeaderCarrier): Future[HttpResponse] = {
+  def getStatus(fhddsRegistrationNumber: String)(hc: HeaderCarrier): Future[StatusResponse] = {
     implicit val desHeaders: HeaderCarrier = headerCarrierBuilder(hc)
-    http.GET(s"$desServiceStatusUri/fulfilment-diligence/subscription/$fhddsRegistrationNumber/status")
+    http.GET[StatusResponse](s"$desServiceStatusUri/fulfilment-diligence/subscription/$fhddsRegistrationNumber/status")
   }
 
   def sendSubmission(safeId: String, submission: JsValue)(hc: HeaderCarrier): Future[DesSubmissionResponse] = {
