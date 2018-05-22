@@ -18,7 +18,9 @@ package uk.gov.hmrc.fhregistration.repositories
 
 import javax.inject.Inject
 
+import com.google.inject.ImplementedBy
 import play.modules.reactivemongo.ReactiveMongoComponent
+import reactivemongo.api.commands.WriteResult
 import reactivemongo.api.indexes.{Index, IndexType}
 import reactivemongo.bson.{BSONDocument, BSONObjectID}
 import reactivemongo.play.json.ImplicitBSONHandlers._
@@ -28,32 +30,45 @@ import uk.gov.hmrc.mongo.{AtomicUpdate, ReactiveRepository}
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{ExecutionContext, Future}
 
-class SubmissionTrackingRepository @Inject() (implicit rmc: ReactiveMongoComponent)
+@ImplementedBy(classOf[DefaultSubmissionTrackingRepository])
+trait SubmissionTrackingRepository {
+
+  def findSubmissionTrackingByUserId(userId: String): Future[Option[SubmissionTracking]]
+
+  def findSubmissionTrakingByFormBundleId(formBundleId: String): Future[Option[SubmissionTracking]]
+
+  def deleteSubmissionTackingByFormBundleId(formBundleId: String): Future[Int]
+
+  def insertSubmissionTracking(submissionTracking: SubmissionTracking): Future[WriteResult]
+}
+
+
+class DefaultSubmissionTrackingRepository @Inject() (implicit rmc: ReactiveMongoComponent)
   extends ReactiveRepository[SubmissionTracking, BSONObjectID](
     "submission-tracking",
     rmc.mongoConnector.db,
     SubmissionTracking.formats,
-    ReactiveMongoFormats.objectIdFormats)
+    ReactiveMongoFormats.objectIdFormats) with SubmissionTrackingRepository
 {
 
 
   import SubmissionTracking.{FormBundleIdField, UserIdField}
 
-  def findSubmissionTrackingByUserId(userId: String) = {
+  override def findSubmissionTrackingByUserId(userId: String) = {
     collection.find(BSONDocument(UserIdField → userId)).one[SubmissionTracking]
   }
 
-  def findSubmissionTrakingByFormBundleId(formBundleId: String) = {
+  override def findSubmissionTrakingByFormBundleId(formBundleId: String) = {
     collection.find(BSONDocument(FormBundleIdField → formBundleId)).one[SubmissionTracking]
   }
 
-  def deleteSubmissionTackingByFormBundleId(formBundleId: String): Future[Int] = {
+  override def deleteSubmissionTackingByFormBundleId(formBundleId: String): Future[Int] = {
     collection
       .remove(BSONDocument(FormBundleIdField → formBundleId))
       .map( _.n)
   }
 
-  def insertSubmissionTracking(submissionTracking: SubmissionTracking) = {
+  override def insertSubmissionTracking(submissionTracking: SubmissionTracking): Future[WriteResult] = {
     collection.insert(submissionTracking)
   }
 

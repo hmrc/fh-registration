@@ -2,6 +2,7 @@ package uk.gov.hmrc.fhregistration
 
 import play.api.test.WsTestClient
 import uk.gov.hmrc.fhdds.testsupport.{TestConfiguration, TestHelpers}
+import uk.gov.hmrc.fhregistration.models.des.StatusResponse
 
 class MdtpSubscriptionStatusSpecs
   extends TestHelpers with TestConfiguration {
@@ -25,7 +26,7 @@ class MdtpSubscriptionStatusSpecs
             .get().futureValue
         }
         response.status shouldBe 200
-        response.body shouldBe "Received"
+        response.json.as[String] shouldBe "received"
       }
 
       "if the the form is processing" in {
@@ -40,7 +41,7 @@ class MdtpSubscriptionStatusSpecs
             .get().futureValue
         }
         response.status shouldBe 200
-        response.body shouldBe "Processing"
+        response.json.as[String] shouldBe "processing"
       }
 
       "if the the form is successful" in {
@@ -55,7 +56,7 @@ class MdtpSubscriptionStatusSpecs
             .get().futureValue
         }
         response.status shouldBe 200
-        response.body shouldBe "Successful"
+        response.json.as[String] shouldBe "approved"
       }
 
     }
