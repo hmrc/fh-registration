@@ -9,6 +9,7 @@ case class TaxEnrolmentStub()(implicit builder: PreconditionBuilder) {
       put(
         urlMatching(s"/tax-enrolments/subscriptions/([0-9a-zA-Z]+)/subscriber")
       )
+        .withHeader("Authorization", matching(".+"))
         .willReturn(
           ok("{}")
         )
@@ -19,8 +20,10 @@ case class TaxEnrolmentStub()(implicit builder: PreconditionBuilder) {
   def acceptsDeEnrolment() = {
     stubFor(
       delete(
-        urlMatching("/tax-enrolments/groups/([0-9a-zA-Z\\-~]+)/enrolments/([0-9a-zA-Z\\-~]+)"))
-      .willReturn((noContent()))
+        urlMatching("/tax-enrolments/groups/([0-9a-zA-Z\\-~]+)/enrolments/([0-9a-zA-Z\\-~]+)")
+      )
+        .withHeader("Authorization", matching(".+"))
+        .willReturn((noContent()))
     )
 
     builder

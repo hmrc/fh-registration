@@ -21,10 +21,11 @@ import play.api.mvc._
 import uk.gov.hmrc.auth.core.{AuthConnector, AuthorisedFunctions}
 
 import scala.concurrent.Future
-import uk.gov.hmrc.auth.core.retrieve.Retrievals.groupIdentifier
+import uk.gov.hmrc.auth.core.retrieve.Retrievals.{internalId, groupIdentifier}
+import uk.gov.hmrc.auth.core.retrieve.~
 import scala.concurrent.ExecutionContext.Implicits.global
 
-class UserGroupRequest[A](val groupId: String, request: Request[A]) extends WrappedRequest(request)
+class UserGroupRequest[A](val userId: String, val groupId: String, request: Request[A]) extends WrappedRequest(request)
 
 class UserGroupAction(val authConnector: AuthConnector)
   extends ActionBuilder[UserGroupRequest]
@@ -36,9 +37,9 @@ class UserGroupAction(val authConnector: AuthConnector)
   override protected def refine[A](request: Request[A]): Future[Either[Result, UserGroupRequest[A]]] = {
     implicit val r = request
 
-    authorised().retrieve(groupIdentifier) {
-      case Some(groupId) ⇒
-        Future successful Right(new UserGroupRequest[A](groupId, request))
+    authorised().retrieve(internalId and groupIdentifier) {
+      case Some(userId) ~ Some(groupId) ⇒
+        Future successful Right(new UserGroupRequest[A](userId, groupId, request))
       case _ ⇒
         Logger.error("group id not found")
         Future successful error(BadRequest, "group id not found")

@@ -55,13 +55,17 @@ class FhddsApplicationController @Inject()(
 
   val SubmissionTrackingAgeThresholdMs = 60 * 60 * 1000L
 
-  def subscribe(safeId: String) = userAction.async(parse.json[SubmissionRequest]) { implicit r ⇒
+  def subscribe(safeId: String, currentRegNumber: Option[String]) = userGroupAction.async(parse.json[SubmissionRequest]) { implicit r ⇒
     val request = r.body
     for {
       desResponse ← desConnector.sendSubmission(safeId, request.submission)(hc)
       response = SubmissionResponse(desResponse.registrationNumberFHDDS, desResponse.processingDate)
     } yield {
       Logger.info(s"Received registration number ${desResponse.registrationNumberFHDDS} for safeId $safeId")
+
+      currentRegNumber foreach { regNumber ⇒
+        taxEnrolmentConnector.deleteGroupEnrolment(r.groupId, regNumber)
+      }
 
       val event: DataEvent = auditService.buildSubmissionCreateAuditEvent(request, safeId, response.registrationNumber)
       saveSubscriptionTracking(
@@ -132,7 +136,6 @@ class FhddsApplicationController @Inject()(
     for {
       desResponse ← desConnector.sendWithdrawal(fhddsRegistrationNumber, request.withdrawal)(hc)
       processingDate = desResponse.processingDate
-      _ ← taxEnrolmentConnector.deleteGroupEnrolment(r.groupId, fhddsRegistrationNumber)
     } yield {
       val event = auditService.buildSubmissionWithdrawalAuditEvent(
         request, fhddsRegistrationNumber)
@@ -185,11 +188,16 @@ class FhddsApplicationController @Inject()(
     Logger.info(s"Received subscription callback for formBundleId: $formBundleId with data: $data")
     if (data.succeeded) {
 
-      sendConfirmationEmailAfterCallback(formBundleId).andThen {
-        case _ ⇒ deleteSubmissionTrackingAfterCallback(formBundleId)
-      }
-      .map(_ ⇒ Ok(""))
-      .recover { case _ ⇒ Ok("") }
+      submissionTrackingRepository
+        .findSubmissionTrakingByFormBundleId(formBundleId)
+        .map {
+          case None ⇒ Logger.error(s"Could not find enrolment tracking data for bundleId $formBundleId")
+          case Some(tracking) ⇒
+            sendEmail(tracking.email)
+            deleteSubmissionTrackingAfterCallback(formBundleId)
+        }
+        .map(_ ⇒ Ok(""))
+        .recover { case _ ⇒ Ok("") }
 
     } else {
       Logger.error(s"Tax enrolment failed for $formBundleId: ${data.errorResponse} ($data)")

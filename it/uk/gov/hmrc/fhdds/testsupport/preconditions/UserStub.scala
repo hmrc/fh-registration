@@ -1,6 +1,7 @@
 package uk.gov.hmrc.fhdds.testsupport.preconditions
 
 import com.github.tomakehurst.wiremock.client.WireMock._
+import uk.gov.hmrc.fhdds.testsupport.TestData
 
 case class UserStub()(implicit builder: PreconditionBuilder) { //extends SessionBuilder {
 
@@ -34,7 +35,7 @@ case class UserStub()(implicit builder: PreconditionBuilder) { //extends Session
           ok(
             s"""
                |{
-               |  "internalId": "some-id",
+               |  "internalId": "${TestData.testUserId}",
                |  "loginTimes": {
                |     "currentLogin": "2016-11-27T09:00:00.000Z",
                |     "previousLogin": "2016-11-01T12:00:00.000Z"
@@ -55,7 +56,7 @@ case class UserStub()(implicit builder: PreconditionBuilder) { //extends Session
           ok(
             s"""
                |{
-               |  "internalId": "some-id",
+               |  "internalId": "${TestData.testUserId}",
                |  "groupIdentifier": "some-group",
                |  "loginTimes": {
                |     "currentLogin": "2016-11-27T09:00:00.000Z",
@@ -68,6 +69,34 @@ case class UserStub()(implicit builder: PreconditionBuilder) { //extends Session
     )
     builder
 
+  }
+
+  def isAuthorisedAndEnrolled = {
+    stubFor(
+      post(urlPathEqualTo("/auth/authorise"))
+        .willReturn(
+          ok(
+            s"""
+               |{
+               |  "internalId": "${TestData.testUserId}",
+               |  "email": "test@test.com",
+               |  "allEnrolments": [{
+               |     "key": "HMRC-OBTDS-ORG",
+               |     "identifiers": [{
+               |       "key":"ETMPREGISTRATIONNUMBER",
+               |       "value": "XEFH01234567890"
+               |     }]
+               |  }],
+               |  "loginTimes": {
+               |     "currentLogin": "2018-03-27T09:00:00.000Z",
+               |     "previousLogin": "2018-03-01T12:00:00.000Z"
+               |  }
+               |}
+             """.stripMargin
+          )
+        )
+    )
+    builder
   }
 
 

@@ -4,7 +4,7 @@
 POST /tax-enrolment/callback/subscriptions/:formBundleId                         @uk.gov.hmrc.fhregistration.controllers.FhddsApplicationController.subscriptionCallback(formBundleId)
 GET  /subscription/:fhddsRegistrationNumber/status                               @uk.gov.hmrc.fhregistration.controllers.FhddsApplicationController.checkStatus(fhddsRegistrationNumber)
 GET  /subscription/:fhddsRegistrationNumber/get                                  @uk.gov.hmrc.fhregistration.controllers.FhddsApplicationController.get(fhddsRegistrationNumber)
-POST /subscription/subscribe/:safeId                                             @uk.gov.hmrc.fhregistration.controllers.FhddsApplicationController.subscribe(safeId)
+POST /subscription/subscribe/:safeId                                             @uk.gov.hmrc.fhregistration.controllers.FhddsApplicationController.subscribe(safeId, currentRegNumber: Option[String])
 POST /subscription/amend/:fhddsRegistrationNumber                                @uk.gov.hmrc.fhregistration.controllers.FhddsApplicationController.amend(fhddsRegistrationNumber)
 POST /subscription/withdrawal/:fhddsRegistrationNumber                           @uk.gov.hmrc.fhregistration.controllers.FhddsApplicationController.withdrawal(fhddsRegistrationNumber)
 GET  /subscription/enrolmentProgress                                             @uk.gov.hmrc.fhregistration.controllers.FhddsApplicationController.enrolmentProgress

@@ -21,7 +21,7 @@ import play.api.libs.json.Json
 case class TaxEnrolmentsCallback(
   url: String,
   state: String,
-  errorResponse: String
+  errorResponse: Option[String]
 ) {
 
   val succeeded = state == "SUCCEEDED"
