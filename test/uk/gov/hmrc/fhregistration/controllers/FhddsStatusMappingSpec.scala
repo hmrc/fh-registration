@@ -14,18 +14,18 @@
  * limitations under the License.
  */
 
-package controllers
+package uk.gov.hmrc.fhregistration.controllers
 
 import play.api.libs.json._
 import uk.gov.hmrc.fhregistration.models.des.StatusResponse
 import uk.gov.hmrc.fhregistration.models.fhdds.FhddsStatus
-import uk.gov.hmrc.fhregistration.services.FhddsApplicationControllerMock
+import uk.gov.hmrc.fhregistration.testsupport.mocks.FhddsMocks
 import uk.gov.hmrc.play.bootstrap.controller.BaseController
 import uk.gov.hmrc.play.test.UnitSpec
 
-class FhddsStatusMappingSpec extends UnitSpec with BaseController {
+class FhddsStatusMappingSpec extends UnitSpec with BaseController with FhddsMocks {
 
-  val fhddsApplicationController = FhddsApplicationControllerMock.fhddsApplicationController
+  val fhddsApplicationController = fhddsApplicationControllerWithMocks
 
   "mdtpSubscriptionStatus" should {
     "map MDTP subscription status to received from DES status" in {
