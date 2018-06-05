@@ -33,7 +33,7 @@ object DesStatus extends Enumeration {
   val SentToRcm               = Value("Sent to RCM")
   val ApprovedWithConditions  = Value("Approved with Conditions")
   val Revoked                 = Value("Revoked")
-  val DeRegistered            = Value("De-Registered")
+  val Deregistered            = Value("De-Registered")
   val ContractObjectInactive  = Value("Contract Object Inactive")
 
 
