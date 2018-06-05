@@ -269,7 +269,7 @@ class FhddsApplicationController @Inject()(
       case Rejected               ⇒ FhddsStatus.Rejected
       case Revoked                ⇒ FhddsStatus.Revoked
       case Withdrawal             ⇒ FhddsStatus.Withdrawn
-      case DeRegistered           ⇒ FhddsStatus.DeRegistered
+      case Deregistered           ⇒ FhddsStatus.Deregistered
       case _                      ⇒
         Logger.error(s"Unknown status received from des: $desStatus")
         throw new IllegalArgumentException(s"des status: $desStatus")
