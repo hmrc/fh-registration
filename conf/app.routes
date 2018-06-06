@@ -7,4 +7,5 @@ GET  /subscription/:fhddsRegistrationNumber/get                                 
 POST /subscription/subscribe/:safeId                                             @uk.gov.hmrc.fhregistration.controllers.FhddsApplicationController.subscribe(safeId, currentRegNumber: Option[String])
 POST /subscription/amend/:fhddsRegistrationNumber                                @uk.gov.hmrc.fhregistration.controllers.FhddsApplicationController.amend(fhddsRegistrationNumber)
 POST /subscription/withdrawal/:fhddsRegistrationNumber                           @uk.gov.hmrc.fhregistration.controllers.FhddsApplicationController.withdrawal(fhddsRegistrationNumber)
+POST /subscription/deregistration/:fhddsRegistrationNumber                           @uk.gov.hmrc.fhregistration.controllers.FhddsApplicationController.deregister(fhddsRegistrationNumber)
 GET  /subscription/enrolmentProgress                                             @uk.gov.hmrc.fhregistration.controllers.FhddsApplicationController.enrolmentProgress
