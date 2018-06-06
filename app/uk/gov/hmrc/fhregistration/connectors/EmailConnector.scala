@@ -38,6 +38,7 @@ class DefaultEmailConnector @Inject() (
   val emailUrl: String = baseUrl("email") + "/hmrc/email"
   override val defaultEmailTemplateID: String =  getConfString(s"email.defaultTemplateId", "fhdds_submission_confirmation")
   override val withdrawalEmailTemplateID: String =  getConfString(s"email.withdrawalEmailTemplateID", "fhdds_submission_withdrawal")
+  override val deregisterEmailTemplateID: String =  getConfString(s"email.deregisterEmailTemplateID", "fhdds_submission_deregister")
   protected def mode: Mode = environment.mode
 
   override def sendEmail(emailTemplateId:String, userData: UserData, emailParameters: Map[String, String] = Map.empty)(implicit hc: HeaderCarrier, request: Request[AnyRef], ec: ExecutionContext): Future[Any] = {
@@ -68,6 +69,7 @@ class DefaultEmailConnector @Inject() (
 trait EmailConnector {
   val defaultEmailTemplateID: String
   val withdrawalEmailTemplateID: String
+  val deregisterEmailTemplateID: String
 
   def sendEmail(emailTemplateId:String, userData: UserData, emailParameters: Map[String, String] = Map.empty)
     (implicit hc: HeaderCarrier, request: Request[AnyRef], ec: ExecutionContext): Future[Any]

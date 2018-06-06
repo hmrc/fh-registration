@@ -149,6 +149,25 @@ class FhddsApplicationController @Inject()(
     }
   }
 
+  def deregister(fhddsRegistrationNumber: String) = userGroupAction.async(parse.json[DeregistrationRequest]) { implicit r ⇒
+    val request = r.body
+    for {
+      desResponse ← desConnector.sendDeregistration(fhddsRegistrationNumber, request.deregistration)(hc)
+      processingDate = desResponse.processingDate
+    } yield {
+      val event = auditService.buildSubmissionDeregisterAuditEvent(
+        request, fhddsRegistrationNumber)
+      auditSubmission(fhddsRegistrationNumber, event)
+      sendEmail(
+        request.emailAddress,
+        emailTemplateId = emailConnector.deregisterEmailTemplateID,
+        emailParameters = Map("deregisterDate" → new SimpleDateFormat("dd MMMM yyyy").format(processingDate)))
+
+      Ok(Json toJson processingDate)
+    }
+  }
+
+
   def sendEmail(email: String, emailTemplateId: String = emailConnector.defaultEmailTemplateID, emailParameters: Map[String, String] = Map.empty)(implicit hc: HeaderCarrier, request: Request[AnyRef]) = {
     import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext
     emailConnector
@@ -156,6 +175,9 @@ class FhddsApplicationController @Inject()(
         emailTemplateId = emailTemplateId,
         userData = UserData(email),
         emailParameters)(hc, request, MdcLoggingExecutionContext.fromLoggingDetails)
+      .onFailure {
+        case t ⇒ Logger.error(s"Failed sending email $emailTemplateId", t)
+      }
   }
 
   private def auditSubmission(registrationNumber: String, event: DataEvent)(implicit hc: HeaderCarrier) = {

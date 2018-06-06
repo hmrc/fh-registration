@@ -22,7 +22,7 @@ import com.google.inject.ImplementedBy
 import play.api.Mode.Mode
 import play.api.libs.json.JsValue
 import play.api.{Configuration, Environment, Logger}
-import uk.gov.hmrc.fhregistration.models.des.{DesSubmissionResponse, DesWithdrawalResponse, StatusResponse}
+import uk.gov.hmrc.fhregistration.models.des.{DesDeregistrationResponse, DesSubmissionResponse, DesWithdrawalResponse, StatusResponse}
 import uk.gov.hmrc.http.logging.Authorization
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
 import uk.gov.hmrc.play.bootstrap.http.HttpClient
@@ -37,6 +37,7 @@ trait DesConnector {
   def sendSubmission(safeId: String, submission: JsValue)(hc: HeaderCarrier): Future[DesSubmissionResponse]
   def sendAmendment(fhddsRegistrationNumber: String, submission: JsValue)(hc: HeaderCarrier): Future[DesSubmissionResponse]
   def sendWithdrawal(fhddsRegistrationNumber: String, submission: JsValue)(hc: HeaderCarrier): Future[DesWithdrawalResponse]
+  def sendDeregistration(fhddsRegistrationNumber: String, submission: JsValue)(hc: HeaderCarrier): Future[DesDeregistrationResponse]
   def display(fhddsRegistrationNumber: String)(hc: HeaderCarrier): Future[HttpResponse]
 }
 
@@ -54,6 +55,7 @@ class DefaultDesConnector @Inject() (
   def desSubmissionUrl(safeId: String) =s"${baseUrl("des-service")}$desServiceBaseUri$desServiceUri/id/$safeId/id-type/safe"
   def desAmendmentUrl(fhddsRegistrationNumber: String) =s"${baseUrl("des-service")}$desServiceBaseUri$desServiceUri/id/$fhddsRegistrationNumber/id-type/fhdds"
   def desWithdrawalUrl(fhddsRegistrationNumber: String) =s"${baseUrl("des-service")}$desServiceBaseUri$desServiceUri/$fhddsRegistrationNumber/withdrawal"
+  def desDeregisterUrl(fhddsRegistrationNumber: String) =s"${baseUrl("des-service")}$desServiceBaseUri$desServiceUri/$fhddsRegistrationNumber/deregistration"
 
   val desToken: String = config("des-service").getString("authorization-token").getOrElse("")
   val environmentKey: String = config("des-service").getString("environment").getOrElse("")
@@ -85,6 +87,12 @@ class DefaultDesConnector @Inject() (
     Logger.info(s"Sending fhdds withdrawal data to DES for regNumber $fhddsRegistrationNumber")
     implicit val desHeaders: HeaderCarrier = headerCarrierBuilder(hc)
     http.PUT[JsValue, DesWithdrawalResponse](desWithdrawalUrl(fhddsRegistrationNumber), submission)
+  }
+
+  def sendDeregistration(fhddsRegistrationNumber: String, submission: JsValue)(hc: HeaderCarrier): Future[DesDeregistrationResponse] = {
+    Logger.info(s"Sending fhdds deregistration data to DES for regNumber $fhddsRegistrationNumber")
+    implicit val desHeaders: HeaderCarrier = headerCarrierBuilder(hc)
+    http.PUT[JsValue, DesDeregistrationResponse](desDeregisterUrl(fhddsRegistrationNumber), submission)
   }
 
   def display(fhddsRegistrationNumber: String)(hc: HeaderCarrier): Future[HttpResponse] = {
