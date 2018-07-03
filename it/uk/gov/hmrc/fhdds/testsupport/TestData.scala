@@ -1,6 +1,6 @@
 package uk.gov.hmrc.fhdds.testsupport
 
-import java.util.Date
+import java.util.{Date, UUID}
 
 import play.api.libs.json.{JsObject, JsString, JsValue, Json}
 import uk.gov.hmrc.fhregistration.models.des.{DesSubmissionResponse, DesWithdrawalResponse}
@@ -30,9 +30,10 @@ object TestData {
 
   val testFormTypeRef = "testFormTypeRef"
   val testFormId = "testFormId"
-  val testUserId = "testUserId"
+  val testUserId = "test-" + UUID.randomUUID()
   val testSafeId = "XE0001234567890"
-  val testRegistrationNumber = "XE0001234567890"
+  val testRegistrationNumber = "XEFH0001234567890"
+  val anotherRegistrationNumber = "XEFH0001234567891"
   val testEtmpFormBundleNumber: String = Array.fill(9)((math.random * 10).toInt).mkString
   val validFormData: String = {
     scala.io.Source.fromFile(s"$directoryPath$file").mkString

@@ -29,26 +29,19 @@ import uk.gov.hmrc.play.config.ServicesConfig
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success}
 
-class EmailConnectorImpl @Inject() (
+class DefaultEmailConnector @Inject() (
   val http: HttpClient,
   val runModeConfiguration: Configuration,
   environment: Environment
 ) extends EmailConnector with ServicesConfig {
 
-  override val emailUrl: String = baseUrl("email") + "/hmrc/email"
+  val emailUrl: String = baseUrl("email") + "/hmrc/email"
   override val defaultEmailTemplateID: String =  getConfString(s"email.defaultTemplateId", "fhdds_submission_confirmation")
   override val withdrawalEmailTemplateID: String =  getConfString(s"email.withdrawalEmailTemplateID", "fhdds_submission_withdrawal")
-  override protected def mode: Mode = environment.mode
-}
+  override val deregisterEmailTemplateID: String =  getConfString(s"email.deregisterEmailTemplateID", "fhdds_submission_deregister")
+  protected def mode: Mode = environment.mode
 
-@ImplementedBy(classOf[EmailConnectorImpl])
-trait EmailConnector {
-  val http: HttpClient
-  val emailUrl: String
-  val defaultEmailTemplateID: String
-  val withdrawalEmailTemplateID: String
-
-  def sendEmail(emailTemplateId:String, userData: UserData, emailParameters: Map[String, String] = Map.empty)(implicit hc: HeaderCarrier, request: Request[AnyRef], ec: ExecutionContext): Future[Any] = {
+  override def sendEmail(emailTemplateId:String, userData: UserData, emailParameters: Map[String, String] = Map.empty)(implicit hc: HeaderCarrier, request: Request[AnyRef], ec: ExecutionContext): Future[Any] = {
     val toList: List[String] = List(userData.email)
 
     val email: SendEmailRequest = SendEmailRequest(templateId = emailTemplateId, to = toList, parameters = emailParameters, force = true)
@@ -70,5 +63,17 @@ trait EmailConnector {
     }
     futureResult
   }
+}
+
+@ImplementedBy(classOf[DefaultEmailConnector])
+trait EmailConnector {
+  val defaultEmailTemplateID: String
+  val withdrawalEmailTemplateID: String
+  val deregisterEmailTemplateID: String
+
+  def sendEmail(emailTemplateId:String, userData: UserData, emailParameters: Map[String, String] = Map.empty)
+    (implicit hc: HeaderCarrier, request: Request[AnyRef], ec: ExecutionContext): Future[Any]
+
+
 
 }

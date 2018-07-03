@@ -18,13 +18,22 @@ package uk.gov.hmrc.fhregistration.models.fhdds
 
 import play.api.libs.json.{Format, Reads, Writes}
 
-object EnrolmentProgress extends Enumeration {
+object FhddsStatus extends Enumeration {
 
-  type EnrolmentProgress = Value
-  val Pending, Unknown = Value
+  type FhddsStatus = Value
+
+  val Processing              = Value("processing")
+  val Received                = Value("received")
+  val Approved                = Value("approved")
+  val ApprovedWithConditions  = Value("approvedWithConditions")
+  val Rejected                = Value("rejected")
+  val Revoked                 = Value("revoked")
+  val Withdrawn               = Value("withdrawn")
+  val Deregistered            = Value("deregistered")
+
 
   implicit val format = Format(
-    Reads.enumNameReads(EnrolmentProgress),
+    Reads.enumNameReads(FhddsStatus),
     Writes.enumNameWrites[this.type ])
 
 }

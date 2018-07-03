@@ -46,7 +46,7 @@ class UserAction @Inject()(val authConnector: AuthConnector)
         Future successful error(BadRequest, "Can not find user id")
 
     } recover { case e ⇒
-      Logger.warn("Unauthorized user", e)
+      Logger.warn("Unauthorized user: $e")
       error(Unauthorized, s"Unauthorized: ${e.getMessage}")
     }
   }

@@ -30,7 +30,7 @@ import uk.gov.hmrc.http._
 
 import scala.concurrent.Future
 
-class TaxEnrolmentConnectorImpl @Inject() (
+class DefaultTaxEnrolmentConnector @Inject() (
   val http: HttpClient,
   val runModeConfiguration: Configuration,
   environment: Environment) extends TaxEnrolmentConnector with ServicesConfig {
@@ -41,32 +41,22 @@ class TaxEnrolmentConnectorImpl @Inject() (
   val serviceBaseUrl =  s"${baseUrl("tax-enrolments")}/tax-enrolments"
   val serviceName = config("tax-enrolments").getString("serviceName").getOrElse("HMRC-OBTDS-ORG")
 
-  override def subscriberUrl(etmpFormBundleId: String) =
+  private def subscriberUrl(etmpFormBundleId: String) =
    s"$serviceBaseUrl/subscriptions/$etmpFormBundleId/subscriber"
 
-  override def groupEnrolmentUrl(groupId: String, registrationNumber: String) = {
+  private def groupEnrolmentUrl(groupId: String, registrationNumber: String) = {
     val enrolmentKey = s"$serviceName~ETMPREGISTRATIONNUMBER~$registrationNumber"
     s"$serviceBaseUrl/groups/$groupId/enrolments/$enrolmentKey"
   }
 
   override protected def mode: Mode = environment.mode
-}
-
-@ImplementedBy(classOf[TaxEnrolmentConnectorImpl])
-trait TaxEnrolmentConnector extends HttpErrorFunctions {
-  val http: HttpClient
-  def callback(formBundleId: String): String
-  val serviceName: String
-
-  def subscriberUrl(subscriptionId: String): String
-  def groupEnrolmentUrl(groupId: String, registrationNumber: String): String
 
   /**
     * Subscribe to tax enrolments
     * @param safeId - the id of the entity in ETMP
     * @param etmpFormBundleNumber - use this as the subscription id as requested by ETMP
     */
-  def subscribe(safeId: String, etmpFormBundleNumber: String)(implicit hc: HeaderCarrier): Future[Option[JsObject]] = {
+  override def subscribe(safeId: String, etmpFormBundleNumber: String)(implicit hc: HeaderCarrier): Future[Option[JsObject]] = {
     Logger.info(s"Request to tax enrolments authorisation header is present: ${hc.authorization.isDefined}")
     http.PUT[JsObject, Option[JsObject]](
       subscriberUrl(etmpFormBundleNumber),
@@ -74,7 +64,7 @@ trait TaxEnrolmentConnector extends HttpErrorFunctions {
     )
   }
 
-  def deleteGroupEnrolment(groupId: String, registrationNumber: String)(implicit hc: HeaderCarrier): Future[_] = {
+  override def deleteGroupEnrolment(groupId: String, registrationNumber: String)(implicit hc: HeaderCarrier): Future[_] = {
     http.DELETE[HttpResponse](groupEnrolmentUrl(groupId, registrationNumber)).map { response ⇒
       if (is2xx(response.status)) response.body
       else throw new RuntimeException(s"Unexpected response code '${response.status}'")
@@ -82,11 +72,19 @@ trait TaxEnrolmentConnector extends HttpErrorFunctions {
     }
   }
 
-  def requestBody(etmpId: String, etmpFormBundleNumber: String): JsObject = {
+  private def requestBody(etmpId: String, etmpFormBundleNumber: String): JsObject = {
     Json.obj(
       "serviceName" → JsString(serviceName),
       "callback" → JsString(callback(etmpFormBundleNumber)),
       "etmpId" → JsString(etmpId)
     )
   }
+}
+
+@ImplementedBy(classOf[DefaultTaxEnrolmentConnector])
+trait TaxEnrolmentConnector extends HttpErrorFunctions {
+
+  def subscribe(safeId: String, etmpFormBundleNumber: String)(implicit hc: HeaderCarrier): Future[Option[JsObject]]
+  def deleteGroupEnrolment(groupId: String, registrationNumber: String)(implicit hc: HeaderCarrier): Future[_]
+
 }

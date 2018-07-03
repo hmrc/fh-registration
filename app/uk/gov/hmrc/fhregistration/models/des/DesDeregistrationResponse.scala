@@ -14,17 +14,14 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.fhregistration.models.fhdds
+package uk.gov.hmrc.fhregistration.models.des
 
-import play.api.libs.json.{Format, Reads, Writes}
+import java.util.Date
 
-object EnrolmentProgress extends Enumeration {
+import play.api.libs.json.Json
 
-  type EnrolmentProgress = Value
-  val Pending, Unknown = Value
+case class DesDeregistrationResponse (processingDate: Date)
 
-  implicit val format = Format(
-    Reads.enumNameReads(EnrolmentProgress),
-    Writes.enumNameWrites[this.type ])
-
+object DesDeregistrationResponse {
+  implicit val format = Json.format[DesDeregistrationResponse]
 }

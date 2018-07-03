@@ -30,11 +30,24 @@ trait MicroService {
   lazy val dispatchV = "0.11.2"
   lazy val dispatch = "net.databinder.dispatch" %% "dispatch-core" % dispatchV
 
+  lazy val scoverageSettings = {
+    import scoverage.ScoverageKeys
+    Seq(
+      // Semicolon-separated list of regexs matching classes to exclude
+      ScoverageKeys.coverageExcludedPackages := """uk\.gov\.hmrc\.BuildInfo;.*\.Routes;.*\.RoutesPrefix;.*\.Reverse[^.]*""",
+      ScoverageKeys.coverageMinimum := 80.00,
+      ScoverageKeys.coverageFailOnMinimum := true,
+      ScoverageKeys.coverageHighlighting := true,
+      parallelExecution in Test := false
+    )
+  }
+
   lazy val microservice = Project(appName, file("."))
     .enablePlugins(Seq(play.sbt.PlayScala,SbtAutoBuildPlugin, SbtGitVersioning, SbtDistributablesPlugin) ++ plugins : _*)
     .settings(unmanagedResourceDirectories in Compile += baseDirectory.value / "resources")
     .settings(PlayKeys.playDefaultPort := 1119)
     .settings(playSettings : _*)
+    .settings(scoverageSettings: _*)
     .settings(scalaSettings: _*)
     .settings(publishingSettings: _*)
     .settings(defaultSettings(): _*)

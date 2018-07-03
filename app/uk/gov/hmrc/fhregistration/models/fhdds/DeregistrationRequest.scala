@@ -16,15 +16,13 @@
 
 package uk.gov.hmrc.fhregistration.models.fhdds
 
-import play.api.libs.json.{Format, Reads, Writes}
+import play.api.libs.json.{JsValue, Json}
 
-object EnrolmentProgress extends Enumeration {
+case class DeregistrationRequest(
+  emailAddress  : String,
+  deregistration: JsValue
+)
 
-  type EnrolmentProgress = Value
-  val Pending, Unknown = Value
-
-  implicit val format = Format(
-    Reads.enumNameReads(EnrolmentProgress),
-    Writes.enumNameWrites[this.type ])
-
+object DeregistrationRequest {
+  implicit val format = Json.format[DeregistrationRequest]
 }

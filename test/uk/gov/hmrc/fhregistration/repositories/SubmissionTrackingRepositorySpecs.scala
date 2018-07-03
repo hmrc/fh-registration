@@ -38,7 +38,7 @@ class SubmissionTrackingRepositorySpecs
   }
 
   implicit val crypto = CompositeSymmetricCrypto.aes("962D3D205B9E29A74D25D0743B1C11E0", Seq.empty)
-  val repository = new SubmissionTrackingRepository()
+  val repository = new DefaultSubmissionTrackingRepository()
 
 
   override protected def beforeEach(): Unit = {

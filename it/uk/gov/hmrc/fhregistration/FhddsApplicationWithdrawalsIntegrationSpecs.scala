@@ -61,7 +61,7 @@ class FhddsApplicationWithdrawalsIntegrationSpecs
         expect()
           .des.withdrawalCalled(testRegistrationNumber)
           .email.emailSent("fhdds_submission_withdrawal")
-          .taxEnrolments.deEnrolmentCalled("some-group", testRegistrationNumber)
+          .taxEnrolments.noDeEnrolmentCalled()
 
       }
     }

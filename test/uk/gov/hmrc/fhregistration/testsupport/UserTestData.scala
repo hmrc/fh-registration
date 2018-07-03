@@ -14,17 +14,10 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.fhregistration.models.fhdds
+package uk.gov.hmrc.fhregistration.testsupport
 
-import play.api.libs.json.{Format, Reads, Writes}
+object UserTestData {
 
-object EnrolmentProgress extends Enumeration {
-
-  type EnrolmentProgress = Value
-  val Pending, Unknown = Value
-
-  implicit val format = Format(
-    Reads.enumNameReads(EnrolmentProgress),
-    Writes.enumNameWrites[this.type ])
+  val testUserId = "Int-test-user"
 
 }
