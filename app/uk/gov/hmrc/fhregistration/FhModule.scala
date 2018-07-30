@@ -14,17 +14,15 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.fhregistration.models.fhdds
+package uk.gov.hmrc.fhregistration
 
-import play.api.libs.json.{Format, Reads, Writes}
+import java.time.Clock
 
-object EnrolmentProgress extends Enumeration {
+import play.api.{Configuration, Environment}
+import play.api.inject.{Binding, Module}
 
-  type EnrolmentProgress = Value
-  val Pending, Unknown, Error = Value
-
-  implicit val format = Format(
-    Reads.enumNameReads(EnrolmentProgress),
-    Writes.enumNameWrites[this.type ])
-
+class FhModule extends Module {
+  override def bindings(environment: Environment, configuration: Configuration): Seq[Binding[_]] = {
+    Seq(bind(classOf[Clock]).toInstance(Clock.systemDefaultZone()))
+  }
 }

@@ -29,13 +29,12 @@ import uk.gov.hmrc.fhregistration.models.des.DesStatus
 import uk.gov.hmrc.fhregistration.models.des.DesStatus.DesStatus
 import uk.gov.hmrc.fhregistration.models.fhdds.FhddsStatus.FhddsStatus
 import uk.gov.hmrc.fhregistration.models.fhdds._
-import uk.gov.hmrc.fhregistration.repositories.{SubmissionTracking, SubmissionTrackingRepository}
-import uk.gov.hmrc.fhregistration.services.AuditService
+import uk.gov.hmrc.fhregistration.services.{AuditService, SubmissionTrackingService}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import uk.gov.hmrc.play.audit.model.DataEvent
 import uk.gov.hmrc.play.bootstrap.controller.BaseController
-
+import cats.implicits._
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.util.{Failure, Success}
@@ -45,15 +44,13 @@ class FhddsApplicationController @Inject()(
   val desConnector: DesConnector,
   val taxEnrolmentConnector: TaxEnrolmentConnector,
   val emailConnector: EmailConnector,
-  val submissionTrackingRepository: SubmissionTrackingRepository,
+  val submissionTrackingService: SubmissionTrackingService,
   val auditService: AuditService,
   val auditConnector: AuditConnector,
   val actions: Actions)
   extends BaseController {
 
   import actions._
-
-  val SubmissionTrackingAgeThresholdMs = 60 * 60 * 1000L
 
   def subscribe(safeId: String, currentRegNumber: Option[String]) = userGroupAction.async(parse.json[SubmissionRequest]) { implicit r ⇒
     val request = r.body
@@ -68,13 +65,16 @@ class FhddsApplicationController @Inject()(
       }
 
       val event: DataEvent = auditService.buildSubmissionCreateAuditEvent(request, safeId, response.registrationNumber)
-      saveSubscriptionTracking(
+      submissionTrackingService.saveSubscriptionTracking(
         safeId,
         r.userId,
         desResponse.etmpFormBundleNumber,
         request.emailAddress
       ) andThen { case _ ⇒
         subscribeToTaxEnrolment(safeId, desResponse.etmpFormBundleNumber)
+          .onFailure { case e ⇒
+            submissionTrackingService.updateSubscriptionTracking(desResponse.etmpFormBundleNumber, EnrolmentProgress.Error)
+          }
       }
 
       auditSubmission(response.registrationNumber, event)
@@ -84,37 +84,11 @@ class FhddsApplicationController @Inject()(
   }
 
   def enrolmentProgress() = userAction.async { implicit request ⇒
-    val now = System.currentTimeMillis
-    submissionTrackingRepository
-      .findSubmissionTrackingByUserId(request.userId)
-      .map {
-        case Some(tracking) if (now - tracking.submissionTime) > SubmissionTrackingAgeThresholdMs ⇒
-          Logger.error(s"Submission tracking is too old for user ${request.userId}. Was made at ${tracking.submissionTime}")
-          Ok(Json.toJson(EnrolmentProgress.Pending))
-        case Some(_)                                                                              ⇒
-          Ok(Json.toJson(EnrolmentProgress.Pending))
-        case None                                                                                 ⇒
-          Ok(Json.toJson(EnrolmentProgress.Unknown))
-      }
+    submissionTrackingService.enrolmentProgress(request.userId) map {
+      progress ⇒ Ok(Json toJson progress)
+    }
   }
 
-  def saveSubscriptionTracking(safeId: String, userId: String, etmpFormBundleNumber: String, emailAddress: String): Future[Any] = {
-    val submissionTracking = SubmissionTracking(
-      userId,
-      etmpFormBundleNumber,
-      emailAddress,
-      System.currentTimeMillis()
-    )
-
-    val result = submissionTrackingRepository.insertSubmissionTracking(submissionTracking)
-    result.onComplete({
-      case Success(r) ⇒ Logger.info(s"Submission tracking record saved for $safeId and etmpFormBundleNumber $etmpFormBundleNumber")
-      case Failure(e) ⇒ Logger.error(s"Submission tracking record FAILED for $safeId and etmpFormBundleNumber $etmpFormBundleNumber", e)
-    })
-
-    result
-
-  }
 
   def amend(fhddsRegistrationNumber: String) = Action.async(parse.json[SubmissionRequest]) { implicit r ⇒
     val request = r.body
@@ -195,11 +169,11 @@ class FhddsApplicationController @Inject()(
 
   }
 
-  private def subscribeToTaxEnrolment(safeId: String, etmpFormBundleNumber: String)(implicit hc: HeaderCarrier) = {
+  private def subscribeToTaxEnrolment(safeId: String, etmpFormBundleNumber: String)(implicit hc: HeaderCarrier): Future[_] = {
     Logger.info(s"Sending subscription for safeId = $safeId for etmpFormBundelNumber = $etmpFormBundleNumber to tax enrolments")
     taxEnrolmentConnector
      .subscribe(safeId, etmpFormBundleNumber)(hc)
-     .onComplete({
+     .andThen({
        case Success(r) ⇒ Logger.info(s"Tax enrolments for subscription $safeId and etmpFormBundleNumber $etmpFormBundleNumber returned $r")
        case Failure(e) ⇒ Logger.error(s"Tax enrolments for subscription $safeId and etmpFormBundleNumber $etmpFormBundleNumber failed", e)
      })
@@ -210,14 +184,10 @@ class FhddsApplicationController @Inject()(
     Logger.info(s"Received subscription callback for formBundleId: $formBundleId with data: $data")
     if (data.succeeded) {
 
-      submissionTrackingRepository
-        .findSubmissionTrakingByFormBundleId(formBundleId)
-        .map {
-          case None ⇒ Logger.error(s"Could not find enrolment tracking data for bundleId $formBundleId")
-          case Some(tracking) ⇒
-            sendEmail(tracking.email)
-            deleteSubmissionTrackingAfterCallback(formBundleId)
-        }
+      submissionTrackingService
+        .getSubmissionTrackingEmail(formBundleId)
+        .fold(Logger.error(s"Could not find enrolment tracking data for bundleId $formBundleId"))(email ⇒ sendEmail(email))
+        .andThen { case _ ⇒ submissionTrackingService deleteSubmissionTracking formBundleId }
         .map(_ ⇒ Ok(""))
         .recover { case _ ⇒ Ok("") }
 
@@ -225,33 +195,6 @@ class FhddsApplicationController @Inject()(
       Logger.error(s"Tax enrolment failed for $formBundleId: ${data.errorResponse} ($data)")
       Future successful Ok("")
     }
-  }
-
-  private def deleteSubmissionTrackingAfterCallback(formBundleId: String) = {
-    submissionTrackingRepository
-      .deleteSubmissionTackingByFormBundleId(formBundleId)
-      .andThen {
-        case Success(1) ⇒ Logger.info(s"Submission tracking deleted for $formBundleId")
-        case Success(0) ⇒ Logger.warn(s"Submission tracking not found for $formBundleId")
-        case Success(n) ⇒ Logger.error(s"Submission tracking delete for $formBundleId returned an unexpected number of docs: $n")
-        case Failure(e) ⇒ Logger.error(s"Submission tracking delete failed for $formBundleId", e)
-      }
-  }
-
-  private def sendConfirmationEmailAfterCallback(formBundleId: String)(implicit request: Request[AnyRef]) = {
-    val result = submissionTrackingRepository
-      .findSubmissionTrakingByFormBundleId(formBundleId)
-      .map {
-        case Some(tracking) ⇒ sendEmail(tracking.email)
-        case None ⇒ Logger.error(s"Could not find enrolment tracking data for bundleId $formBundleId")
-      }
-
-    result.onFailure {
-      case t ⇒ Logger.error(s"Error retrieving enrolment tracking data for bundeIld $formBundleId", t)
-    }
-
-    result
-
   }
 
   def checkStatus(fhddsRegistrationNumber: String) = Action.async { implicit request ⇒

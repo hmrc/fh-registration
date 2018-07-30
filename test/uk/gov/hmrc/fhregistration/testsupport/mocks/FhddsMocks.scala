@@ -16,13 +16,15 @@
 
 package uk.gov.hmrc.fhregistration.testsupport.mocks
 
+import java.time.Clock
+
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.mockito.MockitoSugar
 import uk.gov.hmrc.fhregistration.actions.Actions
 import uk.gov.hmrc.fhregistration.connectors._
 import uk.gov.hmrc.fhregistration.controllers.FhddsApplicationController
 import uk.gov.hmrc.fhregistration.repositories.SubmissionTrackingRepository
-import uk.gov.hmrc.fhregistration.services.AuditService
+import uk.gov.hmrc.fhregistration.services.{AuditService, DefaultSubmissionTrackingService}
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 
 
@@ -36,6 +38,7 @@ trait FhddsMocks extends ScalaFutures with MockitoSugar {
   val mockAuditService: AuditService = mock[AuditService]
   val mockAuditConnector: AuditConnector = mock[AuditConnector]
   val mockSubmissionTrackingRepository: SubmissionTrackingRepository = mock[SubmissionTrackingRepository]
+  val mockSubmissionTrackingService = new DefaultSubmissionTrackingService(mockSubmissionTrackingRepository, Clock.systemDefaultZone())
   val mockActions = mock[Actions]
 
 //  implicit val request: FakeRequest[AnyContentAsEmpty.type] = FakeRequest().withHeaders(HeaderNames.xSessionId -> "test")
@@ -46,7 +49,7 @@ trait FhddsMocks extends ScalaFutures with MockitoSugar {
     mockDesConnector,
     mockTaxEnrolmentConnector,
     mockEmailConnectorConnector,
-    mockSubmissionTrackingRepository,
+    mockSubmissionTrackingService,
     mockAuditService,
     mockAuditConnector,
     mockActions
