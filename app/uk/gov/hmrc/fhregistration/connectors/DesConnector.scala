@@ -92,7 +92,7 @@ class DefaultDesConnector @Inject() (
   def sendDeregistration(fhddsRegistrationNumber: String, submission: JsValue)(hc: HeaderCarrier): Future[DesDeregistrationResponse] = {
     Logger.info(s"Sending fhdds deregistration data to DES for regNumber $fhddsRegistrationNumber")
     implicit val desHeaders: HeaderCarrier = headerCarrierBuilder(hc)
-    http.PUT[JsValue, DesDeregistrationResponse](desDeregisterUrl(fhddsRegistrationNumber), submission)
+    http.POST[JsValue, DesDeregistrationResponse](desDeregisterUrl(fhddsRegistrationNumber), submission)
   }
 
   def display(fhddsRegistrationNumber: String)(hc: HeaderCarrier): Future[HttpResponse] = {
