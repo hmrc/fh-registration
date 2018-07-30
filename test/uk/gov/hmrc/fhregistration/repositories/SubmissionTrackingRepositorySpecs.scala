@@ -16,10 +16,10 @@
 
 package uk.gov.hmrc.fhregistration.repositories
 
-import org.scalatest.{BeforeAndAfterEach, Matchers, WordSpec}
 import org.scalatest.concurrent.Eventually
+import org.scalatest.{BeforeAndAfterEach, Matchers, WordSpec}
 import play.modules.reactivemongo.ReactiveMongoComponent
-import uk.gov.hmrc.crypto.CompositeSymmetricCrypto
+import uk.gov.hmrc.fhregistration.models.fhdds.EnrolmentProgress
 import uk.gov.hmrc.mongo.{Awaiting, CurrentTime, MongoSpecSupport}
 import uk.gov.hmrc.play.test.LogCapturing
 
@@ -37,7 +37,6 @@ class SubmissionTrackingRepositorySpecs
     override def mongoConnector = mongoConnectorForTest
   }
 
-  implicit val crypto = CompositeSymmetricCrypto.aes("962D3D205B9E29A74D25D0743B1C11E0", Seq.empty)
   val repository = new DefaultSubmissionTrackingRepository()
 
 
@@ -83,7 +82,8 @@ class SubmissionTrackingRepositorySpecs
     anUserId,
     aFormBundleId,
     anEmail,
-    System.currentTimeMillis()
+    System.currentTimeMillis(),
+    EnrolmentProgress.Pending
   )
 
 

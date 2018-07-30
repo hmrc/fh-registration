@@ -20,12 +20,13 @@ import javax.inject.Inject
 
 import com.google.inject.ImplementedBy
 import play.modules.reactivemongo.ReactiveMongoComponent
-import reactivemongo.api.commands.WriteResult
+import reactivemongo.api.commands.{UpdateWriteResult, WriteResult}
 import reactivemongo.api.indexes.{Index, IndexType}
 import reactivemongo.bson.{BSONDocument, BSONObjectID}
 import reactivemongo.play.json.ImplicitBSONHandlers._
+import uk.gov.hmrc.fhregistration.models.fhdds.EnrolmentProgress.EnrolmentProgress
+import uk.gov.hmrc.mongo.ReactiveRepository
 import uk.gov.hmrc.mongo.json.ReactiveMongoFormats
-import uk.gov.hmrc.mongo.{AtomicUpdate, ReactiveRepository}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{ExecutionContext, Future}
@@ -39,7 +40,9 @@ trait SubmissionTrackingRepository {
 
   def deleteSubmissionTackingByFormBundleId(formBundleId: String): Future[Int]
 
-  def insertSubmissionTracking(submissionTracking: SubmissionTracking): Future[WriteResult]
+  def insertSubmissionTracking(submissionTracking: SubmissionTracking): Future[_]
+
+  def updateEnrolmentProgress(formBundleId: String, progress: EnrolmentProgress): Future[UpdateWriteResult]
 }
 
 
@@ -52,7 +55,7 @@ class DefaultSubmissionTrackingRepository @Inject() (implicit rmc: ReactiveMongo
 {
 
 
-  import SubmissionTracking.{FormBundleIdField, UserIdField}
+  import SubmissionTracking.{EnrolmentProgressField, FormBundleIdField, UserIdField}
 
   override def findSubmissionTrackingByUserId(userId: String) = {
     collection.find(BSONDocument(UserIdField → userId)).one[SubmissionTracking]
@@ -68,10 +71,20 @@ class DefaultSubmissionTrackingRepository @Inject() (implicit rmc: ReactiveMongo
       .map( _.n)
   }
 
-  override def insertSubmissionTracking(submissionTracking: SubmissionTracking): Future[WriteResult] = {
-    collection.insert(submissionTracking)
+  override def insertSubmissionTracking(submissionTracking: SubmissionTracking): Future[_] = {
+    collection.findAndUpdate(
+      BSONDocument(UserIdField → submissionTracking.userId),
+      submissionTracking,
+      upsert = true)
   }
 
+  override def updateEnrolmentProgress(formBundleId: String, progress: EnrolmentProgress): Future[UpdateWriteResult] = {
+    collection.update(
+      BSONDocument(FormBundleIdField → formBundleId),
+      BSONDocument("$set" → BSONDocument(EnrolmentProgressField → progress.toString))
+    )
+
+  }
 
 
   override def ensureIndexes(implicit ec: ExecutionContext): Future[Seq[Boolean]] = {

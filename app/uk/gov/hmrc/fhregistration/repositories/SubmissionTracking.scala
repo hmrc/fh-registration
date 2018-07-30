@@ -17,20 +17,33 @@
 package uk.gov.hmrc.fhregistration.repositories
 
 import play.api.libs.json._
+import uk.gov.hmrc.fhregistration.models.fhdds.EnrolmentProgress
+import uk.gov.hmrc.fhregistration.models.fhdds.EnrolmentProgress.EnrolmentProgress
 
 case class SubmissionTracking(
   userId: String,
   formBundleId: String,
   email: String,
-  submissionTime: Long
-)
+  submissionTime: Long,
+  enrolmentProgressOpt: Option[EnrolmentProgress]
+) {
+  def enrolmentProgress = enrolmentProgressOpt getOrElse EnrolmentProgress.Pending
+}
 
 object SubmissionTracking {
   implicit val formats = Json.format[SubmissionTracking]
 
+  def apply(
+    userId: String,
+    formBundleId: String,
+    email: String,
+    submissionTime: Long,
+    enrolmentProgress: EnrolmentProgress
+  ): SubmissionTracking = SubmissionTracking(userId, formBundleId, email, submissionTime, Some(enrolmentProgress))
 
   val UserIdField = "userId"
   val FormBundleIdField = "formBundleId"
+  val EnrolmentProgressField = "enrolmentProgressOpt"
 
 
 }
