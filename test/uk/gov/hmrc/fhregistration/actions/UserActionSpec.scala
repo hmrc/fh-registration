@@ -18,7 +18,7 @@ package uk.gov.hmrc.fhregistration.actions
 
 import org.mockito.Mockito.{reset, when}
 import play.api.test.FakeRequest
-import uk.gov.hmrc.auth.core.{AuthConnector, MissingBearerToken}
+import uk.gov.hmrc.auth.core._
 import org.mockito.ArgumentMatchers.any
 import uk.gov.hmrc.auth.core.retrieve.{Retrieval, ~}
 import play.api.test.Helpers._
@@ -50,21 +50,40 @@ class UserActionSpec extends ActionSpecBase {
       status(result(action, request)) shouldBe UNAUTHORIZED
     }
 
-    "Return a user request with correct user id" in {
+    "Return a user request with correct user id and no registration number" in {
       setupAuthConnector(Some(UserTestData.testUserId))
 
       val userRequest = refinedRequest(action, request)
       userRequest.userId shouldBe UserTestData.testUserId
+      userRequest.registrationNumber shouldBe None
     }
+
+    "Return a user request with correct user id and registration number" in {
+      val fhddsEnrolment = EnrolmentIdentifier("EtmpRegistrationNumber", "XZFH00000123456")
+      val otherEnrolment = EnrolmentIdentifier("EtmpRegistrationNumber", "XZSDIL000123456")
+
+      val enrolments = Set(
+        new Enrolment("HMRC-OBTDS-ORG", Seq(otherEnrolment), "Active"),
+        new Enrolment("HMRC-OBTDS-ORG", Seq(fhddsEnrolment), "Active")
+      )
+
+      setupAuthConnector(Some(UserTestData.testUserId), enrolments)
+
+      val userRequest = refinedRequest(action, request)
+      userRequest.userId shouldBe UserTestData.testUserId
+      userRequest.registrationNumber shouldBe Some(fhddsEnrolment.value)
+    }
+
 
   }
 
-  def setupAuthConnector(internalId: Option[String] = None) = {
-    when(mockAuthConnector.authorise(any(),any[Retrieval[Option[String]]])(any(), any())) thenReturn Future.successful(internalId)
+  def setupAuthConnector(internalId: Option[String] = None, enrolments: Set[Enrolment] = Set.empty) = {
+    val authResult = Future successful (new ~(internalId, new Enrolments(enrolments)))
+    when(mockAuthConnector.authorise(any(),any[Retrieval[Option[String] ~ Enrolments]])(any(), any())) thenReturn authResult
   }
 
   def setupAuthConnector(throwable: Throwable) = {
-    when(mockAuthConnector.authorise(any(),any[Retrieval[Option[String]]])(any(), any())) thenReturn Future.failed(throwable)
+    when(mockAuthConnector.authorise(any(),any[Retrieval[Option[String]~ Enrolments]])(any(), any())) thenReturn Future.failed(throwable)
   }
 
 }
