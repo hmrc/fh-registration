@@ -78,12 +78,42 @@ class SubmissionTrackingRepositorySpecs
     }
   }
 
+  "Delete a record by registration with fhreg number" should {
+    "delete the registration" in {
+      val tracking = mkSubmissionTracking
+      await(repository.insertSubmissionTracking(tracking))
+
+      val nDeleted = await(
+        repository.deleteSubmissionTackingByRegistrationNumber(tracking.userId, tracking.registrationNumber.get))
+      nDeleted shouldBe 1
+
+      val byUserId = await(repository.findSubmissionTrackingByUserId(anUserId))
+
+      byUserId shouldBe None
+    }
+
+    "don't delete it if it does not match" in {
+      val tracking = mkSubmissionTracking
+      await(repository.insertSubmissionTracking(tracking))
+
+      val nDeleted = await(
+        repository.deleteSubmissionTackingByRegistrationNumber(tracking.userId, tracking.registrationNumber.get + "1"))
+      nDeleted shouldBe 0
+
+      val byUserId = await(repository.findSubmissionTrackingByUserId(anUserId))
+
+      byUserId shouldBe Some(tracking)
+    }
+
+  }
+
   def mkSubmissionTracking = SubmissionTracking(
     anUserId,
     aFormBundleId,
     anEmail,
     System.currentTimeMillis(),
-    EnrolmentProgress.Pending
+    EnrolmentProgress.Pending,
+    "XXFH00000123432"
   )
 
 

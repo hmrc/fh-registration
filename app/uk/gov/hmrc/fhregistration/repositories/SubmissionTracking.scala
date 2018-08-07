@@ -25,7 +25,8 @@ case class SubmissionTracking(
   formBundleId: String,
   email: String,
   submissionTime: Long,
-  enrolmentProgressOpt: Option[EnrolmentProgress]
+  enrolmentProgressOpt: Option[EnrolmentProgress],
+  registrationNumber: Option[String]
 ) {
   def enrolmentProgress = enrolmentProgressOpt getOrElse EnrolmentProgress.Pending
 }
@@ -38,12 +39,22 @@ object SubmissionTracking {
     formBundleId: String,
     email: String,
     submissionTime: Long,
-    enrolmentProgress: EnrolmentProgress
-  ): SubmissionTracking = SubmissionTracking(userId, formBundleId, email, submissionTime, Some(enrolmentProgress))
+    enrolmentProgress: EnrolmentProgress,
+    registrationNumber: String
+  ): SubmissionTracking = SubmissionTracking(
+    userId,
+    formBundleId,
+    email,
+    submissionTime,
+    Some(enrolmentProgress),
+    Some(registrationNumber))
+
+
 
   val UserIdField = "userId"
   val FormBundleIdField = "formBundleId"
   val EnrolmentProgressField = "enrolmentProgressOpt"
+  val RegistrationNumberField = "registrationNumber"
 
 
 }

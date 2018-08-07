@@ -33,8 +33,8 @@ import cats.implicits._
 
 @ImplementedBy(classOf[DefaultSubmissionTrackingService])
 trait SubmissionTrackingService {
-  def enrolmentProgress(userId: String): Future[EnrolmentProgress]
-  def saveSubscriptionTracking(safeId: String, userId: String, etmpFormBundleNumber: String, emailAddress: String): Future[_]
+  def enrolmentProgress(userId: String, registrationNumber: Option[String]): Future[EnrolmentProgress]
+  def saveSubscriptionTracking(safeId: String, userId: String, etmpFormBundleNumber: String, emailAddress: String, registrationNumber: String): Future[_]
   def updateSubscriptionTracking(etmpFormBundleNumber: String, enrolmentProgress: EnrolmentProgress): Future[_]
   def getSubmissionTrackingEmail(formBundleId: String): OptionT[Future, String]
   def deleteSubmissionTracking(formBundleId: String): Future[_]
@@ -46,11 +46,13 @@ class DefaultSubmissionTrackingService @Inject()(
   extends SubmissionTrackingService {
   val SubmissionTrackingAgeThresholdMs = 60 * 60 * 1000L
 
-  override def enrolmentProgress(userId: String): Future[EnrolmentProgress] = {
+  override def enrolmentProgress(userId: String, registrationNumber: Option[String]): Future[EnrolmentProgress] = {
     val now = clock.millis()
-    repository
-      .findSubmissionTrackingByUserId(userId)
-      .map {
+    for {
+      _ ← clearSubmissionTrackingForRegNumber(userId, registrationNumber)
+      tracking ← repository.findSubmissionTrackingByUserId(userId)
+    } yield {
+      tracking match {
         case Some(tracking) ⇒
           if (tracking.enrolmentProgress == EnrolmentProgress.Pending && (now - tracking.submissionTime) > SubmissionTrackingAgeThresholdMs) {
             Logger.error(s"Submission tracking is too old for user $userId. Was made at ${tracking.submissionTime}")
@@ -61,15 +63,23 @@ class DefaultSubmissionTrackingService @Inject()(
         case None                                                                                 ⇒
           EnrolmentProgress.Unknown
       }
+    }
   }
 
-  override def saveSubscriptionTracking(safeId: String, userId: String, etmpFormBundleNumber: String, emailAddress: String): Future[_] = {
+  private def clearSubmissionTrackingForRegNumber(userId: String, registrationNumber: Option[String]): Future[Int] = {
+    registrationNumber.fold(Future successful 0) { r ⇒
+      repository.deleteSubmissionTackingByRegistrationNumber(userId, r)
+    }
+  }
+
+  override def saveSubscriptionTracking(safeId: String, userId: String, etmpFormBundleNumber: String, emailAddress: String, registrationNumber: String): Future[_] = {
     val submissionTracking = SubmissionTracking(
       userId,
       etmpFormBundleNumber,
       emailAddress,
       clock.millis(),
-      EnrolmentProgress.Pending
+      EnrolmentProgress.Pending,
+      registrationNumber
     )
 
     val result = repository.insertSubmissionTracking(submissionTracking)

@@ -65,12 +65,7 @@ class FhddsApplicationController @Inject()(
       }
 
       val event: DataEvent = auditService.buildSubmissionCreateAuditEvent(request, safeId, response.registrationNumber)
-      submissionTrackingService.saveSubscriptionTracking(
-        safeId,
-        r.userId,
-        desResponse.etmpFormBundleNumber,
-        request.emailAddress
-      ) andThen { case _ ⇒
+      submissionTrackingService.saveSubscriptionTracking(safeId, r.userId, desResponse.etmpFormBundleNumber, request.emailAddress, response.registrationNumber) andThen { case _ ⇒
         subscribeToTaxEnrolment(safeId, desResponse.etmpFormBundleNumber)
           .onFailure { case e ⇒
             submissionTrackingService.updateSubscriptionTracking(desResponse.etmpFormBundleNumber, EnrolmentProgress.Error)
@@ -84,7 +79,7 @@ class FhddsApplicationController @Inject()(
   }
 
   def enrolmentProgress() = userAction.async { implicit request ⇒
-    submissionTrackingService.enrolmentProgress(request.userId) map {
+    submissionTrackingService.enrolmentProgress(request.userId, request.registrationNumber) map {
       progress ⇒ Ok(Json toJson progress)
     }
   }

@@ -57,25 +57,35 @@ class SubmissionTrackingServiceSpecs extends UnitSpec
 
   "enrolmentProgress" should {
     "be Unknown" in {
-      await(service.enrolmentProgress("some-user")) shouldBe EnrolmentProgress.Unknown
+      await(service.enrolmentProgress("some-user", None)) shouldBe EnrolmentProgress.Unknown
     }
 
     "be Pending" in {
-      await(service.saveSubscriptionTracking("safeid", "some-user", "formbundelid", "a@a.co"))
-      await(service.enrolmentProgress("some-user")) shouldBe EnrolmentProgress.Pending
+      await(service.saveSubscriptionTracking("safeid", "some-user", "formbundelid", "a@a.co", "ZZFH0000001231456"))
+      await(service.enrolmentProgress("some-user", None)) shouldBe EnrolmentProgress.Pending
+    }
+
+    "be Unknown when the user has the registration number" in {
+      await(service.saveSubscriptionTracking("safeid", "some-user", "formbundelid", "a@a.co", "ZZFH0000001231456"))
+      await(service.enrolmentProgress("some-user", Some("ZZFH0000001231456"))) shouldBe EnrolmentProgress.Unknown
+    }
+
+    "be Pending when the registration number does not match" in {
+      await(service.saveSubscriptionTracking("safeid", "some-user", "formbundelid", "a@a.co", "ZZFH0000001231456"))
+      await(service.enrolmentProgress("some-user", Some("ZZFH0000008888888"))) shouldBe EnrolmentProgress.Pending
     }
 
     "be Error" when {
       "the tracking was marked as error" in {
-        await(service.saveSubscriptionTracking("safeid", "some-user", "formbundelid", "a@a.co"))
+        await(service.saveSubscriptionTracking("safeid", "some-user", "formbundelid", "a@a.co", "ZZFH0000001231456"))
         await(service.updateSubscriptionTracking("formbundelid", EnrolmentProgress.Error))
-        await(service.enrolmentProgress("some-user")) shouldBe EnrolmentProgress.Error
+        await(service.enrolmentProgress("some-user", None)) shouldBe EnrolmentProgress.Error
       }
 
       "the pending tracking was not updated" in {
-        await(service.saveSubscriptionTracking("safeid", "some-user", "formbundelid", "a@a.co"))
+        await(service.saveSubscriptionTracking("safeid", "some-user", "formbundelid", "a@a.co", "ZZFH0000001231456"))
         when(mockClock.millis()).thenReturn(System.currentTimeMillis() + 2 * service.SubmissionTrackingAgeThresholdMs )
-        await(service.enrolmentProgress("some-user")) shouldBe EnrolmentProgress.Error
+        await(service.enrolmentProgress("some-user", None)) shouldBe EnrolmentProgress.Error
       }
     }
 
@@ -83,22 +93,22 @@ class SubmissionTrackingServiceSpecs extends UnitSpec
 
   "saveSubscriptionTracking" should {
     "overwrite a previous tracking" in {
-      await(service.saveSubscriptionTracking("safeid", "some-user", "formbundelid", "a@a.co"))
+      await(service.saveSubscriptionTracking("safeid", "some-user", "formbundelid", "a@a.co", "ZZFH0000001231456"))
       await(service.updateSubscriptionTracking("formbundelid", EnrolmentProgress.Error))
-      await(service.enrolmentProgress("some-user")) shouldBe EnrolmentProgress.Error
+      await(service.enrolmentProgress("some-user", None)) shouldBe EnrolmentProgress.Error
 
-      await(service.saveSubscriptionTracking("safeid", "some-user", "another-formbundelid", "a@a.co"))
+      await(service.saveSubscriptionTracking("safeid", "some-user", "another-formbundelid", "a@a.co", "ZZFH0000001231456"))
 
-      await(service.enrolmentProgress("some-user")) shouldBe EnrolmentProgress.Pending
+      await(service.enrolmentProgress("some-user", None)) shouldBe EnrolmentProgress.Pending
     }
   }
 
   "deleteSubmissionTracking" should {
     "remove the tracking so the progress is now Unknown" in {
-      await(service.saveSubscriptionTracking("safeid", "some-user", "formbundelid", "a@a.co"))
-      await(service.enrolmentProgress("some-user")) shouldBe EnrolmentProgress.Pending
+      await(service.saveSubscriptionTracking("safeid", "some-user", "formbundelid", "a@a.co", "ZZFH0000001231456"))
+      await(service.enrolmentProgress("some-user", None)) shouldBe EnrolmentProgress.Pending
       await(service.deleteSubmissionTracking("formbundelid"))
-      await(service.enrolmentProgress("some-user")) shouldBe EnrolmentProgress.Unknown
+      await(service.enrolmentProgress("some-user", None)) shouldBe EnrolmentProgress.Unknown
     }
   }
 
