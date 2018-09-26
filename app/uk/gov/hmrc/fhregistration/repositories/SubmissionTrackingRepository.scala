@@ -20,7 +20,7 @@ import javax.inject.Inject
 
 import com.google.inject.ImplementedBy
 import play.modules.reactivemongo.ReactiveMongoComponent
-import reactivemongo.api.commands.{UpdateWriteResult, WriteResult}
+import reactivemongo.api.commands.UpdateWriteResult
 import reactivemongo.api.indexes.{Index, IndexType}
 import reactivemongo.bson.{BSONDocument, BSONObjectID}
 import reactivemongo.play.json.ImplicitBSONHandlers._
