@@ -14,8 +14,6 @@ trait MicroService {
   import uk.gov.hmrc.versioning.SbtGitVersioning
   import uk.gov.hmrc.versioning.SbtGitVersioning.autoImport.majorVersion
   import play.sbt.routes.RoutesKeys.routesGenerator
-  //import sbtscalaxb.Plugin.ScalaxbKeys
-  //import ScalaxbKeys._
   import uk.gov.hmrc.SbtArtifactory
 
   import TestPhases.oneForkedJvmPerTest
@@ -60,7 +58,6 @@ trait MicroService {
     )
     .configs(IntegrationTest)
     .settings(inConfig(IntegrationTest)(Defaults.itSettings): _*)
-   // .settings(sbtscalaxb.Plugin.scalaxbSettings: _*)
     .settings(
       Keys.fork in IntegrationTest := false,
       resourceDirectory in IntegrationTest := baseDirectory.value / "it/resources",
