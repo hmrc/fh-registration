@@ -5,7 +5,6 @@ import play.routes.compiler.StaticRoutesGenerator
 import play.sbt.PlayImport.PlayKeys
 import uk.gov.hmrc.sbtdistributables.SbtDistributablesPlugin._
 
-
 trait MicroService {
 
   import uk.gov.hmrc._
@@ -13,12 +12,13 @@ trait MicroService {
   import uk.gov.hmrc.SbtAutoBuildPlugin
   import uk.gov.hmrc.sbtdistributables.SbtDistributablesPlugin
   import uk.gov.hmrc.versioning.SbtGitVersioning
+  import uk.gov.hmrc.versioning.SbtGitVersioning.autoImport.majorVersion
   import play.sbt.routes.RoutesKeys.routesGenerator
-  import sbtscalaxb.Plugin.ScalaxbKeys
-  import ScalaxbKeys._
+  //import sbtscalaxb.Plugin.ScalaxbKeys
+  //import ScalaxbKeys._
+  import uk.gov.hmrc.SbtArtifactory
 
-
-  import TestPhases._
+  import TestPhases.oneForkedJvmPerTest
 
   val appName: String
 
@@ -44,6 +44,7 @@ trait MicroService {
 
   lazy val microservice = Project(appName, file("."))
     .enablePlugins(Seq(play.sbt.PlayScala,SbtAutoBuildPlugin, SbtGitVersioning, SbtDistributablesPlugin) ++ plugins : _*)
+    .settings(majorVersion := 0)
     .settings(unmanagedResourceDirectories in Compile += baseDirectory.value / "resources")
     .settings(PlayKeys.playDefaultPort := 1119)
     .settings(playSettings : _*)
@@ -59,11 +60,11 @@ trait MicroService {
     )
     .configs(IntegrationTest)
     .settings(inConfig(IntegrationTest)(Defaults.itSettings): _*)
-    .settings(sbtscalaxb.Plugin.scalaxbSettings: _*)
+   // .settings(sbtscalaxb.Plugin.scalaxbSettings: _*)
     .settings(
       Keys.fork in IntegrationTest := false,
       resourceDirectory in IntegrationTest := baseDirectory.value / "it/resources",
-      unmanagedSourceDirectories in IntegrationTest <<= (baseDirectory in IntegrationTest)(base => Seq(base / "it")),
+      unmanagedSourceDirectories in IntegrationTest := (baseDirectory in IntegrationTest)(base => Seq(base / "it")).value,
       addTestReportOption(IntegrationTest, "int-test-reports"),
       testGrouping in IntegrationTest := oneForkedJvmPerTest((definedTests in IntegrationTest).value),
       parallelExecution in IntegrationTest := false)
