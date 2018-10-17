@@ -51,10 +51,10 @@ trait TestConfiguration
   private def replaceWithWiremock(services: Seq[String]) =
     services.foldLeft(Map.empty[String, Any]) { (configMap, service) =>
       configMap + (
-        s"Test.microservice.services.$service.host" -> wiremockHost,
-        s"Test.microservice.services.$service.port" -> wiremockPort)
+        s"microservice.services.$service.host" -> wiremockHost,
+        s"microservice.services.$service.port" -> wiremockPort)
     } +
-      (s"Test.auditing.consumer.baseUri.host" -> wiremockHost, s"Test.auditing.consumer.baseUri.port" -> wiremockPort)
+      (s"auditing.consumer.baseUri.host" -> wiremockHost, s"auditing.consumer.baseUri.port" -> wiremockPort)
 
   val wireMockServer = new WireMockServer(wireMockConfig().port(wiremockPort))
 
