@@ -1,14 +1,15 @@
 package uk.gov.hmrc.fhregistration
 
+import org.scalatest.Ignore
 import play.api.libs.json.Json
 import play.api.test.WsTestClient
 import uk.gov.hmrc.fhdds.testsupport.TestData._
 import uk.gov.hmrc.fhdds.testsupport.{TestConfiguration, TestHelpers}
 import uk.gov.hmrc.fhregistration.models.TaxEnrolmentsCallback
-
 import uk.gov.hmrc.fhregistration.models.fhdds.EnrolmentProgress
 import uk.gov.hmrc.fhregistration.models.fhdds.EnrolmentProgress.EnrolmentProgress
 
+@Ignore
 class FhddsApplicationIntegrationSpecs
   extends TestHelpers with TestConfiguration {
 
