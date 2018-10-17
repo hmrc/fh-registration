@@ -41,7 +41,7 @@ trait MicroService {
   }
 
   lazy val microservice = Project(appName, file("."))
-    .enablePlugins(Seq(play.sbt.PlayScala,SbtAutoBuildPlugin, SbtGitVersioning, SbtDistributablesPlugin) ++ plugins : _*)
+    .enablePlugins(Seq(play.sbt.PlayScala,SbtAutoBuildPlugin, SbtGitVersioning, SbtDistributablesPlugin, SbtArtifactory) ++ plugins : _*)
     .settings(majorVersion := 0)
     .settings(unmanagedResourceDirectories in Compile += baseDirectory.value / "resources")
     .settings(PlayKeys.playDefaultPort := 1119)
