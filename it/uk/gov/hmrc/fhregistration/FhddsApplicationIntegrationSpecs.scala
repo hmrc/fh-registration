@@ -1,6 +1,5 @@
 package uk.gov.hmrc.fhregistration
 
-import org.scalatest.Ignore
 import play.api.libs.json.Json
 import play.api.test.WsTestClient
 import uk.gov.hmrc.fhdds.testsupport.TestData._
@@ -9,7 +8,6 @@ import uk.gov.hmrc.fhregistration.models.TaxEnrolmentsCallback
 import uk.gov.hmrc.fhregistration.models.fhdds.EnrolmentProgress
 import uk.gov.hmrc.fhregistration.models.fhdds.EnrolmentProgress.EnrolmentProgress
 
-@Ignore
 class FhddsApplicationIntegrationSpecs
   extends TestHelpers with TestConfiguration {
 
@@ -29,6 +27,7 @@ class FhddsApplicationIntegrationSpecs
         val result = WsTestClient.withClient { client ⇒ client
           .url(s"http://localhost:$port/fhdds/subscription/subscribe/$testSafeId")
           .withHeaders("Content-Type" -> "application/json")
+          .withHeaders("Authorization" → "Bearer token")
           .post(Json.toJson(validSubmissionRequest)).futureValue
         }
 
@@ -77,11 +76,10 @@ class FhddsApplicationIntegrationSpecs
         .email.sendEmail
         .user.isAuthorised()
 
-
       val result = WsTestClient.withClient { client ⇒ client
         .url(s"http://localhost:$port/fhdds/subscription/subscribe/$testSafeId?currentRegNumber=$testRegistrationNumber")
         .withHeaders("Content-Type" → "application/json")
-        .withHeaders("Authorization" → "123")
+        .withHeaders("Authorization" → "Bearer token")
         .post(Json.toJson(validSubmissionRequest)).futureValue
       }
 
@@ -117,9 +115,9 @@ class FhddsApplicationIntegrationSpecs
     val pendingResult = WsTestClient.withClient { client ⇒
       client
         .url(s"http://localhost:$port/fhdds/subscription/enrolmentProgress")
+        .withHeaders("Authorization" → "Bearer token")
         .get().futureValue
     }
-
     pendingResult.json.as[EnrolmentProgress]
   }
 }
