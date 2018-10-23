@@ -31,6 +31,7 @@ case class UserStub()(implicit builder: PreconditionBuilder) { //extends Session
   def isAuthorisedWithNoGroup() = {
     stubFor(
       post(urlPathEqualTo("/auth/authorise"))
+        .withHeader("Authorization", matching(".+"))
         .willReturn(
           ok(
             s"""
@@ -52,12 +53,14 @@ case class UserStub()(implicit builder: PreconditionBuilder) { //extends Session
   def isAuthorised() = {
     stubFor(
       post(urlPathEqualTo("/auth/authorise"))
+        .withHeader("Authorization", matching(".+"))
         .willReturn(
           ok(
             s"""
                |{
                |  "internalId": "${TestData.testUserId}",
                |  "groupIdentifier": "some-group",
+               |  "allEnrolments": [],
                |  "loginTimes": {
                |     "currentLogin": "2016-11-27T09:00:00.000Z",
                |     "previousLogin": "2016-11-01T12:00:00.000Z"
@@ -74,6 +77,7 @@ case class UserStub()(implicit builder: PreconditionBuilder) { //extends Session
   def isAuthorisedAndEnrolled = {
     stubFor(
       post(urlPathEqualTo("/auth/authorise"))
+        .withHeader("Authorization", matching(".+"))
         .willReturn(
           ok(
             s"""

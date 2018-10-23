@@ -18,6 +18,7 @@ class FhddsApplicationWithdrawalsIntegrationSpecs
           client
             .url(s"http://localhost:$port/fhdds/subscription/withdrawal/$testRegistrationNumber")
             .withHeaders("Content-Type" -> "application/json")
+            .withHeaders("Authorization" → "Bearer token")
             .post(testInvalidWithdrawalBody).futureValue
         }
         responseForWithdrawal.status shouldBe 400
@@ -36,6 +37,7 @@ class FhddsApplicationWithdrawalsIntegrationSpecs
           client
             .url(s"http://localhost:$port/fhdds/subscription/withdrawal/$testRegistrationNumber")
             .withHeaders("Content-Type" -> "application/json")
+            .withHeaders("Authorization" → "Bearer token")
             .post(testWithdrawalBody).futureValue
         }
         responseForWithdrawal.status shouldBe 400
@@ -54,6 +56,7 @@ class FhddsApplicationWithdrawalsIntegrationSpecs
           client
             .url(s"http://localhost:$port/fhdds/subscription/withdrawal/$testRegistrationNumber")
             .withHeaders("Content-Type" -> "application/json")
+            .withHeaders("Authorization" → "Bearer token")
             .post(testWithdrawalBody).futureValue
         }
         responseForWithdrawal.status shouldBe 200
