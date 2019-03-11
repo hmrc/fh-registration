@@ -9,3 +9,5 @@ POST /subscription/amend/:fhddsRegistrationNumber                               
 POST /subscription/withdrawal/:fhddsRegistrationNumber                           @uk.gov.hmrc.fhregistration.controllers.FhddsApplicationController.withdrawal(fhddsRegistrationNumber)
 POST /subscription/deregistration/:fhddsRegistrationNumber                           @uk.gov.hmrc.fhregistration.controllers.FhddsApplicationController.deregister(fhddsRegistrationNumber)
 GET  /subscription/enrolmentProgress                                             @uk.gov.hmrc.fhregistration.controllers.FhddsApplicationController.enrolmentProgress
+
+GET  /subscription/getAllSubmission                                              @uk.gov.hmrc.fhregistration.controllers.FhddsApplicationController.findAllSubmissions
