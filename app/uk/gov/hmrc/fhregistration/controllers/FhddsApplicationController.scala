@@ -17,11 +17,11 @@
 package uk.gov.hmrc.fhregistration.controllers
 
 import java.text.SimpleDateFormat
-import javax.inject.Inject
 
+import javax.inject.Inject
 import play.api.Logger
 import play.api.libs.json.Json
-import play.api.mvc.{Action, Request}
+import play.api.mvc.{Action, AnyContent, Request}
 import uk.gov.hmrc.fhregistration.actions.Actions
 import uk.gov.hmrc.fhregistration.connectors.{DesConnector, EmailConnector, TaxEnrolmentConnector}
 import uk.gov.hmrc.fhregistration.models.TaxEnrolmentsCallback
@@ -35,6 +35,8 @@ import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import uk.gov.hmrc.play.audit.model.DataEvent
 import uk.gov.hmrc.play.bootstrap.controller.BaseController
 import cats.implicits._
+import uk.gov.hmrc.fhregistration.repositories.{DefaultSubmissionTrackingRepository, SubmissionTrackingRepository}
+
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.util.{Failure, Success}
@@ -47,10 +49,15 @@ class FhddsApplicationController @Inject()(
   val submissionTrackingService: SubmissionTrackingService,
   val auditService: AuditService,
   val auditConnector: AuditConnector,
-  val actions: Actions)
+  val actions: Actions,
+  val repo: DefaultSubmissionTrackingRepository)
   extends BaseController {
 
   import actions._
+
+  def findAllSubmissions = Action.async { implicit request =>
+    repo.findAll().map(x => Ok(Json.toJson(x)))
+}
 
   def subscribe(safeId: String, currentRegNumber: Option[String]) = userGroupAction.async(parse.json[SubmissionRequest]) { implicit r ⇒
     val request = r.body
