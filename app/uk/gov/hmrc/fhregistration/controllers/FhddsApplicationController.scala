@@ -59,6 +59,11 @@ class FhddsApplicationController @Inject()(
     repo.findAll().map(x => Ok(Json.toJson(x)))
 }
 
+  def getSubmission(formBundleId: String) = Action.async { implicit request =>
+    repo.findSubmissionTrakingByFormBundleId(formBundleId).map(x=> Ok(Json.toJson(x)))
+
+  }
+
   def subscribe(safeId: String, currentRegNumber: Option[String]) = userGroupAction.async(parse.json[SubmissionRequest]) { implicit r ⇒
     val request = r.body
     for {
@@ -197,6 +202,11 @@ class FhddsApplicationController @Inject()(
       Logger.error(s"Tax enrolment failed for $formBundleId: ${data.errorResponse} ($data)")
       Future successful Ok("")
     }
+  }
+
+  def deleteSubmission(formBundleId: String) = Action.async { implicit request =>
+    submissionTrackingService.deleteSubmissionTracking(formBundleId).map(_ => Ok(""))
+      .recover{case _ => Ok(s"Submission with $formBundleId not found")}
   }
 
   def checkStatus(fhddsRegistrationNumber: String) = Action.async { implicit request ⇒
