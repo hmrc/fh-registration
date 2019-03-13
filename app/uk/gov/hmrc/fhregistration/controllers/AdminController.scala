@@ -20,7 +20,7 @@ import com.google.inject.Inject
 import play.api.libs.json.JsObject
 import play.api.mvc.Action
 import uk.gov.hmrc.fhregistration.actions.Actions
-import uk.gov.hmrc.fhregistration.connectors.UserSearchConnector
+import uk.gov.hmrc.fhregistration.connectors.{EnrolmentStoreProxyConnector, UserSearchConnector}
 import uk.gov.hmrc.fhregistration.repositories.DefaultSubmissionTrackingRepository
 import uk.gov.hmrc.fhregistration.services.{AuditService, SubmissionTrackingService}
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
@@ -33,7 +33,8 @@ class AdminController @Inject()(val submissionTrackingService: SubmissionTrackin
                                 val auditConnector: AuditConnector,
                                 val actions: Actions,
                                 val repo: DefaultSubmissionTrackingRepository,
-                                val userSearchConnector: UserSearchConnector)(implicit val ec: ExecutionContext) extends BaseController {
+                                val userSearchConnector: UserSearchConnector,
+                                val enrolmentStoreProxyConnector: EnrolmentStoreProxyConnector)(implicit val ec: ExecutionContext) extends BaseController {
 
   def findUserDetails(userId: String) = Action.async { implicit request =>
 
@@ -41,6 +42,14 @@ class AdminController @Inject()(val submissionTrackingService: SubmissionTrackin
       response: JsObject <- userSearchConnector.retrieveUserInfo(userId)
     } yield {
       Ok(response)
+    }
+  }
+
+  def allocateEnrolmentToGroup(userId: String, groupId: String, enrolmentKey: String) = Action.async { implicit request =>
+    for {
+      response <- enrolmentStoreProxyConnector.allocateEnrolmentToGroup(userId, groupId, enrolmentKey)
+    } yield {
+      Ok(response.body)
     }
   }
 
