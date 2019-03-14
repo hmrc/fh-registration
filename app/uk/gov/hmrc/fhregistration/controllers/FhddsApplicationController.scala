@@ -17,7 +17,6 @@
 package uk.gov.hmrc.fhregistration.controllers
 
 import java.text.SimpleDateFormat
-
 import javax.inject.Inject
 import play.api.Logger
 import play.api.libs.json.Json
