@@ -40,7 +40,6 @@ import play.api.{Configuration, Environment, Logger}
 import uk.gov.hmrc.http.{HeaderCarrier, HttpErrorFunctions, HttpResponse}
 import uk.gov.hmrc.play.bootstrap.http.HttpClient
 import uk.gov.hmrc.play.config.ServicesConfig
-
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
@@ -53,27 +52,30 @@ class DefaultEnrolmentStoreProxyConnector @Inject()(
   override protected def mode: Mode = environment.mode
 
   val serviceBaseUrl = s"${baseUrl("enrolment-store-proxy")}/enrolment-store-proxy"
+  lazy val serviceName = config("tax-enrolments").getString("serviceName").getOrElse("HMRC-OBTDS-ORG")
 
-  private def es8Url(groupId: String, enrolmentKey: String) = s"$serviceBaseUrl/enrolment-store/groups/$groupId/enrolments/$enrolmentKey"
-  private def es11Url(userId: String, enrolmentKey: String) = s"$serviceBaseUrl/enrolment-store/users/$userId/enrolments/$enrolmentKey"
-  private def es12Url(userId: String, enrolmentKey: String) = s"$serviceBaseUrl/enrolment-store/users/$userId/enrolments/$enrolmentKey"
+  private def enrolmentKey(registrationNumber: String): String = s"$serviceName~ETMPREGISTRATIONNUMBER~$registrationNumber"
 
-  override def allocateEnrolmentToGroup(userId: String, groupId: String, enrolmentKey: String)(implicit hc: HeaderCarrier): Future[HttpResponse] = {
+  private def es8Url(groupId: String, registrationNumber: String) = s"$serviceBaseUrl/enrolment-store/groups/$groupId/enrolments/${enrolmentKey(registrationNumber)}"
+  private def es11Url(userId: String, registrationNumber: String) = s"$serviceBaseUrl/enrolment-store/users/$userId/enrolments/${enrolmentKey(registrationNumber)}"
+  private def es12Url(userId: String, registrationNumber: String) = s"$serviceBaseUrl/enrolment-store/users/$userId/enrolments/${enrolmentKey(registrationNumber)}"
+
+  override def allocateEnrolmentToGroup(userId: String, groupId: String, registrationNumber: String)(implicit hc: HeaderCarrier): Future[HttpResponse] = {
     Logger.info(s"Request to alocate enrolment to group id")
     val jsonRequest = Json.obj(
       "userId" -> userId,
       "type" -> "principal",
       "action" -> "enrolAndActivate"
     )
-    http.POST[JsObject, HttpResponse](es8Url(groupId, enrolmentKey), jsonRequest)
+    http.POST[JsObject, HttpResponse](es8Url(groupId, registrationNumber), jsonRequest)
   }
 
-  override def allocateEnrolmentToUser(userId: String, enrolmentKey: String)(implicit hc: HeaderCarrier): Future[HttpResponse] = {
-    http.POSTEmpty(es11Url(userId, enrolmentKey))
+  override def allocateEnrolmentToUser(userId: String, registrationNumber: String)(implicit hc: HeaderCarrier): Future[HttpResponse] = {
+    http.POSTEmpty(es11Url(userId, registrationNumber))
   }
 
-  override def deassignEnrolmentFromUser(userId: String, enrolmentKey: String)(implicit hc: HeaderCarrier): Future[HttpResponse] = {
-    http.POSTEmpty(es12Url(userId, enrolmentKey))
+  override def deassignEnrolmentFromUser(userId: String, registrationNumber: String)(implicit hc: HeaderCarrier): Future[HttpResponse] = {
+    http.DELETE(es12Url(userId, registrationNumber))
   }
 
 }
@@ -82,13 +84,13 @@ class DefaultEnrolmentStoreProxyConnector @Inject()(
 trait EnrolmentStoreProxyConnector extends HttpErrorFunctions {
 
   //ES8
-  def allocateEnrolmentToGroup(userId: String, groupId: String, enrolmentKey: String)(implicit hc: HeaderCarrier): Future[HttpResponse]
+  def allocateEnrolmentToGroup(userId: String, groupId: String, registrationNumber: String)(implicit hc: HeaderCarrier): Future[HttpResponse]
 
   //ES11
-  def allocateEnrolmentToUser(userId: String, enrolmentKey: String)(implicit hc: HeaderCarrier): Future[HttpResponse]
+  def allocateEnrolmentToUser(userId: String, registrationNumber: String)(implicit hc: HeaderCarrier): Future[HttpResponse]
 
   //ES12
-  def deassignEnrolmentFromUser(userId: String, enrolmentKey: String)(implicit hc: HeaderCarrier): Future[HttpResponse]
+  def deassignEnrolmentFromUser(userId: String, registrationNumber: String)(implicit hc: HeaderCarrier): Future[HttpResponse]
 }
 
 

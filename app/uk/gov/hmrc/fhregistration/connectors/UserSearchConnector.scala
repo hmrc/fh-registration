@@ -40,9 +40,15 @@ class DefaultUserSearchConnector @Inject()(
 
   private def userInfoUrl(userId: String) = s"$serviceBaseUrl/users/$userId"
 
+  private def groupInfoUrl(groupId: String) = s"$serviceBaseUrl/groups/$groupId/users"
+
   override def retrieveUserInfo(userId: String)(implicit hc: HeaderCarrier): Future[JsObject] = {
     Logger.info(s"Request to user groups search")
     http.GET[JsObject](userInfoUrl(userId))
+  }
+
+  override def retrieveGroupInfo(groupId: String)(implicit hc: HeaderCarrier): Future[JsObject] = {
+    http.GET[JsObject](groupInfoUrl(groupId))
   }
 
 }
@@ -52,5 +58,6 @@ trait UserSearchConnector extends HttpErrorFunctions {
 
   def retrieveUserInfo(userId: String)(implicit hc: HeaderCarrier): Future[JsObject]
 
+  def retrieveGroupInfo(groupId: String)(implicit hc: HeaderCarrier): Future[JsObject]
 }
 

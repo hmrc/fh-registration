@@ -45,14 +45,39 @@ class AdminController @Inject()(val submissionTrackingService: SubmissionTrackin
     }
   }
 
-  def allocateEnrolmentToGroup(userId: String, groupId: String, enrolmentKey: String) = Action.async { implicit request =>
+  def findGroupDetails(groupId: String) = Action.async { implicit request =>
     for {
-      response <- enrolmentStoreProxyConnector.allocateEnrolmentToGroup(userId, groupId, enrolmentKey)
+      response <- userSearchConnector.retrieveGroupInfo(groupId)
+    } yield {
+      Ok(response)
+    }
+  }
+
+  //ES8
+  def allocateEnrolmentToGroup(userId: String, groupId: String, registrationNumber: String) = Action.async { implicit request =>
+    for {
+      response <- enrolmentStoreProxyConnector.allocateEnrolmentToGroup(userId, groupId, registrationNumber)
     } yield {
       Ok(response.body)
     }
   }
 
+  //ES11
+  def allocateEnrolmentToUser(userId: String, registrationNumber: String) = Action.async { implicit request =>
+    for {
+      response <- enrolmentStoreProxyConnector.allocateEnrolmentToUser(userId, registrationNumber)
+    } yield {
+      Ok(response.body)
+    }
+  }
 
+  //ES12
+  def deAssignEnrolment(userId: String, registrationNumber: String) = Action.async { implicit request =>
+    for {
+      response <- enrolmentStoreProxyConnector.deassignEnrolmentFromUser(userId, registrationNumber)
+    } yield {
+      Ok(response.body)
+    }
+  }
 
 }
