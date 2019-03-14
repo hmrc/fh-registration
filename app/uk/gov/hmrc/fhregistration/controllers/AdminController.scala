@@ -20,7 +20,7 @@ import com.google.inject.Inject
 import play.api.libs.json.JsObject
 import play.api.mvc.Action
 import uk.gov.hmrc.fhregistration.actions.Actions
-import uk.gov.hmrc.fhregistration.connectors.UserSearchConnector
+import uk.gov.hmrc.fhregistration.connectors.{EnrolmentStoreProxyConnector, UserSearchConnector}
 import uk.gov.hmrc.fhregistration.repositories.DefaultSubmissionTrackingRepository
 import uk.gov.hmrc.fhregistration.services.{AuditService, SubmissionTrackingService}
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
@@ -33,7 +33,8 @@ class AdminController @Inject()(val submissionTrackingService: SubmissionTrackin
                                 val auditConnector: AuditConnector,
                                 val actions: Actions,
                                 val repo: DefaultSubmissionTrackingRepository,
-                                val userSearchConnector: UserSearchConnector)(implicit val ec: ExecutionContext) extends BaseController {
+                                val userSearchConnector: UserSearchConnector,
+                                val enrolmentStoreProxyConnector: EnrolmentStoreProxyConnector)(implicit val ec: ExecutionContext) extends BaseController {
 
   def findUserDetails(userId: String) = Action.async { implicit request =>
 
@@ -44,6 +45,39 @@ class AdminController @Inject()(val submissionTrackingService: SubmissionTrackin
     }
   }
 
+  def findGroupDetails(groupId: String) = Action.async { implicit request =>
+    for {
+      response <- userSearchConnector.retrieveGroupInfo(groupId)
+    } yield {
+      Ok(response)
+    }
+  }
 
+  //ES8
+  def allocateEnrolmentToGroup(userId: String, groupId: String, registrationNumber: String) = Action.async { implicit request =>
+    for {
+      response <- enrolmentStoreProxyConnector.allocateEnrolmentToGroup(userId, groupId, registrationNumber)
+    } yield {
+      Ok(response.body)
+    }
+  }
+
+  //ES11
+  def allocateEnrolmentToUser(userId: String, registrationNumber: String) = Action.async { implicit request =>
+    for {
+      response <- enrolmentStoreProxyConnector.allocateEnrolmentToUser(userId, registrationNumber)
+    } yield {
+      Ok(response.body)
+    }
+  }
+
+  //ES12
+  def deAssignEnrolment(userId: String, registrationNumber: String) = Action.async { implicit request =>
+    for {
+      response <- enrolmentStoreProxyConnector.deassignEnrolmentFromUser(userId, registrationNumber)
+    } yield {
+      Ok(response.body)
+    }
+  }
 
 }
