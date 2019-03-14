@@ -80,7 +80,7 @@ class DefaultEnrolmentStoreProxyConnector @Inject()(
 
 }
 
-@ImplementedBy(classOf[DefaultUserSearchConnector])
+@ImplementedBy(classOf[DefaultEnrolmentStoreProxyConnector])
 trait EnrolmentStoreProxyConnector extends HttpErrorFunctions {
 
   //ES8
