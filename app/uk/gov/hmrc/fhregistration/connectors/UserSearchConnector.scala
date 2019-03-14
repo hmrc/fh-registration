@@ -47,8 +47,8 @@ class DefaultUserSearchConnector @Inject()(
     http.GET[JsObject](userInfoUrl(userId))
   }
 
-  override def retrieveGroupInfo(groupId: String)(implicit hc: HeaderCarrier): Future[JsObject] = {
-    http.GET[JsObject](groupInfoUrl(groupId))
+  override def retrieveGroupInfo(groupId: String)(implicit hc: HeaderCarrier): Future[List[JsObject]] = {
+    http.GET[List[JsObject]](groupInfoUrl(groupId))
   }
 
 }
@@ -58,6 +58,6 @@ trait UserSearchConnector extends HttpErrorFunctions {
 
   def retrieveUserInfo(userId: String)(implicit hc: HeaderCarrier): Future[JsObject]
 
-  def retrieveGroupInfo(groupId: String)(implicit hc: HeaderCarrier): Future[JsObject]
+  def retrieveGroupInfo(groupId: String)(implicit hc: HeaderCarrier): Future[List[JsObject]]
 }
 

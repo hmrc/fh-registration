@@ -10,11 +10,13 @@ POST          /subscription/withdrawal/:fhddsRegistrationNumber                 
 POST          /subscription/deregistration/:fhddsRegistrationNumber              @uk.gov.hmrc.fhregistration.controllers.FhddsApplicationController.deregister(fhddsRegistrationNumber)
 GET           /subscription/enrolmentProgress                                    @uk.gov.hmrc.fhregistration.controllers.FhddsApplicationController.enrolmentProgress
 
+GET  /subscription/getAllSubmission                                              @uk.gov.hmrc.fhregistration.controllers.FhddsApplicationController.findAllSubmissions
+GET  /subscription/getSubmission/:formbundleId                                   @uk.gov.hmrc.fhregistration.controllers.FhddsApplicationController.getSubmission(formbundleId)
+DELETE /subscription/deleteSubmission/:formbundleId                              @uk.gov.hmrc.fhregistration.controllers.FhddsApplicationController.deleteSubmission(formbundleId)
 
-GET           /subscription/getAllSubmission                                     @uk.gov.hmrc.fhregistration.controllers.FhddsApplicationController.findAllSubmissions
 GET           /user-info/:userId                                                 @uk.gov.hmrc.fhregistration.controllers.AdminController.findUserDetails(userId: String)
 GET           /group-info/:groupId                                               @uk.gov.hmrc.fhregistration.controllers.AdminController.findGroupDetails(groupId: String)
 
-POST          /enrolment/es8/userId/:userId/groupId/:groupId/regNo/:regNo        @uk.gov.hmrc.fhregistration.controllers.AdminController.allocateEnrolmentToGroup(userId: String, groupId: String, regNo: String)
-POST          /enrolment/es11/userId/:userId/regNo/:regNo                        @uk.gov.hmrc.fhregistration.controllers.AdminController.allocateEnrolmentToUser(userId: String, regNo: String)
+GET          /enrolment/es8/userId/:userId/groupId/:groupId/regNo/:regNo        @uk.gov.hmrc.fhregistration.controllers.AdminController.allocateEnrolmentToGroup(userId: String, groupId: String, regNo: String)
+GET          /enrolment/es11/userId/:userId/regNo/:regNo                        @uk.gov.hmrc.fhregistration.controllers.AdminController.allocateEnrolmentToUser(userId: String, regNo: String)
 DELETE        /enrolment/es12/userId/:userId/regNo/:regNo                        @uk.gov.hmrc.fhregistration.controllers.AdminController.deAssignEnrolment(userId: String, regNo: String)

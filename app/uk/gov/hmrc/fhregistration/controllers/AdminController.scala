@@ -17,7 +17,7 @@
 package uk.gov.hmrc.fhregistration.controllers
 
 import com.google.inject.Inject
-import play.api.libs.json.JsObject
+import play.api.libs.json.{JsObject, Json}
 import play.api.mvc.Action
 import uk.gov.hmrc.fhregistration.actions.Actions
 import uk.gov.hmrc.fhregistration.connectors.{EnrolmentStoreProxyConnector, UserSearchConnector}
@@ -49,7 +49,7 @@ class AdminController @Inject()(val submissionTrackingService: SubmissionTrackin
     for {
       response <- userSearchConnector.retrieveGroupInfo(groupId)
     } yield {
-      Ok(response)
+      Ok(Json.toJson(response))
     }
   }
 
