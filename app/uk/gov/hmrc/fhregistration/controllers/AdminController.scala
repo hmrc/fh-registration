@@ -80,4 +80,21 @@ class AdminController @Inject()(val submissionTrackingService: SubmissionTrackin
     }
   }
 
+  def userEnrolments(userId: String) = Action.async {implicit request =>
+    for{
+      response <- enrolmentStoreProxyConnector.userEnrolments(userId)
+    } yield {
+      Ok(response)
+    }
+  }
+
+  def groupEnrolments(groupId: String) = Action.async {implicit request =>
+    for{
+      response <- enrolmentStoreProxyConnector.groupEnrolments(groupId)
+    } yield {
+      Ok(response)
+    }
+  }
+
+
 }
