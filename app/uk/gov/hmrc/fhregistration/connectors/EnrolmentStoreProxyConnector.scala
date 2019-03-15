@@ -60,6 +60,10 @@ class DefaultEnrolmentStoreProxyConnector @Inject()(
   private def es11Url(userId: String, registrationNumber: String) = s"$serviceBaseUrl/enrolment-store/users/$userId/enrolments/${enrolmentKey(registrationNumber)}"
   private def es12Url(userId: String, registrationNumber: String) = s"$serviceBaseUrl/enrolment-store/users/$userId/enrolments/${enrolmentKey(registrationNumber)}"
 
+  private def es2Url(userId: String) = s"$serviceBaseUrl/enrolment-store/users/$userId/enrolments"
+  private def es3Url(groupId: String) = s"$serviceBaseUrl/enrolment-store/groups/$groupId/enrolments"
+
+
   override def allocateEnrolmentToGroup(userId: String, groupId: String, registrationNumber: String)(implicit hc: HeaderCarrier): Future[HttpResponse] = {
     Logger.info(s"Request to alocate enrolment to group id")
     val jsonRequest = Json.obj(
@@ -78,6 +82,14 @@ class DefaultEnrolmentStoreProxyConnector @Inject()(
     http.DELETE(es12Url(userId, registrationNumber))
   }
 
+  override def userEnrolments(userId: String)(implicit hc: HeaderCarrier): Future[JsObject] = {
+    http.GET[JsObject](es2Url(userId))
+  }
+
+  override def groupEnrolments(groupId: String)(implicit hc: HeaderCarrier): Future[JsObject] = {
+    http.GET[JsObject](es3Url(groupId))
+  }
+
 }
 
 @ImplementedBy(classOf[DefaultEnrolmentStoreProxyConnector])
@@ -91,6 +103,12 @@ trait EnrolmentStoreProxyConnector extends HttpErrorFunctions {
 
   //ES12
   def deassignEnrolmentFromUser(userId: String, registrationNumber: String)(implicit hc: HeaderCarrier): Future[HttpResponse]
+
+  //Es2
+  def userEnrolments(userId: String)(implicit hc:HeaderCarrier): Future[JsObject]
+
+  //Es3
+  def groupEnrolments(groupId: String)(implicit hc:HeaderCarrier): Future[JsObject]
 }
 
 
