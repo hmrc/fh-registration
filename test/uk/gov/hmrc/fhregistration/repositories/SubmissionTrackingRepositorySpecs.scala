@@ -107,6 +107,14 @@ class SubmissionTrackingRepositorySpecs
 
   }
 
+  "enrolmentProgress" should {
+    "Return pending if None" in {
+      val testSubmissionTracking = SubmissionTracking("", "", "", 0, None, None)
+
+      testSubmissionTracking.enrolmentProgress shouldBe EnrolmentProgress.Pending
+    }
+  }
+
   def mkSubmissionTracking = SubmissionTracking(
     anUserId,
     aFormBundleId,

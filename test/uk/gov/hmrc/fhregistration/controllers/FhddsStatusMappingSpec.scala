@@ -71,6 +71,50 @@ class FhddsStatusMappingSpec extends UnitSpec with BaseController with FhddsMock
 
     }
 
+    "map MDTP subscription status to ApprovedWithConditions from DES status" in {
+
+      val json: JsValue = JsObject(Seq("subscriptionStatus" → JsString("Approved with Conditions")))
+
+
+      val mdtpStatus = fhddsApplicationController.mdtpSubscriptionStatus(json.as[StatusResponse].subscriptionStatus)
+
+      mdtpStatus shouldBe FhddsStatus.ApprovedWithConditions
+
+    }
+
+    "map MDTP subscription status to Revoked from DES status" in {
+
+      val json: JsValue = JsObject(Seq("subscriptionStatus" → JsString("Revoked")))
+
+
+      val mdtpStatus = fhddsApplicationController.mdtpSubscriptionStatus(json.as[StatusResponse].subscriptionStatus)
+
+      mdtpStatus shouldBe FhddsStatus.Revoked
+
+    }
+
+    "map MDTP subscription status to Withdrawal from DES status" in {
+
+      val json: JsValue = JsObject(Seq("subscriptionStatus" → JsString("Withdrawal")))
+
+
+      val mdtpStatus = fhddsApplicationController.mdtpSubscriptionStatus(json.as[StatusResponse].subscriptionStatus)
+
+      mdtpStatus shouldBe FhddsStatus.Withdrawn
+
+    }
+
+    "map MDTP subscription status to Deregistered from DES status" in {
+
+      val json: JsValue = JsObject(Seq("subscriptionStatus" → JsString("De-Registered")))
+
+
+      val mdtpStatus = fhddsApplicationController.mdtpSubscriptionStatus(json.as[StatusResponse].subscriptionStatus)
+
+      mdtpStatus shouldBe FhddsStatus.Deregistered
+
+    }
+
     "throw exception in case of unexpected status " in {
 
       val json: JsValue = JsObject(Seq("subscriptionStatus" → JsString("Contract Object Inactive")))

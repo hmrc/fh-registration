@@ -23,9 +23,14 @@ import org.scalatest.mockito.MockitoSugar
 import uk.gov.hmrc.fhregistration.actions.Actions
 import uk.gov.hmrc.fhregistration.connectors._
 import uk.gov.hmrc.fhregistration.controllers.FhddsApplicationController
-import uk.gov.hmrc.fhregistration.repositories.{DefaultSubmissionTrackingRepository, SubmissionTrackingRepository}
+import uk.gov.hmrc.fhregistration.repositories.{DefaultSubmissionTrackingRepository, SubmissionTracking, SubmissionTrackingRepository}
 import uk.gov.hmrc.fhregistration.services.{AuditService, DefaultSubmissionTrackingService}
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
+import org.mockito.ArgumentMatchers.any
+import reactivemongo.api.ReadPreference
+import org.mockito.Mockito.when
+
+import scala.concurrent.{ExecutionContext, Future}
 
 
 trait FhddsMocks extends ScalaFutures with MockitoSugar {
@@ -41,8 +46,9 @@ trait FhddsMocks extends ScalaFutures with MockitoSugar {
   val mockSubmissionTrackingService = new DefaultSubmissionTrackingService(mockSubmissionTrackingRepository, Clock.systemDefaultZone())
   val mockActions = mock[Actions]
   val mockRepository = mock[DefaultSubmissionTrackingRepository]
-
-//  implicit val request: FakeRequest[AnyContentAsEmpty.type] = FakeRequest().withHeaders(HeaderNames.xSessionId -> "test")
+  when(mockRepository.findAll(any[ReadPreference])(any[ExecutionContext])) thenReturn
+    Future.successful(List(new SubmissionTracking("1", "2", "3", 0, None, None)))
+//  implicit val request: FakeRequest[AnyContentAsEmpty.type] = FakeRequest().withHeaders(HeaderNames.xSessionId -> "test")`
 //  implicit val headerCarrier: HeaderCarrier = HeaderCarrierConverter.fromHeadersAndSession(request.headers)
 
 
