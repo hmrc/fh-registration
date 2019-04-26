@@ -26,7 +26,6 @@ import scala.concurrent.Future
 
 class UserGroupActionSpec extends ActionSpecBase {
 
-
   val mockAuthConnector = mock[AuthConnector]
 
   override protected def beforeEach(): Unit = {
@@ -48,5 +47,4 @@ class UserGroupActionSpec extends ActionSpecBase {
   def setupAuthConnector(throwable: Throwable) = {
     when(mockAuthConnector.authorise(any(),any[Retrieval[Option[String]~ Enrolments]])(any(), any())) thenReturn Future.failed(throwable)
   }
-
 }
