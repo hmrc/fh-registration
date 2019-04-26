@@ -38,11 +38,42 @@ class FhddsStatusMappingSpec extends UnitSpec with BaseController with FhddsMock
 
     }
 
-    "map MDTP subscription status to Processing from DES status" in {
+    "map MDTP subscription status to Processing from DES status for Sent To DS" in {
 
       val json: JsValue = JsObject(Seq("subscriptionStatus" → JsString("Sent To DS")))
 
 
+
+      val mdtpStatus = fhddsApplicationController.mdtpSubscriptionStatus(json.as[StatusResponse].subscriptionStatus)
+
+      mdtpStatus shouldBe FhddsStatus.Processing
+
+    }
+
+    "map MDTP subscription status to Processing from DES status for In processing" in {
+
+      val json: JsValue = JsObject(Seq("subscriptionStatus" → JsString("In processing")))
+
+      val mdtpStatus = fhddsApplicationController.mdtpSubscriptionStatus(json.as[StatusResponse].subscriptionStatus)
+
+      mdtpStatus shouldBe FhddsStatus.Processing
+
+    }
+
+    "map MDTP subscription status to Processing from DES status for DS Outcome In Progress" in {
+
+      val json: JsValue = JsObject(Seq("subscriptionStatus" → JsString("DS Outcome In Progress")))
+
+      val mdtpStatus = fhddsApplicationController.mdtpSubscriptionStatus(json.as[StatusResponse].subscriptionStatus)
+
+      mdtpStatus shouldBe FhddsStatus.Processing
+
+    }
+
+
+    "map MDTP subscription status to Processing from DES status for Sent to RCM" in {
+
+      val json: JsValue = JsObject(Seq("subscriptionStatus" → JsString("Sent to RCM")))
 
       val mdtpStatus = fhddsApplicationController.mdtpSubscriptionStatus(json.as[StatusResponse].subscriptionStatus)
 
