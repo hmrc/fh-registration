@@ -10,8 +10,8 @@ object MicroServiceBuild extends Build with MicroService {
 
   val compile = Seq(
     ws,
-    "uk.gov.hmrc"             %% "bootstrap-play-25"            % "4.9.0",
-    "uk.gov.hmrc"             %% "simple-reactivemongo"         % "7.12.0-play-25",
+    "uk.gov.hmrc"             %% "bootstrap-play-25"            % "4.11.0",
+    "uk.gov.hmrc"             %% "simple-reactivemongo"         % "7.19.0-play-25",
     
     "com.github.tototoshi"    %% "play-json-naming"             % "1.1.0",
     "com.eclipsesource"       %% "play-json-schema-validator"   % "0.8.9",
@@ -19,13 +19,13 @@ object MicroServiceBuild extends Build with MicroService {
   )
 
   def test(scope: String = "test,it") = Seq(
-    "uk.gov.hmrc"             %% "hmrctest"                     % "3.5.0-play-25"   % scope,
+    "uk.gov.hmrc"             %% "hmrctest"                     % "3.8.0-play-25"   % scope,
     "org.scalatest"           %% "scalatest"                    % "3.0.5"   % scope,
     "org.scalatestplus.play"  %% "scalatestplus-play"           % "2.0.0"   % scope,
     "org.mockito"              % "mockito-core"                 % "2.7.22"  % scope,
     "org.pegdown"              % "pegdown"                      % "1.6.0"   % scope,
     "com.typesafe.play"       %% "play-test"                    % PlayVersion.current % scope,
-    "uk.gov.hmrc"             %% "reactivemongo-test"           % "4.8.0-play-25"   % scope,
+    "uk.gov.hmrc"             %% "reactivemongo-test"           % "4.13.0-play-25"   % scope,
     "com.github.tomakehurst"   % "wiremock"                     % "2.6.0"   % scope
 
   )
