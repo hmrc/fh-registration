@@ -50,6 +50,11 @@ class UserActionSpec extends ActionSpecBase {
       status(result(action, request)) shouldBe UNAUTHORIZED
     }
 
+    "Fail with BAD_GATEWAY" in {
+      setupAuthConnector(new Exception())
+      status(result(action, request)) shouldBe BAD_GATEWAY
+    }
+
     "Return a user request with correct user id and no registration number" in {
       setupAuthConnector(Some(UserTestData.testUserId))
 
