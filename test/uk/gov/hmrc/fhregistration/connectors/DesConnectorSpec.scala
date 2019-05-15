@@ -37,7 +37,7 @@ class DesConnectorSpec extends UnitSpec with MockitoSugar{
   }
 
   "URLs and URIs" should {
-    val desConnectorMock = new DefaultDesConnectorMock(mock[DefaultHttpClient], mock[Configuration], mock[RunMode], mock[Environment], mock[ServicesConfig])
+    val desConnectorMock = new DefaultDesConnectorMock(mock[HttpClient], mock[Configuration], mock[RunMode], mock[Environment], mock[ServicesConfig])
 
     "desServiceStatusUri" in {
       desConnectorMock.desServiceStatusUri shouldBe "des-service"
