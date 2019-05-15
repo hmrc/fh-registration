@@ -16,17 +16,15 @@
 
 package uk.gov.hmrc.fhregistration.connectors
 
-import javax.inject.{Inject, Singleton}
-
 import com.google.inject.ImplementedBy
-import play.api.Mode.Mode
+import javax.inject.{Inject, Singleton}
 import play.api.libs.json.JsValue
 import play.api.{Configuration, Environment, Logger}
 import uk.gov.hmrc.fhregistration.models.des.{DesDeregistrationResponse, DesSubmissionResponse, DesWithdrawalResponse, StatusResponse}
 import uk.gov.hmrc.http.logging.Authorization
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
+import uk.gov.hmrc.play.bootstrap.config.{RunMode, ServicesConfig}
 import uk.gov.hmrc.play.bootstrap.http.HttpClient
-import uk.gov.hmrc.play.config.ServicesConfig
 import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
 
 import scala.concurrent.Future
@@ -43,10 +41,12 @@ trait DesConnector {
 
 @Singleton
 class DefaultDesConnector @Inject() (
-  val http: HttpClient,
-  val runModeConfiguration: Configuration,
-  environment: Environment
-) extends DesConnector with ServicesConfig {
+                                      val http: HttpClient,
+                                      val runModeConfiguration: Configuration,
+                                      val runMode: RunMode,
+                                      environment: Environment,
+                                      servicesConfig: ServicesConfig
+) extends ServicesConfig(runModeConfiguration, runMode) with DesConnector {
 
   def desServiceUri: String = config("des-service").getString("uri").getOrElse("")
   def desServiceBaseUri: String = config("des-service").getString("baseuri").getOrElse("")
@@ -59,8 +59,6 @@ class DefaultDesConnector @Inject() (
 
   val desToken: String = config("des-service").getString("authorization-token").getOrElse("")
   val environmentKey: String = config("des-service").getString("environment").getOrElse("")
-
-  override protected def mode: Mode = environment.mode
 
   private def headerCarrierBuilder(hc: HeaderCarrier) = {
     hc.copy(authorization = Some(Authorization(s"Bearer $desToken"))).withExtraHeaders("Environment" -> environmentKey)

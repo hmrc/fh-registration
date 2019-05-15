@@ -17,10 +17,12 @@
 package uk.gov.hmrc.fhregistration.controllers
 
 import java.text.SimpleDateFormat
+
+import cats.implicits._
 import javax.inject.Inject
 import play.api.Logger
 import play.api.libs.json.Json
-import play.api.mvc.{Action, AnyContent, Request}
+import play.api.mvc.{ControllerComponents, Request}
 import uk.gov.hmrc.fhregistration.actions.Actions
 import uk.gov.hmrc.fhregistration.connectors.{DesConnector, EmailConnector, TaxEnrolmentConnector}
 import uk.gov.hmrc.fhregistration.models.TaxEnrolmentsCallback
@@ -28,13 +30,12 @@ import uk.gov.hmrc.fhregistration.models.des.DesStatus
 import uk.gov.hmrc.fhregistration.models.des.DesStatus.DesStatus
 import uk.gov.hmrc.fhregistration.models.fhdds.FhddsStatus.FhddsStatus
 import uk.gov.hmrc.fhregistration.models.fhdds._
+import uk.gov.hmrc.fhregistration.repositories.DefaultSubmissionTrackingRepository
 import uk.gov.hmrc.fhregistration.services.{AuditService, SubmissionTrackingService}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import uk.gov.hmrc.play.audit.model.DataEvent
-import uk.gov.hmrc.play.bootstrap.controller.BaseController
-import cats.implicits._
-import uk.gov.hmrc.fhregistration.repositories.{DefaultSubmissionTrackingRepository, SubmissionTrackingRepository}
+import uk.gov.hmrc.play.bootstrap.controller.BackendController
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -48,9 +49,10 @@ class FhddsApplicationController @Inject()(
   val submissionTrackingService: SubmissionTrackingService,
   val auditService: AuditService,
   val auditConnector: AuditConnector,
+  val cc: ControllerComponents,
   val actions: Actions,
   val repo: DefaultSubmissionTrackingRepository)
-  extends BaseController {
+  extends BackendController(cc) {
 
   import actions._
 

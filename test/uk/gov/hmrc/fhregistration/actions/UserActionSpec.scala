@@ -16,28 +16,33 @@
 
 package uk.gov.hmrc.fhregistration.actions
 
+import akka.actor.ActorSystem
+import akka.stream.ActorMaterializer
 import org.mockito.Mockito.{reset, when}
 import play.api.test.FakeRequest
 import uk.gov.hmrc.auth.core._
 import org.mockito.ArgumentMatchers.any
+import play.api.mvc.ControllerComponents
 import uk.gov.hmrc.auth.core.retrieve.{Retrieval, ~}
 import play.api.test.Helpers._
 import uk.gov.hmrc.fhregistration.testsupport.UserTestData
-
+import play.api.test.Helpers
 import scala.concurrent.Future
 
 class UserActionSpec extends ActionSpecBase {
+  implicit val materializer = ActorMaterializer()(ActorSystem())
 
   val mockAuthConnector = mock[AuthConnector]
+  val controllerComponents: ControllerComponents = Helpers.stubControllerComponents()
+
 
   override protected def beforeEach(): Unit = {
     super.beforeEach()
     reset(mockAuthConnector)
   }
 
-
   val request = FakeRequest()
-  val action = new UserAction(mockAuthConnector)
+  val action = new UserAction(mockAuthConnector, controllerComponents)
 
   "refine" should {
     "Fail with BAD_REQUEST when the internal user id can no be found" in {
@@ -78,8 +83,6 @@ class UserActionSpec extends ActionSpecBase {
       userRequest.userId shouldBe UserTestData.testUserId
       userRequest.registrationNumber shouldBe Some(fhddsEnrolment.value)
     }
-
-
   }
 
   def setupAuthConnector(internalId: Option[String] = None, enrolments: Set[Enrolment] = Set.empty) = {
@@ -90,5 +93,4 @@ class UserActionSpec extends ActionSpecBase {
   def setupAuthConnector(throwable: Throwable) = {
     when(mockAuthConnector.authorise(any(),any[Retrieval[Option[String]~ Enrolments]])(any(), any())) thenReturn Future.failed(throwable)
   }
-
 }

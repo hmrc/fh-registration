@@ -18,13 +18,13 @@ package uk.gov.hmrc.fhregistration.controllers
 
 import com.google.inject.Inject
 import play.api.libs.json.{JsObject, Json}
-import play.api.mvc.Action
+import play.api.mvc.ControllerComponents
 import uk.gov.hmrc.fhregistration.actions.Actions
 import uk.gov.hmrc.fhregistration.connectors.{EnrolmentStoreProxyConnector, UserSearchConnector}
 import uk.gov.hmrc.fhregistration.repositories.DefaultSubmissionTrackingRepository
 import uk.gov.hmrc.fhregistration.services.{AuditService, SubmissionTrackingService}
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
-import uk.gov.hmrc.play.bootstrap.controller.BaseController
+import uk.gov.hmrc.play.bootstrap.controller.BackendController
 
 import scala.concurrent.ExecutionContext
 
@@ -34,7 +34,8 @@ class AdminController @Inject()(val submissionTrackingService: SubmissionTrackin
                                 val actions: Actions,
                                 val repo: DefaultSubmissionTrackingRepository,
                                 val userSearchConnector: UserSearchConnector,
-                                val enrolmentStoreProxyConnector: EnrolmentStoreProxyConnector)(implicit val ec: ExecutionContext) extends BaseController {
+                                val cc: ControllerComponents,
+                                val enrolmentStoreProxyConnector: EnrolmentStoreProxyConnector)(implicit val ec: ExecutionContext) extends BackendController(cc) {
 
   def findUserDetails(userId: String) = Action.async { implicit request =>
 

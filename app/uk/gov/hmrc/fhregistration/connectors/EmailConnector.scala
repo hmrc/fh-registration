@@ -24,7 +24,7 @@ import play.api.{Configuration, Environment, Logger}
 import uk.gov.hmrc.fhregistration.models.fhdds.{SendEmailRequest, UserData}
 import uk.gov.hmrc.http.{BadGatewayException, HeaderCarrier}
 import uk.gov.hmrc.play.bootstrap.http.HttpClient
-import uk.gov.hmrc.play.config.ServicesConfig
+import uk.gov.hmrc.play.bootstrap.config.{RunMode, ServicesConfig}
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success}
@@ -32,8 +32,9 @@ import scala.util.{Failure, Success}
 class DefaultEmailConnector @Inject() (
   val http: HttpClient,
   val runModeConfiguration: Configuration,
+  val runMode: RunMode,
   environment: Environment
-) extends EmailConnector with ServicesConfig {
+) extends ServicesConfig(runModeConfiguration, runMode) with EmailConnector {
 
   val emailUrl: String = baseUrl("email") + "/hmrc/email"
   override val defaultEmailTemplateID: String =  getConfString(s"email.defaultTemplateId", "fhdds_submission_confirmation")
