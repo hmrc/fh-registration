@@ -19,21 +19,22 @@ package uk.gov.hmrc.fhregistration.actions
 import play.api.Logger
 import play.api.mvc._
 import uk.gov.hmrc.auth.core.{AuthConnector, AuthorisedFunctions}
-
-import scala.concurrent.Future
-import uk.gov.hmrc.auth.core.retrieve.Retrievals.{internalId, groupIdentifier}
+import scala.concurrent.{ExecutionContext, Future}
+import uk.gov.hmrc.auth.core.retrieve.Retrievals.{groupIdentifier, internalId}
 import uk.gov.hmrc.auth.core.retrieve.~
 import scala.concurrent.ExecutionContext.Implicits.global
 
 class UserGroupRequest[A](val userId: String, val groupId: String, request: Request[A]) extends WrappedRequest(request)
 
-class UserGroupAction(val authConnector: AuthConnector)
-  extends ActionBuilder[UserGroupRequest]
+case class UserGroupAction(val authConnector: AuthConnector, cc: ControllerComponents)
+  extends ActionBuilder[UserGroupRequest, AnyContent]
     with ActionRefiner[Request, UserGroupRequest]
     with AuthorisedFunctions
     with MicroserviceAction
 {
 
+  override def parser: BodyParser[AnyContent] = cc.parsers.defaultBodyParser
+  override protected val executionContext: ExecutionContext = cc.executionContext
   override protected def refine[A](request: Request[A]): Future[Either[Result, UserGroupRequest[A]]] = {
     implicit val r = request
 

@@ -17,12 +17,11 @@
 package uk.gov.hmrc.fhregistration.actions
 
 import javax.inject.Inject
-
+import play.api.mvc.ControllerComponents
 import uk.gov.hmrc.auth.core.AuthConnector
 
-class Actions @Inject()(val authConnector: AuthConnector) {
+class Actions @Inject()(val authConnector: AuthConnector, cc: ControllerComponents) {
 
-  def userAction = new UserAction(authConnector)
-  def userGroupAction = new UserGroupAction(authConnector)
-
+  def userAction =  UserAction(authConnector, cc)
+  def userGroupAction = UserGroupAction(authConnector, cc)
 }

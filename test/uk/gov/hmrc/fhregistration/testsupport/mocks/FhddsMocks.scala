@@ -29,13 +29,12 @@ import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import org.mockito.ArgumentMatchers.any
 import reactivemongo.api.ReadPreference
 import org.mockito.Mockito.when
+import play.api.mvc.ControllerComponents
 
 import scala.concurrent.{ExecutionContext, Future}
 
 
 trait FhddsMocks extends ScalaFutures with MockitoSugar {
-
-  //  implicit override val patienceConfig: PatienceConfig = PatienceConfig(timeout = Span(10, Seconds), interval = Span(10, Millis))
 
   val mockDesConnector: DesConnector = mock[DesConnector]
   val mockTaxEnrolmentConnector: TaxEnrolmentConnector = mock[TaxEnrolmentConnector]
@@ -44,12 +43,11 @@ trait FhddsMocks extends ScalaFutures with MockitoSugar {
   val mockAuditConnector: AuditConnector = mock[AuditConnector]
   val mockSubmissionTrackingRepository: SubmissionTrackingRepository = mock[SubmissionTrackingRepository]
   val mockSubmissionTrackingService = new DefaultSubmissionTrackingService(mockSubmissionTrackingRepository, Clock.systemDefaultZone())
+  val mockControllerComponents = mock[ControllerComponents]
   val mockActions = mock[Actions]
   val mockRepository = mock[DefaultSubmissionTrackingRepository]
   when(mockRepository.findAll(any[ReadPreference])(any[ExecutionContext])) thenReturn
     Future.successful(List(new SubmissionTracking("1", "2", "3", 0, None, None)))
-//  implicit val request: FakeRequest[AnyContentAsEmpty.type] = FakeRequest().withHeaders(HeaderNames.xSessionId -> "test")`
-//  implicit val headerCarrier: HeaderCarrier = HeaderCarrierConverter.fromHeadersAndSession(request.headers)
 
 
   var fhddsApplicationControllerWithMocks = new FhddsApplicationController(
@@ -59,6 +57,7 @@ trait FhddsMocks extends ScalaFutures with MockitoSugar {
     mockSubmissionTrackingService,
     mockAuditService,
     mockAuditConnector,
+    mockControllerComponents,
     mockActions,
     mockRepository
   )

@@ -18,7 +18,8 @@ package uk.gov.hmrc.fhregistration.actions
 
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.{reset, when}
-import play.api.test.FakeRequest
+import play.api.mvc.ControllerComponents
+import play.api.test.{FakeRequest, Helpers}
 import uk.gov.hmrc.auth.core.{AuthConnector, Enrolments}
 import uk.gov.hmrc.auth.core.retrieve.{Retrieval, ~}
 
@@ -27,6 +28,7 @@ import scala.concurrent.Future
 class UserGroupActionSpec extends ActionSpecBase {
 
   val mockAuthConnector = mock[AuthConnector]
+  val controllerComponents: ControllerComponents = Helpers.stubControllerComponents()
 
   override protected def beforeEach(): Unit = {
     super.beforeEach()
@@ -34,7 +36,7 @@ class UserGroupActionSpec extends ActionSpecBase {
   }
 
   val request = FakeRequest()
-  val action = new UserGroupAction(mockAuthConnector)
+  val action = new UserGroupAction(mockAuthConnector, controllerComponents)
 
   "refine" should {
     "Fail with UNAUTHORIZED" in {

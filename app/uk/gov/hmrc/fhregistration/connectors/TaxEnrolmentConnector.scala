@@ -18,22 +18,20 @@ package uk.gov.hmrc.fhregistration.connectors
 
 import com.google.inject.ImplementedBy
 import javax.inject.Inject
-
-import play.api.Mode.Mode
 import play.api.libs.json.{JsObject, JsString, Json}
 import play.api.{Configuration, Environment, Logger}
-import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
+import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, _}
+import uk.gov.hmrc.play.bootstrap.config.{RunMode, ServicesConfig}
 import uk.gov.hmrc.play.bootstrap.http.HttpClient
-import uk.gov.hmrc.play.config.ServicesConfig
 import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
-import uk.gov.hmrc.http._
 
 import scala.concurrent.Future
 
 class DefaultTaxEnrolmentConnector @Inject() (
   val http: HttpClient,
   val runModeConfiguration: Configuration,
-  environment: Environment) extends TaxEnrolmentConnector with ServicesConfig {
+  val runMode: RunMode,
+  environment: Environment) extends ServicesConfig(runModeConfiguration, runMode) with TaxEnrolmentConnector {
 
   val callbackBase = config("tax-enrolments").getString("callback").getOrElse("http://fh-registration.protected.mdtp:80/fhdds/tax-enrolment/callback/subscriptions")
   def callback(formBundleId: String) = s"$callbackBase/$formBundleId"
@@ -48,8 +46,6 @@ class DefaultTaxEnrolmentConnector @Inject() (
     val enrolmentKey = s"$serviceName~ETMPREGISTRATIONNUMBER~$registrationNumber"
     s"$serviceBaseUrl/groups/$groupId/enrolments/$enrolmentKey"
   }
-
-  override protected def mode: Mode = environment.mode
 
   /**
     * Subscribe to tax enrolments
@@ -86,5 +82,4 @@ trait TaxEnrolmentConnector extends HttpErrorFunctions {
 
   def subscribe(safeId: String, etmpFormBundleNumber: String)(implicit hc: HeaderCarrier): Future[Option[JsObject]]
   def deleteGroupEnrolment(groupId: String, registrationNumber: String)(implicit hc: HeaderCarrier): Future[_]
-
 }

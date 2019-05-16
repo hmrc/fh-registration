@@ -18,12 +18,11 @@ package uk.gov.hmrc.fhregistration.connectors
 
 import com.google.inject.ImplementedBy
 import javax.inject.Inject
-import play.api.Mode.Mode
 import play.api.libs.json.JsObject
 import play.api.{Configuration, Environment, Logger}
 import uk.gov.hmrc.http.{HeaderCarrier, HttpErrorFunctions}
+import uk.gov.hmrc.play.bootstrap.config.{RunMode, ServicesConfig}
 import uk.gov.hmrc.play.bootstrap.http.HttpClient
-import uk.gov.hmrc.play.config.ServicesConfig
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -31,10 +30,10 @@ import scala.concurrent.Future
 class DefaultUserSearchConnector @Inject()(
                                             val http: HttpClient,
                                             val runModeConfiguration: Configuration,
+                                            val runMode: RunMode,
                                             environment: Environment
-                                          ) extends UserSearchConnector with ServicesConfig {
+                                          ) extends ServicesConfig(runModeConfiguration, runMode) with UserSearchConnector {
 
-  override protected def mode: Mode = environment.mode
 
   val serviceBaseUrl = s"${baseUrl("user-search")}/users-groups-search"
 

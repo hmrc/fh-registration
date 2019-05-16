@@ -16,32 +16,34 @@
 
 package uk.gov.hmrc.fhregistration.actions
 
-import javax.inject.Inject
-
 import play.api.Logger
-import play.api.mvc._
+import play.api.mvc.{ActionBuilder, Request, Result, _}
 import uk.gov.hmrc.auth.core._
 import uk.gov.hmrc.auth.core.retrieve.Retrievals.{allEnrolments, internalId}
 import uk.gov.hmrc.auth.core.retrieve.~
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 class UserRequest[A](val userId: String, val registrationNumber: Option[String], request: Request[A])
   extends WrappedRequest(request) {
 }
 
-class UserAction @Inject()(val authConnector: AuthConnector)
-  extends ActionBuilder[UserRequest]
+case class UserAction (authConnector: AuthConnector, cc: ControllerComponents)
+extends ActionBuilder[UserRequest, AnyContent]
     with ActionRefiner[Request, UserRequest]
     with AuthorisedFunctions
     with MicroserviceAction
 {
+
+  override def parser: BodyParser[AnyContent] = cc.parsers.defaultBodyParser
+  override protected val executionContext: ExecutionContext = cc.executionContext
 
   val serviceName = "HMRC-OBTDS-ORG"
   val identifierName = "ETMPREGISTRATIONNUMBER"
 
   override protected def refine[A](request: Request[A]): Future[Either[Result, UserRequest[A]]] = {
     implicit val r = request
+
 
     authorised().retrieve(internalId and allEnrolments) {
       case Some(id) ~ enrolments ⇒
@@ -73,6 +75,5 @@ class UserAction @Inject()(val authConnector: AuthConnector)
     }
 
     fhddsRegistrationNumbers.headOption
-
   }
 }
