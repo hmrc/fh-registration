@@ -19,8 +19,9 @@ package uk.gov.hmrc.fhregistration.actions
 import play.api.Logger
 import play.api.mvc.{ActionBuilder, Request, Result, _}
 import uk.gov.hmrc.auth.core._
-import uk.gov.hmrc.auth.core.retrieve.Retrievals.{allEnrolments, internalId}
+import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals._
 import uk.gov.hmrc.auth.core.retrieve.~
+import scala.concurrent.ExecutionContext.Implicits.global
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -29,10 +30,10 @@ class UserRequest[A](val userId: String, val registrationNumber: Option[String],
 }
 
 case class UserAction (authConnector: AuthConnector, cc: ControllerComponents)
-extends ActionBuilder[UserRequest, AnyContent]
+extends MicroserviceAction
     with ActionRefiner[Request, UserRequest]
     with AuthorisedFunctions
-    with MicroserviceAction
+    with ActionBuilder[UserRequest, AnyContent]
 {
 
   override def parser: BodyParser[AnyContent] = cc.parsers.defaultBodyParser

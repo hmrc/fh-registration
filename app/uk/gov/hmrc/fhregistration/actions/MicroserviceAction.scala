@@ -16,20 +16,18 @@
 
 package uk.gov.hmrc.fhregistration.actions
 
+import javax.inject.Inject
 import play.api.libs.json.{JsObject, JsString}
 import play.api.mvc.{Request, Results}
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.http.logging.LoggingDetails
 import uk.gov.hmrc.play.HeaderCarrierConverter
-import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext
 
 import scala.concurrent.ExecutionContext
 
-trait MicroserviceAction extends Results {
+
+class MicroserviceAction @Inject()(implicit val ec: ExecutionContext) extends Results {
 
   implicit def hc(implicit request: Request[_]): HeaderCarrier = HeaderCarrierConverter.fromHeadersAndSession(request.headers)
-
-  implicit def mdcExecutionContext(implicit loggingDetails: LoggingDetails): ExecutionContext = MdcLoggingExecutionContext.fromLoggingDetails
 
   def error(status: Status, message: String) = {
     val body = JsObject(

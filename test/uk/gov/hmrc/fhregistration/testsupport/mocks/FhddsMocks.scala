@@ -30,6 +30,7 @@ import org.mockito.ArgumentMatchers.any
 import reactivemongo.api.ReadPreference
 import org.mockito.Mockito.when
 import play.api.mvc.ControllerComponents
+import scala.concurrent.ExecutionContext.Implicits.global
 
 import scala.concurrent.{ExecutionContext, Future}
 

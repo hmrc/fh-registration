@@ -38,7 +38,7 @@ import uk.gov.hmrc.play.audit.model.DataEvent
 import uk.gov.hmrc.play.bootstrap.controller.BackendController
 
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success}
 
 
@@ -51,7 +51,7 @@ class FhddsApplicationController @Inject()(
   val auditConnector: AuditConnector,
   val cc: ControllerComponents,
   val actions: Actions,
-  val repo: DefaultSubmissionTrackingRepository)
+  val repo: DefaultSubmissionTrackingRepository)(implicit val ec: ExecutionContext)
   extends BackendController(cc) {
 
   import actions._
@@ -151,12 +151,11 @@ class FhddsApplicationController @Inject()(
 
 
   def sendEmail(email: String, emailTemplateId: String = emailConnector.defaultEmailTemplateID, emailParameters: Map[String, String] = Map.empty)(implicit hc: HeaderCarrier, request: Request[AnyRef]) = {
-    import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext
     emailConnector
       .sendEmail(
         emailTemplateId = emailTemplateId,
         userData = UserData(email),
-        emailParameters)(hc, request, MdcLoggingExecutionContext.fromLoggingDetails)
+        emailParameters)(hc, request, ec)
       .onFailure {
         case t ⇒ Logger.error(s"Failed sending email $emailTemplateId", t)
       }
@@ -166,10 +165,8 @@ class FhddsApplicationController @Inject()(
 
     Logger.info(s"Sending audit event for registrationNumber $registrationNumber")
 
-    import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext
-
     auditConnector
-      .sendEvent(event)(hc, MdcLoggingExecutionContext.fromLoggingDetails)
+      .sendEvent(event)(hc, ec)
       .map(auditResult ⇒ Logger.info(s"Received audit result $auditResult for registrationNumber $registrationNumber"))
       .recover {
         case t: Throwable ⇒ Logger.error(s"Audit failed for registrationNumber $registrationNumber", t)
