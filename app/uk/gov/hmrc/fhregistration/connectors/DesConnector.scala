@@ -25,9 +25,8 @@ import uk.gov.hmrc.http.logging.Authorization
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
 import uk.gov.hmrc.play.bootstrap.config.{RunMode, ServicesConfig}
 import uk.gov.hmrc.play.bootstrap.http.HttpClient
-import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 @ImplementedBy(classOf[DefaultDesConnector])
 trait DesConnector {
@@ -46,10 +45,10 @@ class DefaultDesConnector @Inject() (
                                       val runMode: RunMode,
                                       environment: Environment,
                                       servicesConfig: ServicesConfig
-) extends ServicesConfig(runModeConfiguration, runMode) with DesConnector {
+)(implicit val ec: ExecutionContext)  extends ServicesConfig(runModeConfiguration, runMode) with DesConnector {
 
-  def desServiceUri: String = config("des-service").getString("uri").getOrElse("")
-  def desServiceBaseUri: String = config("des-service").getString("baseuri").getOrElse("")
+  def desServiceUri: String = config("des-service").getOptional[String]("uri").getOrElse("")
+  def desServiceBaseUri: String = config("des-service").getOptional[String]("baseuri").getOrElse("")
   def desServiceStatusUri = s"${baseUrl("des-service")}$desServiceBaseUri"
 
   def desSubmissionUrl(safeId: String) =s"${baseUrl("des-service")}$desServiceBaseUri$desServiceUri/id/$safeId/id-type/safe"
@@ -57,8 +56,8 @@ class DefaultDesConnector @Inject() (
   def desWithdrawalUrl(fhddsRegistrationNumber: String) =s"${baseUrl("des-service")}$desServiceBaseUri$desServiceUri/$fhddsRegistrationNumber/withdrawal"
   def desDeregisterUrl(fhddsRegistrationNumber: String) =s"${baseUrl("des-service")}$desServiceBaseUri$desServiceUri/$fhddsRegistrationNumber/deregistration"
 
-  val desToken: String = config("des-service").getString("authorization-token").getOrElse("")
-  val environmentKey: String = config("des-service").getString("environment").getOrElse("")
+  val desToken: String = config("des-service").getOptional[String]("authorization-token").getOrElse("")
+  val environmentKey: String = config("des-service").getOptional[String]("environment").getOrElse("")
 
   private def headerCarrierBuilder(hc: HeaderCarrier) = {
     hc.copy(authorization = Some(Authorization(s"Bearer $desToken"))).withExtraHeaders("Environment" -> environmentKey)

@@ -52,7 +52,7 @@ class DefaultEnrolmentStoreProxyConnector @Inject()(
 
 
   val serviceBaseUrl = s"${baseUrl("enrolment-store-proxy")}/enrolment-store-proxy"
-  lazy val serviceName = config("tax-enrolments").getString("serviceName").getOrElse("HMRC-OBTDS-ORG")
+  lazy val serviceName = config("tax-enrolments").getOptional[String]("serviceName").getOrElse("HMRC-OBTDS-ORG")
 
   private def enrolmentKey(registrationNumber: String): String = s"$serviceName~ETMPREGISTRATIONNUMBER~$registrationNumber"
 

@@ -23,21 +23,20 @@ import play.api.{Configuration, Environment, Logger}
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, _}
 import uk.gov.hmrc.play.bootstrap.config.{RunMode, ServicesConfig}
 import uk.gov.hmrc.play.bootstrap.http.HttpClient
-import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 class DefaultTaxEnrolmentConnector @Inject() (
   val http: HttpClient,
   val runModeConfiguration: Configuration,
   val runMode: RunMode,
-  environment: Environment) extends ServicesConfig(runModeConfiguration, runMode) with TaxEnrolmentConnector {
+  environment: Environment)(implicit val ec: ExecutionContext) extends ServicesConfig(runModeConfiguration, runMode) with TaxEnrolmentConnector {
 
-  val callbackBase = config("tax-enrolments").getString("callback").getOrElse("http://fh-registration.protected.mdtp:80/fhdds/tax-enrolment/callback/subscriptions")
+  val callbackBase = config("tax-enrolments").getOptional[String]("callback").getOrElse("http://fh-registration.protected.mdtp:80/fhdds/tax-enrolment/callback/subscriptions")
   def callback(formBundleId: String) = s"$callbackBase/$formBundleId"
 
   val serviceBaseUrl =  s"${baseUrl("tax-enrolments")}/tax-enrolments"
-  val serviceName = config("tax-enrolments").getString("serviceName").getOrElse("HMRC-OBTDS-ORG")
+  val serviceName = config("tax-enrolments").getOptional[String]("serviceName").getOrElse("HMRC-OBTDS-ORG")
 
   private def subscriberUrl(etmpFormBundleId: String) =
    s"$serviceBaseUrl/subscriptions/$etmpFormBundleId/subscriber"

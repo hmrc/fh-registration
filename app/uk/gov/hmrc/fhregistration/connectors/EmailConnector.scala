@@ -18,7 +18,7 @@ package uk.gov.hmrc.fhregistration.connectors
 
 import com.google.inject.ImplementedBy
 import javax.inject.Inject
-import play.api.Mode.Mode
+import play.api.Mode
 import play.api.mvc.Request
 import play.api.{Configuration, Environment, Logger}
 import uk.gov.hmrc.fhregistration.models.fhdds.{SendEmailRequest, UserData}
