@@ -9,7 +9,6 @@ import org.scalatestplus.play.guice.GuiceOneServerPerSuite
 import play.api.Application
 import play.api.inject.guice.GuiceApplicationBuilder
 import uk.gov.hmrc.fhdds.testsupport.preconditions.PreconditionBuilder
-import uk.gov.hmrc.play.it.Port
 import com.github.tomakehurst.wiremock.client.WireMock.{configureFor, reset, resetAllScenarios}
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig
 import uk.gov.hmrc.fhdds.testsupport.verifiers.VerifierBuilder

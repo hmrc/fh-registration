@@ -18,6 +18,7 @@ object MicroServiceBuild extends Build with MicroService {
   )
 
   def test(scope: String = "test,it") = Seq(
+    "uk.gov.hmrc"             %% "service-integration-test"     % "0.9.0-play-26" % scope,
     "org.scalatest"           %% "scalatest"                    % "3.0.8"   % scope,
     "org.scalatestplus.play"  %% "scalatestplus-play"           % "3.1.2"   % scope,
     "org.mockito"              % "mockito-core"                 % "3.0.0"  % scope,
