@@ -22,7 +22,7 @@ import play.api.{Configuration, Environment}
 import uk.gov.hmrc.fhregistration.models.fhdds.{DeregistrationRequest, SubmissionRequest, WithdrawalRequest}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.http.HttpClient
-import uk.gov.hmrc.play.test.UnitSpec
+import uk.gov.hmrc.fhregistration.util.UnitSpec
 
 class AuditServiceSpec extends UnitSpec with MockitoSugar{
   "buildSubmission methods return correct DataEvent" should {

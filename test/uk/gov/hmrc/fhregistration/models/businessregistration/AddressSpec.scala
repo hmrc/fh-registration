@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.fhregistration.models.businessregistration
 
-import uk.gov.hmrc.play.test.UnitSpec
+import uk.gov.hmrc.fhregistration.util.UnitSpec
 
 class AddressSpec extends UnitSpec{
   "Address toString" should {

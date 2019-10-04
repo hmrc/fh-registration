@@ -22,7 +22,7 @@ import org.scalatest.mockito.MockitoSugar
 import play.api.{Configuration, Environment}
 import uk.gov.hmrc.play.bootstrap.config.{RunMode, ServicesConfig}
 import uk.gov.hmrc.play.bootstrap.http.{DefaultHttpClient, HttpClient}
-import uk.gov.hmrc.play.test.UnitSpec
+import uk.gov.hmrc.fhregistration.util.UnitSpec
 import scala.concurrent.ExecutionContext.Implicits.global
 
 class DesConnectorSpec extends UnitSpec with MockitoSugar{
