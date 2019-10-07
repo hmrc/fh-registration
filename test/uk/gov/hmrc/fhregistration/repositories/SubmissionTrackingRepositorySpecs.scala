@@ -20,8 +20,8 @@ import org.scalatest.concurrent.Eventually
 import org.scalatest.{BeforeAndAfterEach, Matchers, WordSpec}
 import play.modules.reactivemongo.ReactiveMongoComponent
 import uk.gov.hmrc.fhregistration.models.fhdds.EnrolmentProgress
+import uk.gov.hmrc.fhregistration.util.LogCapturing
 import uk.gov.hmrc.mongo.{Awaiting, CurrentTime, MongoSpecSupport}
-import uk.gov.hmrc.play.test.LogCapturing
 
 class SubmissionTrackingRepositorySpecs
   extends WordSpec

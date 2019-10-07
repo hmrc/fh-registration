@@ -20,7 +20,7 @@ import play.api.libs.json._
 import uk.gov.hmrc.fhregistration.models.des.StatusResponse
 import uk.gov.hmrc.fhregistration.models.fhdds.FhddsStatus
 import uk.gov.hmrc.fhregistration.testsupport.mocks.FhddsMocks
-import uk.gov.hmrc.play.test.UnitSpec
+import uk.gov.hmrc.fhregistration.util.UnitSpec
 
 class FhddsStatusMappingSpec extends UnitSpec with FhddsMocks {
 

@@ -26,7 +26,7 @@ import play.modules.reactivemongo.ReactiveMongoComponent
 import uk.gov.hmrc.fhregistration.models.fhdds.EnrolmentProgress
 import uk.gov.hmrc.fhregistration.repositories.DefaultSubmissionTrackingRepository
 import uk.gov.hmrc.mongo.MongoSpecSupport
-import uk.gov.hmrc.play.test.UnitSpec
+import uk.gov.hmrc.fhregistration.util.UnitSpec
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
