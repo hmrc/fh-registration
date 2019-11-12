@@ -55,7 +55,6 @@ class FhddsStatusMappingSpec extends UnitSpec with FhddsMocks {
       mdtpStatus shouldBe FhddsStatus.Processing
     }
 
-
     "map MDTP subscription status to Processing from DES status for Sent to RCM" in {
       val json: JsValue = JsObject(Seq("subscriptionStatus" → JsString("Sent to RCM")))
       val mdtpStatus = fhddsApplicationController.mdtpSubscriptionStatus(json.as[StatusResponse].subscriptionStatus)
@@ -108,7 +107,8 @@ class FhddsStatusMappingSpec extends UnitSpec with FhddsMocks {
     "throw exception in case of unexpected status " in {
       val json: JsValue = JsObject(Seq("subscriptionStatus" → JsString("Contract Object Inactive")))
 
-      an[IllegalArgumentException] should be thrownBy fhddsApplicationController.mdtpSubscriptionStatus(json.as[StatusResponse].subscriptionStatus)
+      an[IllegalArgumentException] should be thrownBy fhddsApplicationController.mdtpSubscriptionStatus(
+        json.as[StatusResponse].subscriptionStatus)
     }
   }
 

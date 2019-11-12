@@ -22,7 +22,6 @@ import play.api.inject.{Binding, Module}
 import play.api.{Configuration, Environment}
 
 class FhModule extends Module {
-  override def bindings(environment: Environment, configuration: Configuration): Seq[Binding[_]] = {
+  override def bindings(environment: Environment, configuration: Configuration): Seq[Binding[_]] =
     Seq(bind(classOf[Clock]).toInstance(Clock.systemDefaultZone()))
-  }
 }

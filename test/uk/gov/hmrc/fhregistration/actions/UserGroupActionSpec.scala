@@ -46,7 +46,7 @@ class UserGroupActionSpec extends ActionSpecBase {
   }
 
   //TODO: Reduce repetition.
-  def setupAuthConnector(throwable: Throwable) = {
-    when(mockAuthConnector.authorise(any(),any[Retrieval[Option[String]~ Enrolments]])(any(), any())) thenReturn Future.failed(throwable)
-  }
+  def setupAuthConnector(throwable: Throwable) =
+    when(mockAuthConnector.authorise(any(), any[Retrieval[Option[String] ~ Enrolments]])(any(), any())) thenReturn Future
+      .failed(throwable)
 }

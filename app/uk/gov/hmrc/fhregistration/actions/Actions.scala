@@ -22,6 +22,6 @@ import uk.gov.hmrc.auth.core.AuthConnector
 
 class Actions @Inject()(val authConnector: AuthConnector, cc: ControllerComponents) {
 
-  def userAction =  UserAction(authConnector, cc)
+  def userAction = UserAction(authConnector, cc)
   def userGroupAction = UserGroupAction(authConnector, cc)
 }

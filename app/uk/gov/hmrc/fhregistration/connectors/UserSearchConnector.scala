@@ -28,12 +28,11 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 class DefaultUserSearchConnector @Inject()(
-                                            val http: HttpClient,
-                                            val runModeConfiguration: Configuration,
-                                            val runMode: RunMode,
-                                            environment: Environment
-                                          ) extends ServicesConfig(runModeConfiguration, runMode) with UserSearchConnector {
-
+  val http: HttpClient,
+  val runModeConfiguration: Configuration,
+  val runMode: RunMode,
+  environment: Environment
+) extends ServicesConfig(runModeConfiguration, runMode) with UserSearchConnector {
 
   val serviceBaseUrl = s"${baseUrl("user-search")}/users-groups-search"
 
@@ -46,9 +45,8 @@ class DefaultUserSearchConnector @Inject()(
     http.GET[JsObject](userInfoUrl(userId))
   }
 
-  override def retrieveGroupInfo(groupId: String)(implicit hc: HeaderCarrier): Future[List[JsObject]] = {
+  override def retrieveGroupInfo(groupId: String)(implicit hc: HeaderCarrier): Future[List[JsObject]] =
     http.GET[List[JsObject]](groupInfoUrl(groupId))
-  }
 
 }
 
@@ -59,4 +57,3 @@ trait UserSearchConnector extends HttpErrorFunctions {
 
   def retrieveGroupInfo(groupId: String)(implicit hc: HeaderCarrier): Future[List[JsObject]]
 }
-

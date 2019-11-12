@@ -41,7 +41,6 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success}
 
-
 class FhddsApplicationController @Inject()(
   val desConnector: DesConnector,
   val taxEnrolmentConnector: TaxEnrolmentConnector,
@@ -52,51 +51,60 @@ class FhddsApplicationController @Inject()(
   val cc: ControllerComponents,
   val actions: Actions,
   val repo: DefaultSubmissionTrackingRepository)(implicit val ec: ExecutionContext)
-  extends BackendController(cc) {
+    extends BackendController(cc) {
 
   import actions._
 
   def findAllSubmissions = Action.async { implicit request =>
     repo.findAll().map(x => Ok(Json.toJson(x)))
-}
+  }
 
   def getSubmission(formBundleId: String) = Action.async { implicit request =>
-    repo.findSubmissionTrakingByFormBundleId(formBundleId).map(x=> Ok(Json.toJson(x)))
+    repo.findSubmissionTrakingByFormBundleId(formBundleId).map(x => Ok(Json.toJson(x)))
 
   }
 
-  def subscribe(safeId: String, currentRegNumber: Option[String]) = userGroupAction.async(parse.json[SubmissionRequest]) { implicit r ⇒
-    val request = r.body
-    for {
-      desResponse ← desConnector.sendSubmission(safeId, request.submission)(hc)
-      response = SubmissionResponse(desResponse.registrationNumberFHDDS, desResponse.processingDate)
-    } yield {
-      Logger.info(s"Received registration number ${desResponse.registrationNumberFHDDS} for safeId $safeId")
+  def subscribe(safeId: String, currentRegNumber: Option[String]) =
+    userGroupAction.async(parse.json[SubmissionRequest]) { implicit r ⇒
+      val request = r.body
+      for {
+        desResponse ← desConnector.sendSubmission(safeId, request.submission)(hc)
+        response = SubmissionResponse(desResponse.registrationNumberFHDDS, desResponse.processingDate)
+      } yield {
+        Logger.info(s"Received registration number ${desResponse.registrationNumberFHDDS} for safeId $safeId")
 
-      currentRegNumber foreach { regNumber ⇒
-        taxEnrolmentConnector.deleteGroupEnrolment(r.groupId, regNumber)
+        currentRegNumber foreach { regNumber ⇒
+          taxEnrolmentConnector.deleteGroupEnrolment(r.groupId, regNumber)
+        }
+
+        val event: DataEvent =
+          auditService.buildSubmissionCreateAuditEvent(request, safeId, response.registrationNumber)
+        submissionTrackingService.saveSubscriptionTracking(
+          safeId,
+          r.userId,
+          desResponse.etmpFormBundleNumber,
+          request.emailAddress,
+          response.registrationNumber) andThen {
+          case _ ⇒
+            subscribeToTaxEnrolment(safeId, desResponse.etmpFormBundleNumber)
+              .onFailure {
+                case e ⇒
+                  submissionTrackingService
+                    .updateSubscriptionTracking(desResponse.etmpFormBundleNumber, EnrolmentProgress.Error)
+              }
+        }
+
+        auditSubmission(response.registrationNumber, event)
+
+        Ok(Json toJson response)
       }
-
-      val event: DataEvent = auditService.buildSubmissionCreateAuditEvent(request, safeId, response.registrationNumber)
-      submissionTrackingService.saveSubscriptionTracking(safeId, r.userId, desResponse.etmpFormBundleNumber, request.emailAddress, response.registrationNumber) andThen { case _ ⇒
-        subscribeToTaxEnrolment(safeId, desResponse.etmpFormBundleNumber)
-          .onFailure { case e ⇒
-            submissionTrackingService.updateSubscriptionTracking(desResponse.etmpFormBundleNumber, EnrolmentProgress.Error)
-          }
-      }
-
-      auditSubmission(response.registrationNumber, event)
-
-      Ok(Json toJson response)
     }
-  }
 
   def enrolmentProgress() = userAction.async { implicit request ⇒
-    submissionTrackingService.enrolmentProgress(request.userId, request.registrationNumber) map {
-      progress ⇒ Ok(Json toJson progress)
+    submissionTrackingService.enrolmentProgress(request.userId, request.registrationNumber) map { progress ⇒
+      Ok(Json toJson progress)
     }
   }
-
 
   def amend(fhddsRegistrationNumber: String) = Action.async(parse.json[SubmissionRequest]) { implicit r ⇒
     val request = r.body
@@ -104,8 +112,7 @@ class FhddsApplicationController @Inject()(
       desResponse ← desConnector.sendAmendment(fhddsRegistrationNumber, request.submission)(hc)
       response = SubmissionResponse(desResponse.registrationNumberFHDDS, desResponse.processingDate)
     } yield {
-      val event = auditService.buildSubmissionAmendAuditEvent(
-        request, response.registrationNumber)
+      val event = auditService.buildSubmissionAmendAuditEvent(request, response.registrationNumber)
       auditSubmission(response.registrationNumber, event)
       sendEmail(request.emailAddress)
 
@@ -119,47 +126,46 @@ class FhddsApplicationController @Inject()(
       desResponse ← desConnector.sendWithdrawal(fhddsRegistrationNumber, request.withdrawal)(hc)
       processingDate = desResponse.processingDate
     } yield {
-      val event = auditService.buildSubmissionWithdrawalAuditEvent(
-        request, fhddsRegistrationNumber)
+      val event = auditService.buildSubmissionWithdrawalAuditEvent(request, fhddsRegistrationNumber)
       auditSubmission(fhddsRegistrationNumber, event)
       sendEmail(
         request.emailAddress,
         emailTemplateId = emailConnector.withdrawalEmailTemplateID,
-        emailParameters = Map("withdrawalDate" → new SimpleDateFormat("dd MMMM yyyy").format(processingDate)))
+        emailParameters = Map("withdrawalDate" → new SimpleDateFormat("dd MMMM yyyy").format(processingDate))
+      )
 
       Ok(Json toJson processingDate)
     }
   }
 
-  def deregister(fhddsRegistrationNumber: String) = userGroupAction.async(parse.json[DeregistrationRequest]) { implicit r ⇒
-    val request = r.body
-    for {
-      desResponse ← desConnector.sendDeregistration(fhddsRegistrationNumber, request.deregistration)(hc)
-      processingDate = desResponse.processingDate
-    } yield {
-      val event = auditService.buildSubmissionDeregisterAuditEvent(
-        request, fhddsRegistrationNumber)
-      auditSubmission(fhddsRegistrationNumber, event)
-      sendEmail(
-        request.emailAddress,
-        emailTemplateId = emailConnector.deregisterEmailTemplateID,
-        emailParameters = Map("deregisterDate" → new SimpleDateFormat("dd MMMM yyyy").format(processingDate)))
+  def deregister(fhddsRegistrationNumber: String) = userGroupAction.async(parse.json[DeregistrationRequest]) {
+    implicit r ⇒
+      val request = r.body
+      for {
+        desResponse ← desConnector.sendDeregistration(fhddsRegistrationNumber, request.deregistration)(hc)
+        processingDate = desResponse.processingDate
+      } yield {
+        val event = auditService.buildSubmissionDeregisterAuditEvent(request, fhddsRegistrationNumber)
+        auditSubmission(fhddsRegistrationNumber, event)
+        sendEmail(
+          request.emailAddress,
+          emailTemplateId = emailConnector.deregisterEmailTemplateID,
+          emailParameters = Map("deregisterDate" → new SimpleDateFormat("dd MMMM yyyy").format(processingDate))
+        )
 
-      Ok(Json toJson processingDate)
-    }
+        Ok(Json toJson processingDate)
+      }
   }
 
-
-  def sendEmail(email: String, emailTemplateId: String = emailConnector.defaultEmailTemplateID, emailParameters: Map[String, String] = Map.empty)(implicit hc: HeaderCarrier, request: Request[AnyRef]) = {
+  def sendEmail(
+    email: String,
+    emailTemplateId: String = emailConnector.defaultEmailTemplateID,
+    emailParameters: Map[String, String] = Map.empty)(implicit hc: HeaderCarrier, request: Request[AnyRef]) =
     emailConnector
-      .sendEmail(
-        emailTemplateId = emailTemplateId,
-        userData = UserData(email),
-        emailParameters)(hc, request, ec)
+      .sendEmail(emailTemplateId = emailTemplateId, userData = UserData(email), emailParameters)(hc, request, ec)
       .onFailure {
         case t ⇒ Logger.error(s"Failed sending email $emailTemplateId", t)
       }
-  }
 
   private def auditSubmission(registrationNumber: String, event: DataEvent)(implicit hc: HeaderCarrier) = {
 
@@ -174,14 +180,20 @@ class FhddsApplicationController @Inject()(
 
   }
 
-  private def subscribeToTaxEnrolment(safeId: String, etmpFormBundleNumber: String)(implicit hc: HeaderCarrier): Future[_] = {
-    Logger.info(s"Sending subscription for safeId = $safeId for etmpFormBundelNumber = $etmpFormBundleNumber to tax enrolments")
+  private def subscribeToTaxEnrolment(safeId: String, etmpFormBundleNumber: String)(
+    implicit hc: HeaderCarrier): Future[_] = {
+    Logger.info(
+      s"Sending subscription for safeId = $safeId for etmpFormBundelNumber = $etmpFormBundleNumber to tax enrolments")
     taxEnrolmentConnector
-     .subscribe(safeId, etmpFormBundleNumber)(hc)
-     .andThen({
-       case Success(r) ⇒ Logger.info(s"Tax enrolments for subscription $safeId and etmpFormBundleNumber $etmpFormBundleNumber returned $r")
-       case Failure(e) ⇒ Logger.error(s"Tax enrolments for subscription $safeId and etmpFormBundleNumber $etmpFormBundleNumber failed", e)
-     })
+      .subscribe(safeId, etmpFormBundleNumber)(hc)
+      .andThen({
+        case Success(r) ⇒
+          Logger.info(
+            s"Tax enrolments for subscription $safeId and etmpFormBundleNumber $etmpFormBundleNumber returned $r")
+        case Failure(e) ⇒
+          Logger
+            .error(s"Tax enrolments for subscription $safeId and etmpFormBundleNumber $etmpFormBundleNumber failed", e)
+      })
   }
 
   def subscriptionCallback(formBundleId: String) = Action.async(parse.json[TaxEnrolmentsCallback]) { implicit request ⇒
@@ -191,7 +203,8 @@ class FhddsApplicationController @Inject()(
 
       submissionTrackingService
         .getSubmissionTrackingEmail(formBundleId)
-        .fold(Logger.error(s"Could not find enrolment tracking data for bundleId $formBundleId"))(email ⇒ sendEmail(email))
+        .fold(Logger.error(s"Could not find enrolment tracking data for bundleId $formBundleId"))(email ⇒
+          sendEmail(email))
         .andThen { case _ ⇒ submissionTrackingService deleteSubmissionTracking formBundleId }
         .map(_ ⇒ Ok(""))
         .recover { case _ ⇒ Ok("") }
@@ -203,16 +216,20 @@ class FhddsApplicationController @Inject()(
   }
 
   def deleteSubmission(formBundleId: String) = Action.async { implicit request =>
-    submissionTrackingService.deleteSubmissionTracking(formBundleId).map(_ => Ok(""))
-      .recover{case _ => Ok(s"Submission with $formBundleId not found")}
+    submissionTrackingService
+      .deleteSubmissionTracking(formBundleId)
+      .map(_ => Ok(""))
+      .recover { case _ => Ok(s"Submission with $formBundleId not found") }
   }
 
   def checkStatus(fhddsRegistrationNumber: String) = Action.async { implicit request ⇒
     desConnector
       .getStatus(fhddsRegistrationNumber)(hc)
-      .map {_.subscriptionStatus }
-      .map { mdtpSubscriptionStatus}
-      .map {status ⇒ Ok(Json toJson status)}
+      .map { _.subscriptionStatus }
+      .map { mdtpSubscriptionStatus }
+      .map { status ⇒
+        Ok(Json toJson status)
+      }
   }
 
   def get(fhddsRegistrationNumber: String) = Action.async { implicit request ⇒
@@ -224,7 +241,7 @@ class FhddsApplicationController @Inject()(
         case 400 ⇒ BadRequest("Submission has not passed validation. Invalid parameter FHDDS Registration Number.")
         case 404 ⇒ NotFound("No SAP Number found for the provided FHDDS Registration Number.")
         case 403 ⇒ Forbidden("Unexpected business error received.")
-        case _   ⇒ BadGateway("DES is currently experiencing problems that require live service intervention.")
+        case _ ⇒ BadGateway("DES is currently experiencing problems that require live service intervention.")
       }
     }
   }
@@ -233,19 +250,16 @@ class FhddsApplicationController @Inject()(
     import DesStatus._
     desStatus match {
 
-      case InProcessing
-           | SentToDs
-           | DsOutcomeInProgress
-           | SentToRcm            ⇒ FhddsStatus.Processing
+      case InProcessing | SentToDs | DsOutcomeInProgress | SentToRcm ⇒ FhddsStatus.Processing
 
-      case RegFormReceived        ⇒ FhddsStatus.Received
-      case Successful             ⇒ FhddsStatus.Approved
+      case RegFormReceived ⇒ FhddsStatus.Received
+      case Successful ⇒ FhddsStatus.Approved
       case ApprovedWithConditions ⇒ FhddsStatus.ApprovedWithConditions
-      case Rejected               ⇒ FhddsStatus.Rejected
-      case Revoked                ⇒ FhddsStatus.Revoked
-      case Withdrawal             ⇒ FhddsStatus.Withdrawn
-      case Deregistered           ⇒ FhddsStatus.Deregistered
-      case _                      ⇒
+      case Rejected ⇒ FhddsStatus.Rejected
+      case Revoked ⇒ FhddsStatus.Revoked
+      case Withdrawal ⇒ FhddsStatus.Withdrawn
+      case Deregistered ⇒ FhddsStatus.Deregistered
+      case _ ⇒
         Logger.error(s"Unknown status received from des: $desStatus")
         throw new IllegalArgumentException(s"des status: $desStatus")
     }

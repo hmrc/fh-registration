@@ -26,15 +26,11 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{ExecutionContext, Future}
 
 class UserRequest[A](val userId: String, val registrationNumber: Option[String], request: Request[A])
-  extends WrappedRequest(request) {
-}
+    extends WrappedRequest(request) {}
 
-case class UserAction (authConnector: AuthConnector, cc: ControllerComponents)
-extends MicroserviceAction
-    with ActionRefiner[Request, UserRequest]
-    with AuthorisedFunctions
-    with ActionBuilder[UserRequest, AnyContent]
-{
+case class UserAction(authConnector: AuthConnector, cc: ControllerComponents)
+    extends MicroserviceAction with ActionRefiner[Request, UserRequest] with AuthorisedFunctions
+    with ActionBuilder[UserRequest, AnyContent] {
 
   override def parser: BodyParser[AnyContent] = cc.parsers.defaultBodyParser
   override protected val executionContext: ExecutionContext = cc.executionContext
@@ -45,11 +41,10 @@ extends MicroserviceAction
   override protected def refine[A](request: Request[A]): Future[Either[Result, UserRequest[A]]] = {
     implicit val r = request
 
-
     authorised().retrieve(internalId and allEnrolments) {
       case Some(id) ~ enrolments ⇒
         Future successful Right(new UserRequest(id, registrationNumber(enrolments), request))
-      case _     ⇒
+      case _ ⇒
         Future successful error(BadRequest, "Can not find user id")
 
     } recover {

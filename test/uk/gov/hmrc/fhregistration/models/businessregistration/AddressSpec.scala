@@ -18,10 +18,11 @@ package uk.gov.hmrc.fhregistration.models.businessregistration
 
 import uk.gov.hmrc.fhregistration.util.UnitSpec
 
-class AddressSpec extends UnitSpec{
+class AddressSpec extends UnitSpec {
   "Address toString" should {
     "Format correctly" in {
-      val address = Address("testLine1", "testLine2", Some("testLine3"), Some("testLine4"), Some("testPostcode"), "testCountry")
+      val address =
+        Address("testLine1", "testLine2", Some("testLine3"), Some("testLine4"), Some("testPostcode"), "testCountry")
 
       address.toString shouldBe "testLine1, testLine2, testLine3, testLine4, testPostcode, testCountry"
     }

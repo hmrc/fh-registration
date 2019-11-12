@@ -19,7 +19,7 @@ package uk.gov.hmrc.fhregistration.models.fhdds
 import play.api.libs.json.{JsValue, Json}
 
 case class DeregistrationRequest(
-  emailAddress  : String,
+  emailAddress: String,
   deregistration: JsValue
 )
 

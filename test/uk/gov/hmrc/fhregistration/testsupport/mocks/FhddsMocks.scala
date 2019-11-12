@@ -34,7 +34,6 @@ import scala.concurrent.ExecutionContext.Implicits.global
 
 import scala.concurrent.{ExecutionContext, Future}
 
-
 trait FhddsMocks extends ScalaFutures with MockitoSugar {
 
   val mockDesConnector: DesConnector = mock[DesConnector]
@@ -43,13 +42,13 @@ trait FhddsMocks extends ScalaFutures with MockitoSugar {
   val mockAuditService: AuditService = mock[AuditService]
   val mockAuditConnector: AuditConnector = mock[AuditConnector]
   val mockSubmissionTrackingRepository: SubmissionTrackingRepository = mock[SubmissionTrackingRepository]
-  val mockSubmissionTrackingService = new DefaultSubmissionTrackingService(mockSubmissionTrackingRepository, Clock.systemDefaultZone())
+  val mockSubmissionTrackingService =
+    new DefaultSubmissionTrackingService(mockSubmissionTrackingRepository, Clock.systemDefaultZone())
   val mockControllerComponents = mock[ControllerComponents]
   val mockActions = mock[Actions]
   val mockRepository = mock[DefaultSubmissionTrackingRepository]
   when(mockRepository.findAll(any[ReadPreference])(any[ExecutionContext])) thenReturn
     Future.successful(List(new SubmissionTracking("1", "2", "3", 0, None, None)))
-
 
   var fhddsApplicationControllerWithMocks = new FhddsApplicationController(
     mockDesConnector,

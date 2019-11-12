@@ -24,10 +24,10 @@ import uk.gov.hmrc.play.HeaderCarrierConverter
 
 import scala.concurrent.ExecutionContext
 
-
 class MicroserviceAction @Inject()(implicit val ec: ExecutionContext) extends Results {
 
-  implicit def hc(implicit request: Request[_]): HeaderCarrier = HeaderCarrierConverter.fromHeadersAndSession(request.headers)
+  implicit def hc(implicit request: Request[_]): HeaderCarrier =
+    HeaderCarrierConverter.fromHeadersAndSession(request.headers)
 
   def error(status: Status, message: String) = {
     val body = JsObject(

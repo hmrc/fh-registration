@@ -24,21 +24,14 @@ import uk.gov.hmrc.fhregistration.util.LogCapturing
 import uk.gov.hmrc.mongo.{Awaiting, CurrentTime, MongoSpecSupport}
 
 class SubmissionTrackingRepositorySpecs
-  extends WordSpec
-    with Matchers
-    with MongoSpecSupport
-    with BeforeAndAfterEach
-    with Awaiting
-    with CurrentTime
-    with Eventually
-    with LogCapturing {
+    extends WordSpec with Matchers with MongoSpecSupport with BeforeAndAfterEach with Awaiting with CurrentTime
+    with Eventually with LogCapturing {
 
   implicit val reactiveMongoComponent = new ReactiveMongoComponent {
     override def mongoConnector = mongoConnectorForTest
   }
 
   val repository = new DefaultSubmissionTrackingRepository()
-
 
   override protected def beforeEach(): Unit = {
     await(repository.drop)
@@ -72,7 +65,6 @@ class SubmissionTrackingRepositorySpecs
 
       byUserId shouldBe None
 
-
       val nDeletedZero = await(repository.deleteSubmissionTackingByFormBundleId(aFormBundleId))
       nDeletedZero shouldBe 0
     }
@@ -83,8 +75,8 @@ class SubmissionTrackingRepositorySpecs
       val tracking = mkSubmissionTracking
       await(repository.insertSubmissionTracking(tracking))
 
-      val nDeleted = await(
-        repository.deleteSubmissionTackingByRegistrationNumber(tracking.userId, tracking.registrationNumber.get))
+      val nDeleted =
+        await(repository.deleteSubmissionTackingByRegistrationNumber(tracking.userId, tracking.registrationNumber.get))
       nDeleted shouldBe 1
 
       val byUserId = await(repository.findSubmissionTrackingByUserId(anUserId))
@@ -123,7 +115,6 @@ class SubmissionTrackingRepositorySpecs
     EnrolmentProgress.Pending,
     "XXFH00000123432"
   )
-
 
   val anUserId = "userid-1"
   val unknownUserId = "userid-u"

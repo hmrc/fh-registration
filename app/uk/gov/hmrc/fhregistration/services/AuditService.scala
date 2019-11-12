@@ -31,18 +31,18 @@ import uk.gov.hmrc.play.bootstrap.http.HttpClient
 trait AuditService {
 
   def buildSubmissionCreateAuditEvent(
-    submissionRequest : SubmissionRequest,
-    safeId            : String,
+    submissionRequest: SubmissionRequest,
+    safeId: String,
     registrationNumber: String
   )(implicit hc: HeaderCarrier): DataEvent
 
   def buildSubmissionAmendAuditEvent(
-    submissionRequest : SubmissionRequest,
+    submissionRequest: SubmissionRequest,
     registrationNumber: String
   )(implicit hc: HeaderCarrier): DataEvent
 
   def buildSubmissionWithdrawalAuditEvent(
-    withdrawalRequest : WithdrawalRequest,
+    withdrawalRequest: WithdrawalRequest,
     registrationNumber: String
   )(implicit hc: HeaderCarrier): DataEvent
 
@@ -54,7 +54,7 @@ trait AuditService {
 }
 
 @Singleton
-class DefaultAuditService @Inject() (
+class DefaultAuditService @Inject()(
   val http: HttpClient,
   val runModeConfiguration: Configuration,
   environment: Environment
@@ -65,56 +65,46 @@ class DefaultAuditService @Inject() (
   val auditType = "fulfilmentHouseRegistrationSubmission"
 
   override def buildSubmissionCreateAuditEvent(
-    submissionRequest : SubmissionRequest,
-    safeId            : String,
+    submissionRequest: SubmissionRequest,
+    safeId: String,
     registrationNumber: String
-  )(implicit hc: HeaderCarrier): DataEvent = {
-
+  )(implicit hc: HeaderCarrier): DataEvent =
     buildSubmissionAuditEvent(
       submissionRequest.submission,
       registrationNumber,
       s"/fulfilment-diligence/subscription/$safeId/id-type/safe")
-  }
 
   def buildSubmissionAmendAuditEvent(
-    submissionRequest : SubmissionRequest,
+    submissionRequest: SubmissionRequest,
     registrationNumber: String
-  )(implicit hc: HeaderCarrier): DataEvent = {
-
+  )(implicit hc: HeaderCarrier): DataEvent =
     buildSubmissionAuditEvent(
       submissionRequest.submission,
       registrationNumber,
       s"/fulfilment-diligence/subscription/$registrationNumber/id-type/fhdds")
-  }
 
   def buildSubmissionWithdrawalAuditEvent(
-    withdrawalRequest : WithdrawalRequest,
+    withdrawalRequest: WithdrawalRequest,
     registrationNumber: String
-  )(implicit hc: HeaderCarrier): DataEvent = {
-
+  )(implicit hc: HeaderCarrier): DataEvent =
     buildSubmissionAuditEvent(
       withdrawalRequest.withdrawal,
       registrationNumber,
       s"/fulfilment-diligence/subscription/$registrationNumber/withdrawal")
-  }
 
   def buildSubmissionDeregisterAuditEvent(
     deregistrationRequest: DeregistrationRequest,
     registrationNumber: String
-  )(implicit hc: HeaderCarrier): DataEvent = {
-
+  )(implicit hc: HeaderCarrier): DataEvent =
     buildSubmissionAuditEvent(
       deregistrationRequest.deregistration,
       registrationNumber,
       s"/fulfilment-diligence/subscription/$registrationNumber/deregister")
-  }
-
 
   private def buildSubmissionAuditEvent(
-    data : JsValue,
+    data: JsValue,
     registrationNumber: String,
-    path              : String
-
+    path: String
   )(implicit hc: HeaderCarrier): DataEvent = {
 
     val additionalDetails: Seq[(String, String)] = Seq(
@@ -126,7 +116,7 @@ class DefaultAuditService @Inject() (
       auditSource = auditSource,
       auditType = auditType,
       tags = hc.toAuditTags(s"FHDDS - $registrationNumber", path),
-      detail = hc.toAuditDetails(additionalDetails:_*)
+      detail = hc.toAuditDetails(additionalDetails: _*)
     )
 
   }
