@@ -30,13 +30,8 @@ import uk.gov.hmrc.fhregistration.util.UnitSpec
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
-class SubmissionTrackingServiceSpecs extends UnitSpec
-  with ScalaFutures
-  with MockitoSugar
-  with BeforeAndAfterEach
-  with MongoSpecSupport
-  with Matchers {
-
+class SubmissionTrackingServiceSpecs
+    extends UnitSpec with ScalaFutures with MockitoSugar with BeforeAndAfterEach with MongoSpecSupport with Matchers {
 
   implicit val reactiveMongoComponent = new ReactiveMongoComponent {
     override def mongoConnector = mongoConnectorForTest
@@ -84,7 +79,7 @@ class SubmissionTrackingServiceSpecs extends UnitSpec
 
       "the pending tracking was not updated" in {
         await(service.saveSubscriptionTracking("safeid", "some-user", "formbundelid", "a@a.co", "ZZFH0000001231456"))
-        when(mockClock.millis()).thenReturn(System.currentTimeMillis() + 2 * service.SubmissionTrackingAgeThresholdMs )
+        when(mockClock.millis()).thenReturn(System.currentTimeMillis() + 2 * service.SubmissionTrackingAgeThresholdMs)
         await(service.enrolmentProgress("some-user", None)) shouldBe EnrolmentProgress.Error
       }
     }
@@ -97,7 +92,8 @@ class SubmissionTrackingServiceSpecs extends UnitSpec
       await(service.updateSubscriptionTracking("formbundelid", EnrolmentProgress.Error))
       await(service.enrolmentProgress("some-user", None)) shouldBe EnrolmentProgress.Error
 
-      await(service.saveSubscriptionTracking("safeid", "some-user", "another-formbundelid", "a@a.co", "ZZFH0000001231456"))
+      await(
+        service.saveSubscriptionTracking("safeid", "some-user", "another-formbundelid", "a@a.co", "ZZFH0000001231456"))
 
       await(service.enrolmentProgress("some-user", None)) shouldBe EnrolmentProgress.Pending
     }
@@ -111,8 +107,5 @@ class SubmissionTrackingServiceSpecs extends UnitSpec
       await(service.enrolmentProgress("some-user", None)) shouldBe EnrolmentProgress.Unknown
     }
   }
-
-
-
 
 }

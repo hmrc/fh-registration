@@ -24,13 +24,16 @@ import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.http.HttpClient
 import uk.gov.hmrc.fhregistration.util.UnitSpec
 
-class AuditServiceSpec extends UnitSpec with MockitoSugar{
+class AuditServiceSpec extends UnitSpec with MockitoSugar {
   "buildSubmission methods return correct DataEvent" should {
     val auditService = new DefaultAuditService(mock[HttpClient], mock[Configuration], mock[Environment])
     implicit val hc = new HeaderCarrier()
 
     "buildSubmissionCreateAuditEvent" in {
-      val result = auditService.buildSubmissionCreateAuditEvent(new SubmissionRequest("test@test.test", new JsString("jsCreateVal")), "someSafeID","testCreateValue")
+      val result = auditService.buildSubmissionCreateAuditEvent(
+        new SubmissionRequest("test@test.test", new JsString("jsCreateVal")),
+        "someSafeID",
+        "testCreateValue")
 
       result.tags.getOrElse("path", "") shouldBe "/fulfilment-diligence/subscription/someSafeID/id-type/safe"
       result.tags.getOrElse("transactionName", "") shouldBe "FHDDS - testCreateValue"
@@ -39,7 +42,9 @@ class AuditServiceSpec extends UnitSpec with MockitoSugar{
     }
 
     "buildSubmissionAmendAuditEvent" in {
-      val result = auditService.buildSubmissionAmendAuditEvent(new SubmissionRequest("test@test.test", new JsString("jsAmendVal")), "testAmendValue")
+      val result = auditService.buildSubmissionAmendAuditEvent(
+        new SubmissionRequest("test@test.test", new JsString("jsAmendVal")),
+        "testAmendValue")
 
       result.tags.getOrElse("path", "") shouldBe "/fulfilment-diligence/subscription/testAmendValue/id-type/fhdds"
       result.tags.getOrElse("transactionName", "") shouldBe "FHDDS - testAmendValue"
@@ -48,7 +53,9 @@ class AuditServiceSpec extends UnitSpec with MockitoSugar{
     }
 
     "buildSubmissionWithdrawalAuditEvent" in {
-      val result = auditService.buildSubmissionWithdrawalAuditEvent(new WithdrawalRequest("test@test.test", new JsString("jsWithdrawalVal")), "testWithdrawalValue")
+      val result = auditService.buildSubmissionWithdrawalAuditEvent(
+        new WithdrawalRequest("test@test.test", new JsString("jsWithdrawalVal")),
+        "testWithdrawalValue")
 
       result.tags.getOrElse("path", "") shouldBe "/fulfilment-diligence/subscription/testWithdrawalValue/withdrawal"
       result.tags.getOrElse("transactionName", "") shouldBe "FHDDS - testWithdrawalValue"
@@ -57,7 +64,9 @@ class AuditServiceSpec extends UnitSpec with MockitoSugar{
     }
 
     "buildSubmissionDeregisterAuditEvent" in {
-      val result = auditService.buildSubmissionDeregisterAuditEvent(new DeregistrationRequest("test@test.test", new JsString("jsDeregisterVal")), "testDeregisterValue")
+      val result = auditService.buildSubmissionDeregisterAuditEvent(
+        new DeregistrationRequest("test@test.test", new JsString("jsDeregisterVal")),
+        "testDeregisterValue")
 
       result.tags.getOrElse("path", "") shouldBe "/fulfilment-diligence/subscription/testDeregisterValue/deregister"
       result.tags.getOrElse("transactionName", "") shouldBe "FHDDS - testDeregisterValue"

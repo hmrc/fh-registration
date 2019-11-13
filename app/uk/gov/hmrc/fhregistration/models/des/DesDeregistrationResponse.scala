@@ -20,7 +20,7 @@ import java.util.Date
 
 import play.api.libs.json.Json
 
-case class DesDeregistrationResponse (processingDate: Date)
+case class DesDeregistrationResponse(processingDate: Date)
 
 object DesDeregistrationResponse {
   implicit val format = Json.format[DesDeregistrationResponse]

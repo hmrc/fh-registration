@@ -41,20 +41,12 @@ object SubmissionTracking {
     submissionTime: Long,
     enrolmentProgress: EnrolmentProgress,
     registrationNumber: String
-  ): SubmissionTracking = SubmissionTracking(
-    userId,
-    formBundleId,
-    email,
-    submissionTime,
-    Some(enrolmentProgress),
-    Some(registrationNumber))
-
-
+  ): SubmissionTracking =
+    SubmissionTracking(userId, formBundleId, email, submissionTime, Some(enrolmentProgress), Some(registrationNumber))
 
   val UserIdField = "userId"
   val FormBundleIdField = "formBundleId"
   val EnrolmentProgressField = "enrolmentProgressOpt"
   val RegistrationNumberField = "registrationNumber"
-
 
 }

@@ -23,8 +23,6 @@ object EnrolmentProgress extends Enumeration {
   type EnrolmentProgress = Value
   val Pending, Unknown, Error = Value
 
-  implicit val format = Format(
-    Reads.enumNameReads(EnrolmentProgress),
-    Writes.enumNameWrites[this.type ])
+  implicit val format = Format(Reads.enumNameReads(EnrolmentProgress), Writes.enumNameWrites[this.type])
 
 }

@@ -46,64 +46,56 @@ trait SubmissionTrackingRepository {
   def updateEnrolmentProgress(formBundleId: String, progress: EnrolmentProgress): Future[UpdateWriteResult]
 }
 
+class DefaultSubmissionTrackingRepository @Inject()(implicit rmc: ReactiveMongoComponent)
+    extends ReactiveRepository[SubmissionTracking, BSONObjectID](
+      "submission-tracking",
+      rmc.mongoConnector.db,
+      SubmissionTracking.formats,
+      ReactiveMongoFormats.objectIdFormats) with SubmissionTrackingRepository {
 
-class DefaultSubmissionTrackingRepository @Inject() (implicit rmc: ReactiveMongoComponent)
-  extends ReactiveRepository[SubmissionTracking, BSONObjectID](
-    "submission-tracking",
-    rmc.mongoConnector.db,
-    SubmissionTracking.formats,
-    ReactiveMongoFormats.objectIdFormats) with SubmissionTrackingRepository
-{
+  import SubmissionTracking.{EnrolmentProgressField, FormBundleIdField, RegistrationNumberField, UserIdField}
 
-
-  import SubmissionTracking.{EnrolmentProgressField, FormBundleIdField, UserIdField, RegistrationNumberField}
-
-  override def findSubmissionTrackingByUserId(userId: String) = {
+  override def findSubmissionTrackingByUserId(userId: String) =
     collection.find(BSONDocument(UserIdField → userId)).one[SubmissionTracking]
-  }
 
-  override def findSubmissionTrakingByFormBundleId(formBundleId: String) = {
+  override def findSubmissionTrakingByFormBundleId(formBundleId: String) =
     collection.find(BSONDocument(FormBundleIdField → formBundleId)).one[SubmissionTracking]
-  }
 
-  override def deleteSubmissionTackingByFormBundleId(formBundleId: String): Future[Int] = {
+  override def deleteSubmissionTackingByFormBundleId(formBundleId: String): Future[Int] =
     collection
       .remove(BSONDocument(FormBundleIdField → formBundleId))
-      .map( _.n)
-  }
+      .map(_.n)
 
-  def deleteSubmissionTackingByRegistrationNumber(userId: String, registrationNumber: String): Future[Int] = {
+  def deleteSubmissionTackingByRegistrationNumber(userId: String, registrationNumber: String): Future[Int] =
     collection
-      .remove(BSONDocument(
-        UserIdField → userId,
-        RegistrationNumberField → registrationNumber))
-      .map( _.n)
-  }
+      .remove(BSONDocument(UserIdField → userId, RegistrationNumberField → registrationNumber))
+      .map(_.n)
 
-  override def insertSubmissionTracking(submissionTracking: SubmissionTracking): Future[_] = {
-    collection.findAndUpdate(
-      BSONDocument(UserIdField → submissionTracking.userId),
-      submissionTracking,
-      upsert = true)
-  }
+  override def insertSubmissionTracking(submissionTracking: SubmissionTracking): Future[_] =
+    collection.findAndUpdate(BSONDocument(UserIdField → submissionTracking.userId), submissionTracking, upsert = true)
 
-  override def updateEnrolmentProgress(formBundleId: String, progress: EnrolmentProgress): Future[UpdateWriteResult] = {
+  override def updateEnrolmentProgress(formBundleId: String, progress: EnrolmentProgress): Future[UpdateWriteResult] =
     collection.update(
       BSONDocument(FormBundleIdField → formBundleId),
       BSONDocument("$set" → BSONDocument(EnrolmentProgressField → progress.toString))
     )
-
-  }
-
 
   override def ensureIndexes(implicit ec: ExecutionContext): Future[Seq[Boolean]] = {
     val indexes = Future sequence Seq(
       collection.indexesManager.ensure(
         Index(Seq(UserIdField -> IndexType.Ascending), name = Some("userIdIdx"), unique = false, sparse = true)),
       collection.indexesManager.ensure(
-        Index(Seq(FormBundleIdField -> IndexType.Ascending), name = Some("formBundleIdIdx"), unique = false, sparse = true)),
+        Index(
+          Seq(FormBundleIdField -> IndexType.Ascending),
+          name = Some("formBundleIdIdx"),
+          unique = false,
+          sparse = true)),
       collection.indexesManager.ensure(
-        Index(Seq(FormBundleIdField -> IndexType.Ascending), name = Some("registrationNumberIdx"), unique = false, sparse = true))
+        Index(
+          Seq(FormBundleIdField -> IndexType.Ascending),
+          name = Some("registrationNumberIdx"),
+          unique = false,
+          sparse = true))
     )
 
     for {

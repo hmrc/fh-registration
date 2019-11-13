@@ -19,7 +19,7 @@ package uk.gov.hmrc.fhregistration.models.des
 import play.api.libs.json.Json
 import uk.gov.hmrc.fhregistration.models.des.DesStatus.DesStatus
 
-case class StatusResponse (
+case class StatusResponse(
   subscriptionStatus: DesStatus,
   idType: Option[String],
   idValue: Option[String]

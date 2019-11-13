@@ -35,7 +35,6 @@ class UserActionSpec extends ActionSpecBase {
   val mockAuthConnector = mock[AuthConnector]
   val controllerComponents: ControllerComponents = Helpers.stubControllerComponents()
 
-
   override protected def beforeEach(): Unit = {
     super.beforeEach()
     reset(mockAuthConnector)
@@ -87,10 +86,10 @@ class UserActionSpec extends ActionSpecBase {
 
   def setupAuthConnector(internalId: Option[String] = None, enrolments: Set[Enrolment] = Set.empty) = {
     val authResult = Future successful (new ~(internalId, new Enrolments(enrolments)))
-    when(mockAuthConnector.authorise(any(),any[Retrieval[Option[String] ~ Enrolments]])(any(), any())) thenReturn authResult
+    when(mockAuthConnector.authorise(any(), any[Retrieval[Option[String] ~ Enrolments]])(any(), any())) thenReturn authResult
   }
 
-  def setupAuthConnector(throwable: Throwable) = {
-    when(mockAuthConnector.authorise(any(),any[Retrieval[Option[String]~ Enrolments]])(any(), any())) thenReturn Future.failed(throwable)
-  }
+  def setupAuthConnector(throwable: Throwable) =
+    when(mockAuthConnector.authorise(any(), any[Retrieval[Option[String] ~ Enrolments]])(any(), any())) thenReturn Future
+      .failed(throwable)
 }

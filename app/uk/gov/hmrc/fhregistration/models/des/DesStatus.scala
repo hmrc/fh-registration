@@ -22,22 +22,19 @@ object DesStatus extends Enumeration {
 
   type DesStatus = Value
 
-  val NoFormBundleForm        = Value("No Form Bundle Found")
-  val RegFormReceived         = Value("Reg Form Received")
-  val SentToDs                = Value("Sent To DS")
-  val DsOutcomeInProgress     = Value("DS Outcome In Progress")
-  val Successful              = Value("Successful")
-  val Rejected                = Value("Rejected")
-  val InProcessing            = Value("In processing")
-  val Withdrawal              = Value("Withdrawal")
-  val SentToRcm               = Value("Sent to RCM")
-  val ApprovedWithConditions  = Value("Approved with Conditions")
-  val Revoked                 = Value("Revoked")
-  val Deregistered            = Value("De-Registered")
-  val ContractObjectInactive  = Value("Contract Object Inactive")
+  val NoFormBundleForm = Value("No Form Bundle Found")
+  val RegFormReceived = Value("Reg Form Received")
+  val SentToDs = Value("Sent To DS")
+  val DsOutcomeInProgress = Value("DS Outcome In Progress")
+  val Successful = Value("Successful")
+  val Rejected = Value("Rejected")
+  val InProcessing = Value("In processing")
+  val Withdrawal = Value("Withdrawal")
+  val SentToRcm = Value("Sent to RCM")
+  val ApprovedWithConditions = Value("Approved with Conditions")
+  val Revoked = Value("Revoked")
+  val Deregistered = Value("De-Registered")
+  val ContractObjectInactive = Value("Contract Object Inactive")
 
-
-  implicit val format = Format(
-    Reads.enumNameReads(DesStatus),
-    Writes.enumNameWrites[this.type ])
+  implicit val format = Format(Reads.enumNameReads(DesStatus), Writes.enumNameWrites[this.type])
 }

@@ -28,17 +28,18 @@ import uk.gov.hmrc.play.bootstrap.controller.BackendController
 
 import scala.concurrent.ExecutionContext
 
-class AdminController @Inject()(val submissionTrackingService: SubmissionTrackingService,
-                                val auditService: AuditService,
-                                val auditConnector: AuditConnector,
-                                val actions: Actions,
-                                val repo: DefaultSubmissionTrackingRepository,
-                                val userSearchConnector: UserSearchConnector,
-                                val cc: ControllerComponents,
-                                val enrolmentStoreProxyConnector: EnrolmentStoreProxyConnector)(implicit val ec: ExecutionContext) extends BackendController(cc) {
+class AdminController @Inject()(
+  val submissionTrackingService: SubmissionTrackingService,
+  val auditService: AuditService,
+  val auditConnector: AuditConnector,
+  val actions: Actions,
+  val repo: DefaultSubmissionTrackingRepository,
+  val userSearchConnector: UserSearchConnector,
+  val cc: ControllerComponents,
+  val enrolmentStoreProxyConnector: EnrolmentStoreProxyConnector)(implicit val ec: ExecutionContext)
+    extends BackendController(cc) {
 
   def findUserDetails(userId: String) = Action.async { implicit request =>
-
     for {
       response: JsObject <- userSearchConnector.retrieveUserInfo(userId)
     } yield {
@@ -55,12 +56,13 @@ class AdminController @Inject()(val submissionTrackingService: SubmissionTrackin
   }
 
   //ES8
-  def allocateEnrolmentToGroup(userId: String, groupId: String, registrationNumber: String) = Action.async { implicit request =>
-    for {
-      response <- enrolmentStoreProxyConnector.allocateEnrolmentToGroup(userId, groupId, registrationNumber)
-    } yield {
-      Ok(response.body)
-    }
+  def allocateEnrolmentToGroup(userId: String, groupId: String, registrationNumber: String) = Action.async {
+    implicit request =>
+      for {
+        response <- enrolmentStoreProxyConnector.allocateEnrolmentToGroup(userId, groupId, registrationNumber)
+      } yield {
+        Ok(response.body)
+      }
   }
 
   //ES11
@@ -81,21 +83,20 @@ class AdminController @Inject()(val submissionTrackingService: SubmissionTrackin
     }
   }
 
-  def userEnrolments(userId: String) = Action.async {implicit request =>
-    for{
+  def userEnrolments(userId: String) = Action.async { implicit request =>
+    for {
       response <- enrolmentStoreProxyConnector.userEnrolments(userId)
     } yield {
       Ok(response)
     }
   }
 
-  def groupEnrolments(groupId: String) = Action.async {implicit request =>
-    for{
+  def groupEnrolments(groupId: String) = Action.async { implicit request =>
+    for {
       response <- enrolmentStoreProxyConnector.groupEnrolments(groupId)
     } yield {
       Ok(response)
     }
   }
-
 
 }
