@@ -24,7 +24,7 @@ object MicroServiceBuild extends Build with MicroService {
     "org.mockito"              % "mockito-core"                 % "3.1.0"  % scope,
     "org.pegdown"              % "pegdown"                      % "1.6.0"   % scope,
     "uk.gov.hmrc"             %% "reactivemongo-test"           % "4.15.0-play-26"   % scope,
-    "com.github.tomakehurst"   % "wiremock-jre8"                % "2.23.2"  % scope
+    "com.github.tomakehurst"   % "wiremock-jre8"                % "2.25.1"  % scope
 
   )
 
