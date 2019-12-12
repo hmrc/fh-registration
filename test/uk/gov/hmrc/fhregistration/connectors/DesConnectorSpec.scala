@@ -22,6 +22,8 @@ import play.api.{Configuration, Environment}
 import uk.gov.hmrc.play.bootstrap.config.{RunMode, ServicesConfig}
 import uk.gov.hmrc.play.bootstrap.http.{DefaultHttpClient, HttpClient}
 import uk.gov.hmrc.fhregistration.util.UnitSpec
+import uk.gov.hmrc.http.{HttpResponse, Upstream5xxResponse}
+
 import scala.concurrent.ExecutionContext.Implicits.global
 
 class DesConnectorSpec extends UnitSpec with MockitoSugar {
@@ -64,4 +66,20 @@ class DesConnectorSpec extends UnitSpec with MockitoSugar {
       desConnectorMock.desDeregisterUrl("testValue") shouldBe "des-service/testValue/deregistration"
     }
   }
+
+  "customDesRead" should {
+    val desConnectorMock = new DefaultDesConnectorMock(
+      mock[HttpClient],
+      mock[Configuration],
+      mock[RunMode],
+      mock[Environment],
+      mock[ServicesConfig])
+
+    "successfully convert 429 from DES to 503" in {
+      val httpResponse = HttpResponse(429)
+      val ex = intercept[Upstream5xxResponse](desConnectorMock.customDESRead("test", "testUrl", httpResponse))
+      ex shouldBe Upstream5xxResponse("429 received from DES - converted to 503", 429, 503)
+    }
+  }
+
 }
