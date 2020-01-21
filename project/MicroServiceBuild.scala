@@ -11,7 +11,7 @@ object MicroServiceBuild extends Build with MicroService {
   val compile = Seq(
     ws,
     "uk.gov.hmrc"             %% "bootstrap-play-26"            % "1.1.0",
-    "uk.gov.hmrc"             %% "simple-reactivemongo"         % "7.20.0-play-26",
+    "uk.gov.hmrc"             %% "simple-reactivemongo"         % "7.22.0-play-26",
     "com.github.tototoshi"    %% "play-json-naming"             % "1.3.0",
     "com.eclipsesource"       %% "play-json-schema-validator"   % "0.9.4",
     "org.typelevel"           %% "cats"                         % "0.9.0"
