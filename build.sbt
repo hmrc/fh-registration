@@ -34,8 +34,8 @@ lazy val appDependencies: Seq[ModuleID] = compile ++ test()
 
 val compile = Seq(
   ws,
-  "uk.gov.hmrc"             %% "bootstrap-play-26"            % "1.3.0",
-  "uk.gov.hmrc"             %% "simple-reactivemongo"         % "7.23.0-play-26",
+  "uk.gov.hmrc"             %% "bootstrap-play-26"            % "1.7.0",
+  "uk.gov.hmrc"             %% "simple-reactivemongo"         % "7.26.0-play-26",
   "com.github.tototoshi"    %% "play-json-naming"             % "1.3.0",
   "com.eclipsesource"       %% "play-json-schema-validator"   % "0.9.4",
   "org.typelevel"           %% "cats"                         % "0.9.0"
