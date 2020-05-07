@@ -47,7 +47,7 @@ def test(scope: String = "test,it") = Seq(
   "org.scalatestplus.play"  %% "scalatestplus-play"           % "3.1.2"   % scope,
   "org.mockito"              % "mockito-core"                 % "3.2.4"  % scope,
   "org.pegdown"              % "pegdown"                      % "1.6.0"   % scope,
-  "uk.gov.hmrc"             %% "reactivemongo-test"           % "4.16.0-play-26"   % scope,
+  "uk.gov.hmrc"             %% "reactivemongo-test"           % "4.19.0-play-26"   % scope,
   "com.github.tomakehurst"   % "wiremock-jre8"                % "2.26.0"  % scope
 
 )
