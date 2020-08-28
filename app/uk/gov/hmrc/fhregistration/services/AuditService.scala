@@ -17,15 +17,13 @@
 package uk.gov.hmrc.fhregistration.services
 
 import javax.inject.{Inject, Singleton}
-
 import com.google.inject.ImplementedBy
 import play.api.libs.json.JsValue
 import play.api.{Configuration, Environment}
 import uk.gov.hmrc.fhregistration.models.fhdds.{DeregistrationRequest, SubmissionRequest, WithdrawalRequest}
-import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.http.{HeaderCarrier, HttpClient}
 import uk.gov.hmrc.play.audit.AuditExtensions.auditHeaderCarrier
 import uk.gov.hmrc.play.audit.model.DataEvent
-import uk.gov.hmrc.play.bootstrap.http.HttpClient
 
 @ImplementedBy(classOf[DefaultAuditService])
 trait AuditService {
@@ -56,7 +54,7 @@ trait AuditService {
 @Singleton
 class DefaultAuditService @Inject()(
   val http: HttpClient,
-  val runModeConfiguration: Configuration,
+  val configuration: Configuration,
   environment: Environment
 ) extends AuditService {
 

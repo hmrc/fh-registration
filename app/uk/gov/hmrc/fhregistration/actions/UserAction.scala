@@ -21,7 +21,6 @@ import play.api.mvc.{ActionBuilder, Request, Result, _}
 import uk.gov.hmrc.auth.core._
 import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals._
 import uk.gov.hmrc.auth.core.retrieve.~
-import scala.concurrent.ExecutionContext.Implicits.global
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -29,7 +28,7 @@ class UserRequest[A](val userId: String, val registrationNumber: Option[String],
     extends WrappedRequest(request) {}
 
 case class UserAction(authConnector: AuthConnector, cc: ControllerComponents)
-    extends MicroserviceAction with ActionRefiner[Request, UserRequest] with AuthorisedFunctions
+    extends MicroserviceAction()(cc.executionContext) with ActionRefiner[Request, UserRequest] with AuthorisedFunctions
     with ActionBuilder[UserRequest, AnyContent] {
 
   override def parser: BodyParser[AnyContent] = cc.parsers.defaultBodyParser
