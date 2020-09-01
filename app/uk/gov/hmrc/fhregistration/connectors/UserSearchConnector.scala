@@ -20,19 +20,17 @@ import com.google.inject.ImplementedBy
 import javax.inject.Inject
 import play.api.libs.json.JsObject
 import play.api.{Configuration, Environment, Logger}
-import uk.gov.hmrc.http.{HeaderCarrier, HttpErrorFunctions}
-import uk.gov.hmrc.play.bootstrap.config.{RunMode, ServicesConfig}
-import uk.gov.hmrc.play.bootstrap.http.HttpClient
+import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpErrorFunctions}
+import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 class DefaultUserSearchConnector @Inject()(
   val http: HttpClient,
-  val runModeConfiguration: Configuration,
-  val runMode: RunMode,
+  val configuration: Configuration,
   environment: Environment
-) extends ServicesConfig(runModeConfiguration, runMode) with UserSearchConnector {
+) extends ServicesConfig(configuration) with UserSearchConnector {
 
   val serviceBaseUrl = s"${baseUrl("user-search")}/users-groups-search"
 

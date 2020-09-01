@@ -34,21 +34,21 @@ lazy val appDependencies: Seq[ModuleID] = compile ++ test()
 
 val compile = Seq(
   ws,
-  "uk.gov.hmrc"             %% "bootstrap-play-26"            % "1.7.0",
-  "uk.gov.hmrc"             %% "simple-reactivemongo"         % "7.26.0-play-26",
+  "uk.gov.hmrc"             %% "bootstrap-backend-play-26"    % "2.24.0",
+  "uk.gov.hmrc"             %% "simple-reactivemongo"         % "7.30.0-play-26",
   "com.github.tototoshi"    %% "play-json-naming"             % "1.3.0",
   "com.eclipsesource"       %% "play-json-schema-validator"   % "0.9.4",
   "org.typelevel"           %% "cats"                         % "0.9.0"
 )
 
 def test(scope: String = "test,it") = Seq(
-  "uk.gov.hmrc"             %% "service-integration-test"     % "0.9.0-play-26" % scope,
+  "uk.gov.hmrc"             %% "service-integration-test"     % "0.12.0-play-26" % scope,
   "org.scalatest"           %% "scalatest"                    % "3.0.8"   % scope,
   "org.scalatestplus.play"  %% "scalatestplus-play"           % "3.1.2"   % scope,
-  "org.mockito"              % "mockito-core"                 % "3.2.4"  % scope,
+  "org.mockito"              % "mockito-core"                 % "3.5.7"  % scope,
   "org.pegdown"              % "pegdown"                      % "1.6.0"   % scope,
-  "uk.gov.hmrc"             %% "reactivemongo-test"           % "4.19.0-play-26"   % scope,
-  "com.github.tomakehurst"   % "wiremock-jre8"                % "2.26.0"  % scope
+  "uk.gov.hmrc"             %% "reactivemongo-test"           % "4.21.0-play-26"   % scope,
+  "com.github.tomakehurst"   % "wiremock-jre8"                % "2.27.1"  % scope
 
 )
 
@@ -81,6 +81,7 @@ lazy val microservice = Project(appName, file("."))
   .settings(scoverageSettings: _*)
   .settings(scalaSettings: _*)
   .settings(publishingSettings: _*)
+  .settings(scalaVersion := "2.12.11")
   .settings(defaultSettings(): _*)
   .settings(
     libraryDependencies ++= appDependencies,

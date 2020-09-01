@@ -21,17 +21,15 @@ import javax.inject.Inject
 import play.api.libs.json.{JsObject, JsString, Json}
 import play.api.{Configuration, Environment, Logger}
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, _}
-import uk.gov.hmrc.play.bootstrap.config.{RunMode, ServicesConfig}
-import uk.gov.hmrc.play.bootstrap.http.HttpClient
+import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 
 import scala.concurrent.{ExecutionContext, Future}
 
 class DefaultTaxEnrolmentConnector @Inject()(
   val http: HttpClient,
-  val runModeConfiguration: Configuration,
-  val runMode: RunMode,
+  val configuration: Configuration,
   environment: Environment)(implicit val ec: ExecutionContext)
-    extends ServicesConfig(runModeConfiguration, runMode) with TaxEnrolmentConnector {
+    extends ServicesConfig(configuration) with TaxEnrolmentConnector {
 
   val callbackBase = config("tax-enrolments")
     .getOptional[String]("callback")

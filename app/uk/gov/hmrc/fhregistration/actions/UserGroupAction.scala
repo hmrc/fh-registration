@@ -21,14 +21,13 @@ import play.api.mvc._
 import uk.gov.hmrc.auth.core.{AuthConnector, AuthorisedFunctions}
 import scala.concurrent.{ExecutionContext, Future}
 import uk.gov.hmrc.auth.core.retrieve.~
-import scala.concurrent.ExecutionContext.Implicits.global
 import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals._
 
 class UserGroupRequest[A](val userId: String, val groupId: String, request: Request[A]) extends WrappedRequest(request)
 
 case class UserGroupAction(val authConnector: AuthConnector, cc: ControllerComponents)
-    extends MicroserviceAction with ActionRefiner[Request, UserGroupRequest] with AuthorisedFunctions
-    with ActionBuilder[UserGroupRequest, AnyContent] {
+    extends MicroserviceAction()(cc.executionContext) with ActionRefiner[Request, UserGroupRequest]
+    with AuthorisedFunctions with ActionBuilder[UserGroupRequest, AnyContent] {
 
   override def parser: BodyParser[AnyContent] = cc.parsers.defaultBodyParser
   override protected val executionContext: ExecutionContext = cc.executionContext

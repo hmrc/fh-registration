@@ -19,32 +19,27 @@ package uk.gov.hmrc.fhregistration.connectors
 import com.typesafe.config.Config
 import org.scalatest.mockito.MockitoSugar
 import play.api.{Configuration, Environment}
-import uk.gov.hmrc.play.bootstrap.config.{RunMode, ServicesConfig}
-import uk.gov.hmrc.play.bootstrap.http.{DefaultHttpClient, HttpClient}
+import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
+import uk.gov.hmrc.play.bootstrap.http.DefaultHttpClient
 import uk.gov.hmrc.fhregistration.util.UnitSpec
-import uk.gov.hmrc.http.{HttpResponse, Upstream5xxResponse}
+import uk.gov.hmrc.http.{HttpClient, HttpResponse, Upstream5xxResponse}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
 class DesConnectorSpec extends UnitSpec with MockitoSugar {
   class DefaultDesConnectorMock(
     val httpClient: HttpClient,
-    val runModeConfig: Configuration,
-    runMode: RunMode,
+    val config: Configuration,
     environment: Environment,
     servicesConfig: ServicesConfig
-  ) extends DefaultDesConnector(httpClient, runModeConfig, runMode, environment, servicesConfig) {
+  ) extends DefaultDesConnector(httpClient, config, environment, servicesConfig) {
     override def baseUrl(serviceName: scala.Predef.String): scala.Predef.String = serviceName
     override def config(serviceName: scala.Predef.String): Configuration = new Configuration(mock[Config])
   }
 
   "URLs and URIs" should {
-    val desConnectorMock = new DefaultDesConnectorMock(
-      mock[HttpClient],
-      mock[Configuration],
-      mock[RunMode],
-      mock[Environment],
-      mock[ServicesConfig])
+    val desConnectorMock =
+      new DefaultDesConnectorMock(mock[HttpClient], mock[Configuration], mock[Environment], mock[ServicesConfig])
 
     "desServiceStatusUri" in {
       desConnectorMock.desServiceStatusUri shouldBe "des-service"
@@ -68,12 +63,8 @@ class DesConnectorSpec extends UnitSpec with MockitoSugar {
   }
 
   "customDesRead" should {
-    val desConnectorMock = new DefaultDesConnectorMock(
-      mock[HttpClient],
-      mock[Configuration],
-      mock[RunMode],
-      mock[Environment],
-      mock[ServicesConfig])
+    val desConnectorMock =
+      new DefaultDesConnectorMock(mock[HttpClient], mock[Configuration], mock[Environment], mock[ServicesConfig])
 
     "successfully convert 429 from DES to 503" in {
       val httpResponse = HttpResponse(429)

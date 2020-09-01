@@ -23,8 +23,7 @@ import play.api.{Configuration, Environment, Logger}
 import uk.gov.hmrc.fhregistration.models.des.{DesDeregistrationResponse, DesSubmissionResponse, DesWithdrawalResponse, StatusResponse}
 import uk.gov.hmrc.http.logging.Authorization
 import uk.gov.hmrc.http._
-import uk.gov.hmrc.play.bootstrap.config.{RunMode, ServicesConfig}
-import uk.gov.hmrc.play.bootstrap.http.HttpClient
+import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -44,12 +43,11 @@ trait DesConnector extends HttpErrorFunctions {
 @Singleton
 class DefaultDesConnector @Inject()(
   val http: HttpClient,
-  val runModeConfiguration: Configuration,
-  val runMode: RunMode,
+  val configuration: Configuration,
   environment: Environment,
   servicesConfig: ServicesConfig
 )(implicit val ec: ExecutionContext)
-    extends ServicesConfig(runModeConfiguration, runMode) with DesConnector {
+    extends ServicesConfig(configuration) with DesConnector {
 
   def desServiceUri: String = config("des-service").getOptional[String]("uri").getOrElse("")
   def desServiceBaseUri: String = config("des-service").getOptional[String]("baseuri").getOrElse("")
