@@ -21,7 +21,7 @@ import javax.inject.{Inject, Singleton}
 import play.api.libs.json.JsValue
 import play.api.{Configuration, Environment, Logger}
 import uk.gov.hmrc.fhregistration.models.des.{DesDeregistrationResponse, DesSubmissionResponse, DesWithdrawalResponse, StatusResponse}
-import uk.gov.hmrc.http.logging.Authorization
+import uk.gov.hmrc.http.Authorization
 import uk.gov.hmrc.http._
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 
@@ -72,8 +72,8 @@ class DefaultDesConnector @Inject()(
     response.status match {
       case 429 =>
         Logger.error("[RATE LIMITED] Received 429 from DES - converting to 503")
-        throw Upstream5xxResponse("429 received from DES - converted to 503", 429, 503)
-      case _ => handleResponse(http, url)(response)
+        throw UpstreamErrorResponse("429 received from DES - converted to 503", 429, 503)
+      case _ => response
     }
 
   implicit val httpRds = new HttpReads[HttpResponse] {

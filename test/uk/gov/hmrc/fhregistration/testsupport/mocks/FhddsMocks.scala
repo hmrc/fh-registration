@@ -17,9 +17,7 @@
 package uk.gov.hmrc.fhregistration.testsupport.mocks
 
 import java.time.Clock
-
 import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.mockito.MockitoSugar
 import uk.gov.hmrc.fhregistration.actions.Actions
 import uk.gov.hmrc.fhregistration.connectors._
 import uk.gov.hmrc.fhregistration.controllers.FhddsApplicationController
@@ -29,9 +27,10 @@ import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import org.mockito.ArgumentMatchers.any
 import reactivemongo.api.ReadPreference
 import org.mockito.Mockito.when
+import org.scalatestplus.mockito.MockitoSugar
 import play.api.mvc.ControllerComponents
-import scala.concurrent.ExecutionContext.Implicits.global
 
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{ExecutionContext, Future}
 
 trait FhddsMocks extends ScalaFutures with MockitoSugar {

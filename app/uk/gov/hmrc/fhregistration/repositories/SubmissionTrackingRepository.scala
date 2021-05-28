@@ -17,17 +17,17 @@
 package uk.gov.hmrc.fhregistration.repositories
 
 import javax.inject.Inject
-
 import com.google.inject.ImplementedBy
 import play.modules.reactivemongo.ReactiveMongoComponent
-import reactivemongo.api.commands.UpdateWriteResult
+import reactivemongo.api.WriteConcern
+import reactivemongo.api.commands.{Collation, UpdateWriteResult}
 import reactivemongo.api.indexes.{Index, IndexType}
 import reactivemongo.bson.{BSONDocument, BSONObjectID}
-import reactivemongo.play.json.ImplicitBSONHandlers._
+import reactivemongo.play.json.ImplicitBSONHandlers.BSONDocumentWrites
 import uk.gov.hmrc.fhregistration.models.fhdds.EnrolmentProgress.EnrolmentProgress
 import uk.gov.hmrc.mongo.ReactiveRepository
 import uk.gov.hmrc.mongo.json.ReactiveMongoFormats
-
+import scala.concurrent.duration.FiniteDuration
 import scala.concurrent.{ExecutionContext, Future}
 
 @ImplementedBy(classOf[DefaultSubmissionTrackingRepository])
@@ -57,29 +57,43 @@ class DefaultSubmissionTrackingRepository @Inject()(
   import SubmissionTracking.{EnrolmentProgressField, FormBundleIdField, RegistrationNumberField, UserIdField}
 
   override def findSubmissionTrackingByUserId(userId: String) =
-    collection.find(BSONDocument(UserIdField → userId)).one[SubmissionTracking]
+    collection.find(BSONDocument(UserIdField → userId), None).one[SubmissionTracking]
 
   override def findSubmissionTrakingByFormBundleId(formBundleId: String) =
-    collection.find(BSONDocument(FormBundleIdField → formBundleId)).one[SubmissionTracking]
+    collection.find(BSONDocument(FormBundleIdField → formBundleId), None).one[SubmissionTracking]
 
   override def deleteSubmissionTackingByFormBundleId(formBundleId: String): Future[Int] =
-    collection
-      .remove(BSONDocument(FormBundleIdField → formBundleId))
+    collection.delete
+      .one(BSONDocument(FormBundleIdField → formBundleId))
       .map(_.n)
 
   def deleteSubmissionTackingByRegistrationNumber(userId: String, registrationNumber: String): Future[Int] =
-    collection
-      .remove(BSONDocument(UserIdField → userId, RegistrationNumberField → registrationNumber))
+    collection.delete
+      .one(BSONDocument(UserIdField → userId, RegistrationNumberField → registrationNumber))
       .map(_.n)
 
   override def insertSubmissionTracking(submissionTracking: SubmissionTracking): Future[_] =
-    collection.findAndUpdate(BSONDocument(UserIdField → submissionTracking.userId), submissionTracking, upsert = true)
+    collection.findAndUpdate(
+      BSONDocument(UserIdField → submissionTracking.userId),
+      submissionTracking,
+      fetchNewObject = false,
+      upsert = true,
+      sort = None,
+      fields = None,
+      bypassDocumentValidation = false,
+      writeConcern = WriteConcern.Default,
+      maxTime = Option.empty[FiniteDuration],
+      collation = Option.empty[Collation],
+      arrayFilters = Seq.empty
+    )
 
   override def updateEnrolmentProgress(formBundleId: String, progress: EnrolmentProgress): Future[UpdateWriteResult] =
-    collection.update(
-      BSONDocument(FormBundleIdField → formBundleId),
-      BSONDocument("$set" → BSONDocument(EnrolmentProgressField → progress.toString))
-    )
+    collection
+      .update(ordered = false)
+      .one(
+        BSONDocument(FormBundleIdField → formBundleId),
+        BSONDocument("$set" → BSONDocument(EnrolmentProgressField → progress.toString))
+      )
 
   override def ensureIndexes(implicit ec: ExecutionContext): Future[Seq[Boolean]] = {
     val indexes = Future sequence Seq(

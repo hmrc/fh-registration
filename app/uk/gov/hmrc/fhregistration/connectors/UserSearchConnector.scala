@@ -22,7 +22,7 @@ import play.api.libs.json.JsObject
 import play.api.{Configuration, Environment, Logger}
 import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpErrorFunctions}
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
-
+import uk.gov.hmrc.http.HttpReads.Implicits._
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
