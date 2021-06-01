@@ -21,7 +21,6 @@ import javax.inject.{Inject, Singleton}
 import play.api.libs.json.JsValue
 import play.api.{Configuration, Environment, Logger}
 import uk.gov.hmrc.fhregistration.models.des.{DesDeregistrationResponse, DesSubmissionResponse, DesWithdrawalResponse, StatusResponse}
-import uk.gov.hmrc.http.Authorization
 import uk.gov.hmrc.http._
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 
