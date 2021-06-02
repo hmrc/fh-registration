@@ -22,7 +22,7 @@ import play.api.libs.json.{JsObject, JsString, Json}
 import play.api.{Configuration, Environment, Logger}
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, _}
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
-import uk.gov.hmrc.http.HttpReads.Implicits._
+import uk.gov.hmrc.http.HttpReads.Implicits.{readFromJson, readOptionOfNotFound, readRaw}
 import scala.concurrent.{ExecutionContext, Future}
 
 class DefaultTaxEnrolmentConnector @Inject()(
