@@ -22,7 +22,7 @@ import play.api.libs.json.{JsObject, JsString, Json}
 import play.api.{Configuration, Environment, Logger}
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, _}
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
-import uk.gov.hmrc.http.HttpReads.Implicits.{readFromJson, readOptionOfNotFound, readRaw}
+import uk.gov.hmrc.http.HttpReads.Implicits.readRaw
 import scala.concurrent.{ExecutionContext, Future}
 
 class DefaultTaxEnrolmentConnector @Inject()(
@@ -53,12 +53,17 @@ class DefaultTaxEnrolmentConnector @Inject()(
     * @param etmpFormBundleNumber - use this as the subscription id as requested by ETMP
     */
   override def subscribe(safeId: String, etmpFormBundleNumber: String)(
-    implicit hc: HeaderCarrier): Future[Option[JsObject]] = {
+    implicit hc: HeaderCarrier): Future[HttpResponse] = {
     Logger.info(s"Request to tax enrolments authorisation header is present: ${hc.authorization.isDefined}")
-    http.PUT[JsObject, Option[JsObject]](
-      subscriberUrl(etmpFormBundleNumber),
-      requestBody(safeId, etmpFormBundleNumber)
-    )
+    http
+      .PUT[JsObject, HttpResponse](
+        subscriberUrl(etmpFormBundleNumber),
+        requestBody(safeId, etmpFormBundleNumber)
+      )
+      .map { response ⇒
+        if (is2xx(response.status)) response
+        else throw new RuntimeException(s"Unexpected response code '${response.status}'")
+      }
   }
 
   override def deleteGroupEnrolment(groupId: String, registrationNumber: String)(
@@ -80,6 +85,6 @@ class DefaultTaxEnrolmentConnector @Inject()(
 @ImplementedBy(classOf[DefaultTaxEnrolmentConnector])
 trait TaxEnrolmentConnector extends HttpErrorFunctions {
 
-  def subscribe(safeId: String, etmpFormBundleNumber: String)(implicit hc: HeaderCarrier): Future[Option[JsObject]]
+  def subscribe(safeId: String, etmpFormBundleNumber: String)(implicit hc: HeaderCarrier): Future[_]
   def deleteGroupEnrolment(groupId: String, registrationNumber: String)(implicit hc: HeaderCarrier): Future[_]
 }
