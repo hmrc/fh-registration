@@ -38,7 +38,7 @@ import play.api.libs.json.{JsObject, Json}
 import play.api.{Configuration, Environment, Logger}
 import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpErrorFunctions, HttpResponse}
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
-
+import uk.gov.hmrc.http.HttpReads.Implicits._
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
@@ -77,11 +77,11 @@ class DefaultEnrolmentStoreProxyConnector @Inject()(
 
   override def allocateEnrolmentToUser(userId: String, registrationNumber: String)(
     implicit hc: HeaderCarrier): Future[HttpResponse] =
-    http.POSTEmpty(es11Url(userId, registrationNumber))
+    http.POSTEmpty[HttpResponse](es11Url(userId, registrationNumber))
 
   override def deassignEnrolmentFromUser(userId: String, registrationNumber: String)(
     implicit hc: HeaderCarrier): Future[HttpResponse] =
-    http.DELETE(es12Url(userId, registrationNumber))
+    http.DELETE[HttpResponse](es12Url(userId, registrationNumber))
 
   override def userEnrolments(userId: String)(implicit hc: HeaderCarrier): Future[JsObject] =
     http.GET[JsObject](es2Url(userId))

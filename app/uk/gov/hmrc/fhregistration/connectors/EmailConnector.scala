@@ -24,7 +24,7 @@ import play.api.{Configuration, Environment, Logger}
 import uk.gov.hmrc.fhregistration.models.fhdds.{SendEmailRequest, UserData}
 import uk.gov.hmrc.http.{BadGatewayException, HeaderCarrier, HttpClient}
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
-
+import uk.gov.hmrc.http.HttpReads.Implicits.readRaw
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success}
 

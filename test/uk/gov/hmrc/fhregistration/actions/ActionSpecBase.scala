@@ -19,7 +19,7 @@ package uk.gov.hmrc.fhregistration.actions
 import akka.util.Timeout
 import org.scalatest.{BeforeAndAfterEach, Matchers}
 import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.mockito.MockitoSugar
+import org.scalatestplus.mockito.MockitoSugar
 import play.api.http.Status
 import play.api.mvc.{ActionFunction, ActionRefiner, Results}
 import uk.gov.hmrc.fhregistration.util.UnitSpec

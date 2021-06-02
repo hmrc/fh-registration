@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.fhregistration.models.des
 
-import play.api.libs.json.{Format, Json, Reads, Writes}
+import play.api.libs.json.{Format, Reads, Writes}
 
 object DesStatus extends Enumeration {
 

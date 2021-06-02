@@ -17,11 +17,10 @@
 package uk.gov.hmrc.fhregistration.services
 
 import java.time.Clock
-
 import org.scalatest.{BeforeAndAfterEach, Matchers}
 import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.mockito.MockitoSugar
 import org.mockito.Mockito.{reset, when}
+import org.scalatestplus.mockito.MockitoSugar
 import play.modules.reactivemongo.ReactiveMongoComponent
 import uk.gov.hmrc.fhregistration.models.fhdds.EnrolmentProgress
 import uk.gov.hmrc.fhregistration.repositories.DefaultSubmissionTrackingRepository

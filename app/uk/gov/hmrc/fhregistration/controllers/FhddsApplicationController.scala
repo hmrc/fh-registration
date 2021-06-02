@@ -54,11 +54,11 @@ class FhddsApplicationController @Inject()(
 
   import actions._
 
-  def findAllSubmissions = Action.async { implicit request =>
+  def findAllSubmissions = Action.async { _ =>
     repo.findAll().map(x => Ok(Json.toJson(x)))
   }
 
-  def getSubmission(formBundleId: String) = Action.async { implicit request =>
+  def getSubmission(formBundleId: String) = Action.async { _ =>
     repo.findSubmissionTrakingByFormBundleId(formBundleId).map(x => Ok(Json.toJson(x)))
 
   }
@@ -85,12 +85,11 @@ class FhddsApplicationController @Inject()(
           request.emailAddress,
           response.registrationNumber) andThen {
           case _ ⇒
-            subscribeToTaxEnrolment(safeId, desResponse.etmpFormBundleNumber)
-              .onFailure {
-                case e ⇒
-                  submissionTrackingService
-                    .updateSubscriptionTracking(desResponse.etmpFormBundleNumber, EnrolmentProgress.Error)
-              }
+            subscribeToTaxEnrolment(safeId, desResponse.etmpFormBundleNumber).failed.foreach {
+              case e ⇒
+                submissionTrackingService
+                  .updateSubscriptionTracking(desResponse.etmpFormBundleNumber, EnrolmentProgress.Error)
+            }
         }
 
         auditSubmission(response.registrationNumber, event)
@@ -162,7 +161,8 @@ class FhddsApplicationController @Inject()(
     emailParameters: Map[String, String] = Map.empty)(implicit hc: HeaderCarrier, request: Request[AnyRef]) =
     emailConnector
       .sendEmail(emailTemplateId = emailTemplateId, userData = UserData(email), emailParameters)(hc, request, ec)
-      .onFailure {
+      .failed
+      .foreach {
         case t ⇒ Logger.error(s"Failed sending email $emailTemplateId", t)
       }
 
@@ -214,7 +214,7 @@ class FhddsApplicationController @Inject()(
     }
   }
 
-  def deleteSubmission(formBundleId: String) = Action.async { implicit request =>
+  def deleteSubmission(formBundleId: String) = Action.async { _ =>
     submissionTrackingService
       .deleteSubmissionTracking(formBundleId)
       .map(_ => Ok(""))
