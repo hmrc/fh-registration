@@ -1,6 +1,5 @@
 package uk.gov.hmrc.fhdds.testsupport
 
-import scala.collection.JavaConversions._
 import com.github.tomakehurst.wiremock.WireMockServer
 import org.scalatest.concurrent.{IntegrationPatience, PatienceConfiguration}
 import org.scalatest.time.{Millis, Seconds, Span}
@@ -24,8 +23,6 @@ trait TestConfiguration
 
   val wiremockHost: String = "localhost"
   val wiremockPort: Int = Port.randomAvailable
-
-  override lazy val port: Int = Port.randomAvailable
 
   abstract override implicit val patienceConfig: PatienceConfig =
     PatienceConfig(
@@ -72,14 +69,4 @@ trait TestConfiguration
   override protected def afterAll(): Unit = {
     wireMockServer.stop()
   }
-
-  override def afterEach(): Unit = {
-    println("===== REQUESTS =====")
-    wireMockServer.getAllServeEvents.toList
-      .sortBy(_.getRequest.getLoggedDate)
-      .map(_.getRequest).map(r => s"${r.getLoggedDate.toInstant.toEpochMilli}\t${r.getMethod}\t${r.getUrl}")
-      .foreach(println)
-    println("===== END =====")
-  }
-
 }

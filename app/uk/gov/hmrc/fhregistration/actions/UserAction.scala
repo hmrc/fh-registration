@@ -16,8 +16,8 @@
 
 package uk.gov.hmrc.fhregistration.actions
 
-import play.api.Logger
-import play.api.mvc.{ActionBuilder, Request, Result, _}
+import play.api.Logging
+import play.api.mvc._
 import uk.gov.hmrc.auth.core._
 import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals._
 import uk.gov.hmrc.auth.core.retrieve.~
@@ -29,7 +29,7 @@ class UserRequest[A](val userId: String, val registrationNumber: Option[String],
 
 case class UserAction(authConnector: AuthConnector, cc: ControllerComponents)
     extends MicroserviceAction()(cc.executionContext) with ActionRefiner[Request, UserRequest] with AuthorisedFunctions
-    with ActionBuilder[UserRequest, AnyContent] {
+    with ActionBuilder[UserRequest, AnyContent] with Logging {
 
   override def parser: BodyParser[AnyContent] = cc.parsers.defaultBodyParser
   override protected val executionContext: ExecutionContext = cc.executionContext
@@ -48,10 +48,10 @@ case class UserAction(authConnector: AuthConnector, cc: ControllerComponents)
 
     } recover {
       case e: AuthorisationException ⇒
-        Logger.warn(s"Unauthorized user: $e")
+        logger.warn(s"Unauthorized user: $e")
         error(Unauthorized, s"Unauthorized: ${e.getMessage}")
       case e: Throwable ⇒
-        Logger.warn(s"Bad gateway while authorizing user: $e")
+        logger.warn(s"Bad gateway while authorizing user: $e")
         error(BadGateway, s"Bad gateway: ${e.getMessage}")
     }
   }

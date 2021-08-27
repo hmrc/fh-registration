@@ -26,8 +26,8 @@ class FhddsApplicationIntegrationSpecs
 
         val result = WsTestClient.withClient { client ⇒ client
           .url(s"http://localhost:$port/fhdds/subscription/subscribe/$testSafeId")
-          .withHeaders("Content-Type" -> "application/json")
-          .withHeaders("Authorization" → "Bearer token")
+          .addHttpHeaders("Content-Type" -> "application/json")
+          .addHttpHeaders("Authorization" → "Bearer token")
           .post(Json.toJson(validSubmissionRequest)).futureValue
         }
 
@@ -58,7 +58,7 @@ class FhddsApplicationIntegrationSpecs
         val result = WsTestClient.withClient { client ⇒
           client
             .url(s"http://localhost:$port/fhdds/subscription/subscribe/$testSafeId")
-            .withHeaders("Content-Type" -> "application/json")
+            .addHttpHeaders("Content-Type" -> "application/json")
             .post(Json.toJson("")).futureValue
         }
 
@@ -78,8 +78,8 @@ class FhddsApplicationIntegrationSpecs
 
       val result = WsTestClient.withClient { client ⇒ client
         .url(s"http://localhost:$port/fhdds/subscription/subscribe/$testSafeId?currentRegNumber=$testRegistrationNumber")
-        .withHeaders("Content-Type" → "application/json")
-        .withHeaders("Authorization" → "Bearer token")
+        .addHttpHeaders("Content-Type" → "application/json")
+        .addHttpHeaders("Authorization" → "Bearer token")
         .post(Json.toJson(validSubmissionRequest)).futureValue
       }
 
@@ -115,7 +115,7 @@ class FhddsApplicationIntegrationSpecs
     val pendingResult = WsTestClient.withClient { client ⇒
       client
         .url(s"http://localhost:$port/fhdds/subscription/enrolmentProgress")
-        .withHeaders("Authorization" → "Bearer token")
+        .addHttpHeaders("Authorization" → "Bearer token")
         .get().futureValue
     }
     pendingResult.json.as[EnrolmentProgress]

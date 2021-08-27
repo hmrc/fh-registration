@@ -16,29 +16,14 @@
 
 package uk.gov.hmrc.fhregistration.connectors
 
-/*
- * Copyright 2019 HM Revenue & Customs
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 import com.google.inject.ImplementedBy
-import javax.inject.Inject
 import play.api.libs.json.{JsObject, Json}
-import play.api.{Configuration, Environment, Logger}
+import play.api.{Configuration, Environment, Logging}
+import uk.gov.hmrc.http.HttpReads.Implicits._
 import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpErrorFunctions, HttpResponse}
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
-import uk.gov.hmrc.http.HttpReads.Implicits._
+
+import javax.inject.Inject
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
@@ -46,7 +31,7 @@ class DefaultEnrolmentStoreProxyConnector @Inject()(
   val http: HttpClient,
   val configuration: Configuration,
   environment: Environment
-) extends ServicesConfig(configuration) with EnrolmentStoreProxyConnector {
+) extends ServicesConfig(configuration) with EnrolmentStoreProxyConnector with Logging {
 
   val serviceBaseUrl = s"${baseUrl("enrolment-store-proxy")}/enrolment-store-proxy"
   lazy val serviceName = config("tax-enrolments").getOptional[String]("serviceName").getOrElse("HMRC-OBTDS-ORG")
@@ -66,7 +51,7 @@ class DefaultEnrolmentStoreProxyConnector @Inject()(
 
   override def allocateEnrolmentToGroup(userId: String, groupId: String, registrationNumber: String)(
     implicit hc: HeaderCarrier): Future[HttpResponse] = {
-    Logger.info(s"Request to alocate enrolment to group id")
+    logger.info(s"Request to alocate enrolment to group id")
     val jsonRequest = Json.obj(
       "userId" -> userId,
       "type"   -> "principal",

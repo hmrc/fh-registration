@@ -16,20 +16,19 @@
 
 package uk.gov.hmrc.fhregistration.services
 
-import java.time.Clock
-import javax.inject.Inject
-
 import cats.data.OptionT
+import cats.implicits._
 import com.google.inject.ImplementedBy
-import play.api.Logger
+import play.api.Logging
 import uk.gov.hmrc.fhregistration.models.fhdds.EnrolmentProgress
 import uk.gov.hmrc.fhregistration.models.fhdds.EnrolmentProgress.EnrolmentProgress
 import uk.gov.hmrc.fhregistration.repositories.{SubmissionTracking, SubmissionTrackingRepository}
 
+import java.time.Clock
+import javax.inject.Inject
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.util.{Failure, Success}
-import scala.concurrent.ExecutionContext.Implicits.global
-import cats.implicits._
 
 @ImplementedBy(classOf[DefaultSubmissionTrackingService])
 trait SubmissionTrackingService {
@@ -46,7 +45,7 @@ trait SubmissionTrackingService {
 }
 
 class DefaultSubmissionTrackingService @Inject()(repository: SubmissionTrackingRepository, clock: Clock)
-    extends SubmissionTrackingService {
+    extends SubmissionTrackingService with Logging {
   val SubmissionTrackingAgeThresholdMs = 60 * 60 * 1000L
 
   override def enrolmentProgress(userId: String, registrationNumber: Option[String]): Future[EnrolmentProgress] = {
@@ -58,7 +57,7 @@ class DefaultSubmissionTrackingService @Inject()(repository: SubmissionTrackingR
       tracking match {
         case Some(tracking) ⇒
           if (tracking.enrolmentProgress == EnrolmentProgress.Pending && (now - tracking.submissionTime) > SubmissionTrackingAgeThresholdMs) {
-            Logger.error(s"Submission tracking is too old for user $userId. Was made at ${tracking.submissionTime}")
+            logger.error(s"Submission tracking is too old for user $userId. Was made at ${tracking.submissionTime}")
             EnrolmentProgress.Error
           } else {
             tracking.enrolmentProgress
@@ -92,11 +91,11 @@ class DefaultSubmissionTrackingService @Inject()(repository: SubmissionTrackingR
     val result = repository.insertSubmissionTracking(submissionTracking)
     result
       .map { _ ⇒
-        Logger.info(s"Submission tracking record saved for $safeId and etmpFormBundleNumber $etmpFormBundleNumber")
+        logger.info(s"Submission tracking record saved for $safeId and etmpFormBundleNumber $etmpFormBundleNumber")
       }
       .recover {
         case error ⇒
-          Logger.error(
+          logger.error(
             s"Submission tracking record FAILED for $safeId and etmpFormBundleNumber $etmpFormBundleNumber",
             error)
       }
@@ -107,10 +106,10 @@ class DefaultSubmissionTrackingService @Inject()(repository: SubmissionTrackingR
     enrolmentProgress: EnrolmentProgress): Future[_] = {
     val result = repository updateEnrolmentProgress (etmpFormBundleNumber, enrolmentProgress)
     result
-      .map(_ ⇒ Logger.info(s"Submission tracking record saved for etmpFormBundleNumber $etmpFormBundleNumber"))
+      .map(_ ⇒ logger.info(s"Submission tracking record saved for etmpFormBundleNumber $etmpFormBundleNumber"))
       .recover {
         case error ⇒
-          Logger.error(s"Submission tracking record FAILED for etmpFormBundleNumber $etmpFormBundleNumber", error)
+          logger.error(s"Submission tracking record FAILED for etmpFormBundleNumber $etmpFormBundleNumber", error)
       }
   }
 
@@ -121,11 +120,11 @@ class DefaultSubmissionTrackingService @Inject()(repository: SubmissionTrackingR
     repository
       .deleteSubmissionTackingByFormBundleId(formBundleId)
       .andThen {
-        case Success(1) ⇒ Logger.info(s"Submission tracking deleted for $formBundleId")
-        case Success(0) ⇒ Logger.warn(s"Submission tracking not found for $formBundleId")
+        case Success(1) ⇒ logger.info(s"Submission tracking deleted for $formBundleId")
+        case Success(0) ⇒ logger.warn(s"Submission tracking not found for $formBundleId")
         case Success(n) ⇒
-          Logger.error(s"Submission tracking delete for $formBundleId returned an unexpected number of docs: $n")
-        case Failure(e) ⇒ Logger.error(s"Submission tracking delete failed for $formBundleId", e)
+          logger.error(s"Submission tracking delete for $formBundleId returned an unexpected number of docs: $n")
+        case Failure(e) ⇒ logger.error(s"Submission tracking delete failed for $formBundleId", e)
       }
 
 }

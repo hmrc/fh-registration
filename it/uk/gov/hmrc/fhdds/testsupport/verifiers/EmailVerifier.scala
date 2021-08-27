@@ -1,10 +1,9 @@
 package uk.gov.hmrc.fhdds.testsupport.verifiers
 
-import org.scalatest.Matchers
 import com.github.tomakehurst.wiremock.client.WireMock.{postRequestedFor, urlPathEqualTo}
-import uk.gov.hmrc.fhregistration.models.fhdds.SendEmailRequest
-
+import org.scalatest.matchers.should.Matchers
 import play.api.libs.json._
+import uk.gov.hmrc.fhregistration.models.fhdds.SendEmailRequest
 
 case class EmailVerifier()(implicit builder: VerifierBuilder) extends Matchers with VerifierFunctions {
 

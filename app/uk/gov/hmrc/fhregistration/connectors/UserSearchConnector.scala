@@ -17,12 +17,13 @@
 package uk.gov.hmrc.fhregistration.connectors
 
 import com.google.inject.ImplementedBy
-import javax.inject.Inject
 import play.api.libs.json.JsObject
-import play.api.{Configuration, Environment, Logger}
+import play.api.{Configuration, Environment, Logging}
+import uk.gov.hmrc.http.HttpReads.Implicits._
 import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpErrorFunctions}
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
-import uk.gov.hmrc.http.HttpReads.Implicits._
+
+import javax.inject.Inject
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
@@ -30,7 +31,7 @@ class DefaultUserSearchConnector @Inject()(
   val http: HttpClient,
   val configuration: Configuration,
   environment: Environment
-) extends ServicesConfig(configuration) with UserSearchConnector {
+) extends ServicesConfig(configuration) with UserSearchConnector with Logging {
 
   val serviceBaseUrl = s"${baseUrl("user-search")}/users-groups-search"
 
@@ -39,7 +40,7 @@ class DefaultUserSearchConnector @Inject()(
   private def groupInfoUrl(groupId: String) = s"$serviceBaseUrl/groups/$groupId/users"
 
   override def retrieveUserInfo(userId: String)(implicit hc: HeaderCarrier): Future[JsObject] = {
-    Logger.info(s"Request to user groups search")
+    logger.info(s"Request to user groups search")
     http.GET[JsObject](userInfoUrl(userId))
   }
 

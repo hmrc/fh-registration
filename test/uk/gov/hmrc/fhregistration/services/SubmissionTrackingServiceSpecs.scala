@@ -16,17 +16,18 @@
 
 package uk.gov.hmrc.fhregistration.services
 
-import java.time.Clock
-import org.scalatest.{BeforeAndAfterEach, Matchers}
-import org.scalatest.concurrent.ScalaFutures
 import org.mockito.Mockito.{reset, when}
+import org.scalatest.BeforeAndAfterEach
+import org.scalatest.concurrent.ScalaFutures
+import org.scalatest.matchers.should.Matchers
 import org.scalatestplus.mockito.MockitoSugar
 import play.modules.reactivemongo.ReactiveMongoComponent
 import uk.gov.hmrc.fhregistration.models.fhdds.EnrolmentProgress
 import uk.gov.hmrc.fhregistration.repositories.DefaultSubmissionTrackingRepository
-import uk.gov.hmrc.mongo.MongoSpecSupport
 import uk.gov.hmrc.fhregistration.util.UnitSpec
+import uk.gov.hmrc.mongo.MongoSpecSupport
 
+import java.time.Clock
 import scala.concurrent.ExecutionContext.Implicits.global
 
 class SubmissionTrackingServiceSpecs
@@ -40,7 +41,6 @@ class SubmissionTrackingServiceSpecs
 
   override protected def beforeEach(): Unit = {
     await(repository.drop)
-    await(repository.ensureIndexes)
     reset(mockClock)
     when(mockClock.millis()).thenReturn(System.currentTimeMillis())
   }

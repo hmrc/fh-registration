@@ -1,8 +1,7 @@
 package uk.gov.hmrc.fhdds.testsupport.verifiers
 
-import com.github.tomakehurst.wiremock.client.WireMock.{deleteRequestedFor, urlPathEqualTo, urlMatching, putRequestedFor}
-import org.scalatest.Matchers
-
+import com.github.tomakehurst.wiremock.client.WireMock.{deleteRequestedFor, putRequestedFor, urlMatching, urlPathEqualTo}
+import org.scalatest.matchers.should.Matchers
 
 case class TaxEnrolmentsVerifier()(implicit builder: VerifierBuilder) extends Matchers with VerifierFunctions {
 

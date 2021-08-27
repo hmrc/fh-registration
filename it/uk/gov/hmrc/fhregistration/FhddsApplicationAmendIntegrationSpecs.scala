@@ -22,7 +22,7 @@ class FhddsApplicationAmendIntegrationSpecs
           whenReady(
             client
               .url(s"http://localhost:$port/fhdds/subscription/amend/$testRegistrationNumber")
-              .withHeaders("Content-Type" -> "application/json")
+              .addHttpHeaders("Content-Type" -> "application/json")
               .post(Json.toJson(validAmendSubmissionRequest)))
           { result ⇒
             result.status shouldBe 200
@@ -44,7 +44,7 @@ class FhddsApplicationAmendIntegrationSpecs
           whenReady(
             client
               .url(s"http://localhost:$port/fhdds/subscription/amend/$testRegistrationNumber")
-              .withHeaders("Content-Type" -> "application/json")
+              .addHttpHeaders("Content-Type" -> "application/json")
               .post(Json.toJson("")))
           { result ⇒
             result.status shouldBe 400

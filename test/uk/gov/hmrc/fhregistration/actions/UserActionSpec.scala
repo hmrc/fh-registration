@@ -16,21 +16,18 @@
 
 package uk.gov.hmrc.fhregistration.actions
 
-import akka.actor.ActorSystem
-import akka.stream.ActorMaterializer
-import org.mockito.Mockito.{reset, when}
-import play.api.test.FakeRequest
-import uk.gov.hmrc.auth.core._
 import org.mockito.ArgumentMatchers.any
+import org.mockito.Mockito.{reset, when}
 import play.api.mvc.ControllerComponents
-import uk.gov.hmrc.auth.core.retrieve.{Retrieval, ~}
+import play.api.test.{FakeRequest, Helpers}
 import play.api.test.Helpers._
+import uk.gov.hmrc.auth.core._
+import uk.gov.hmrc.auth.core.retrieve.{Retrieval, ~}
 import uk.gov.hmrc.fhregistration.testsupport.UserTestData
-import play.api.test.Helpers
+
 import scala.concurrent.Future
 
 class UserActionSpec extends ActionSpecBase {
-  implicit val materializer = ActorMaterializer()(ActorSystem())
 
   val mockAuthConnector = mock[AuthConnector]
   val controllerComponents: ControllerComponents = Helpers.stubControllerComponents()
@@ -41,7 +38,7 @@ class UserActionSpec extends ActionSpecBase {
   }
 
   val request = FakeRequest()
-  val action = new UserAction(mockAuthConnector, controllerComponents)
+  val action = UserAction(mockAuthConnector, controllerComponents)
 
   "refine" should {
     "Fail with BAD_REQUEST when the internal user id can no be found" in {

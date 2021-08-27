@@ -1,10 +1,11 @@
 package uk.gov.hmrc.fhdds.testsupport
 
 import java.net.ServerSocket
-import play.api.Logger._
+import play.api.Logging
+
 import scala.annotation.tailrec
 
-object Port {
+object Port extends Logging  {
   val rnd = new scala.util.Random
   val range = 8000 to 39999
   val usedPorts = List[Int]()
@@ -17,11 +18,11 @@ object Port {
       case p: Int => {
         available(p) match {
           case false => {
-            debug(s"Port $p is in use, trying another")
+            logger.debug(s"Port $p is in use, trying another")
             randomAvailable
           }
           case true => {
-            debug("Taking port : " + p)
+            logger.debug("Taking port : " + p)
             usedPorts :+ p
             p
           }
