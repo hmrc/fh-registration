@@ -17,19 +17,20 @@
 package uk.gov.hmrc.fhregistration.connectors
 
 import com.google.inject.ImplementedBy
-import javax.inject.Inject
 import play.api.libs.json.{JsObject, JsString, Json}
-import play.api.{Configuration, Environment, Logger}
+import play.api.{Configuration, Environment, Logging}
+import uk.gov.hmrc.http.HttpReads.Implicits.readRaw
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, _}
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
-import uk.gov.hmrc.http.HttpReads.Implicits.readRaw
+
+import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
 class DefaultTaxEnrolmentConnector @Inject()(
   val http: HttpClient,
   val configuration: Configuration,
   environment: Environment)(implicit val ec: ExecutionContext)
-    extends ServicesConfig(configuration) with TaxEnrolmentConnector {
+    extends ServicesConfig(configuration) with TaxEnrolmentConnector with Logging {
 
   val callbackBase = config("tax-enrolments")
     .getOptional[String]("callback")
@@ -54,7 +55,7 @@ class DefaultTaxEnrolmentConnector @Inject()(
     */
   override def subscribe(safeId: String, etmpFormBundleNumber: String)(
     implicit hc: HeaderCarrier): Future[HttpResponse] = {
-    Logger.info(s"Request to tax enrolments authorisation header is present: ${hc.authorization.isDefined}")
+    logger.info(s"Request to tax enrolments authorisation header is present: ${hc.authorization.isDefined}")
     http
       .PUT[JsObject, HttpResponse](
         subscriberUrl(etmpFormBundleNumber),

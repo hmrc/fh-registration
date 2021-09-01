@@ -17,8 +17,8 @@ class FhddsApplicationWithdrawalsIntegrationSpecs
         val responseForWithdrawal = WsTestClient.withClient { client ⇒
           client
             .url(s"http://localhost:$port/fhdds/subscription/withdrawal/$testRegistrationNumber")
-            .withHeaders("Content-Type" -> "application/json")
-            .withHeaders("Authorization" → "Bearer token")
+            .addHttpHeaders("Content-Type" -> "application/json")
+            .addHttpHeaders("Authorization" → "Bearer token")
             .post(testInvalidWithdrawalBody).futureValue
         }
         responseForWithdrawal.status shouldBe 400
@@ -36,8 +36,8 @@ class FhddsApplicationWithdrawalsIntegrationSpecs
         val responseForWithdrawal = WsTestClient.withClient { client ⇒
           client
             .url(s"http://localhost:$port/fhdds/subscription/withdrawal/$testRegistrationNumber")
-            .withHeaders("Content-Type" -> "application/json")
-            .withHeaders("Authorization" → "Bearer token")
+            .addHttpHeaders("Content-Type" -> "application/json")
+            .addHttpHeaders("Authorization" → "Bearer token")
             .post(testWithdrawalBody).futureValue
         }
         responseForWithdrawal.status shouldBe 400
@@ -55,8 +55,8 @@ class FhddsApplicationWithdrawalsIntegrationSpecs
         val responseForWithdrawal = WsTestClient.withClient { client ⇒
           client
             .url(s"http://localhost:$port/fhdds/subscription/withdrawal/$testRegistrationNumber")
-            .withHeaders("Content-Type" -> "application/json")
-            .withHeaders("Authorization" → "Bearer token")
+            .addHttpHeaders("Content-Type" -> "application/json")
+            .addHttpHeaders("Authorization" → "Bearer token")
             .post(testWithdrawalBody).futureValue
         }
         responseForWithdrawal.status shouldBe 200

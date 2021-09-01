@@ -16,11 +16,8 @@
 
 package uk.gov.hmrc.fhregistration.controllers
 
-import java.text.SimpleDateFormat
-
 import cats.implicits._
-import javax.inject.Inject
-import play.api.Logger
+import play.api.Logging
 import play.api.libs.json.Json
 import play.api.mvc.{ControllerComponents, Request}
 import uk.gov.hmrc.fhregistration.actions.Actions
@@ -37,6 +34,8 @@ import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import uk.gov.hmrc.play.audit.model.DataEvent
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
+import java.text.SimpleDateFormat
+import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success}
 
@@ -50,7 +49,7 @@ class FhddsApplicationController @Inject()(
   val cc: ControllerComponents,
   val actions: Actions,
   val repo: DefaultSubmissionTrackingRepository)(implicit val ec: ExecutionContext)
-    extends BackendController(cc) {
+    extends BackendController(cc) with Logging {
 
   import actions._
 
@@ -70,7 +69,7 @@ class FhddsApplicationController @Inject()(
         desResponse ← desConnector.sendSubmission(safeId, request.submission)(hc)
         response = SubmissionResponse(desResponse.registrationNumberFHDDS, desResponse.processingDate)
       } yield {
-        Logger.info(s"Received registration number ${desResponse.registrationNumberFHDDS} for safeId $safeId")
+        logger.info(s"Received registration number ${desResponse.registrationNumberFHDDS} for safeId $safeId")
 
         currentRegNumber foreach { regNumber ⇒
           taxEnrolmentConnector.deleteGroupEnrolment(r.groupId, regNumber)
@@ -163,53 +162,53 @@ class FhddsApplicationController @Inject()(
       .sendEmail(emailTemplateId = emailTemplateId, userData = UserData(email), emailParameters)(hc, request, ec)
       .failed
       .foreach {
-        case t ⇒ Logger.error(s"Failed sending email $emailTemplateId", t)
+        case t ⇒ logger.error(s"Failed sending email $emailTemplateId", t)
       }
 
   private def auditSubmission(registrationNumber: String, event: DataEvent)(implicit hc: HeaderCarrier) = {
 
-    Logger.info(s"Sending audit event for registrationNumber $registrationNumber")
+    logger.info(s"Sending audit event for registrationNumber $registrationNumber")
 
     auditConnector
       .sendEvent(event)(hc, ec)
-      .map(auditResult ⇒ Logger.info(s"Received audit result $auditResult for registrationNumber $registrationNumber"))
+      .map(auditResult ⇒ logger.info(s"Received audit result $auditResult for registrationNumber $registrationNumber"))
       .recover {
-        case t: Throwable ⇒ Logger.error(s"Audit failed for registrationNumber $registrationNumber", t)
+        case t: Throwable ⇒ logger.error(s"Audit failed for registrationNumber $registrationNumber", t)
       }
 
   }
 
   private def subscribeToTaxEnrolment(safeId: String, etmpFormBundleNumber: String)(
     implicit hc: HeaderCarrier): Future[_] = {
-    Logger.info(
+    logger.info(
       s"Sending subscription for safeId = $safeId for etmpFormBundelNumber = $etmpFormBundleNumber to tax enrolments")
     taxEnrolmentConnector
       .subscribe(safeId, etmpFormBundleNumber)(hc)
       .andThen({
         case Success(r) ⇒
-          Logger.info(
+          logger.info(
             s"Tax enrolments for subscription $safeId and etmpFormBundleNumber $etmpFormBundleNumber returned $r")
         case Failure(e) ⇒
-          Logger
+          logger
             .error(s"Tax enrolments for subscription $safeId and etmpFormBundleNumber $etmpFormBundleNumber failed", e)
       })
   }
 
   def subscriptionCallback(formBundleId: String) = Action.async(parse.json[TaxEnrolmentsCallback]) { implicit request ⇒
     val data = request.body
-    Logger.info(s"Received subscription callback for formBundleId: $formBundleId with data: $data")
+    logger.info(s"Received subscription callback for formBundleId: $formBundleId with data: $data")
     if (data.succeeded) {
 
       submissionTrackingService
         .getSubmissionTrackingEmail(formBundleId)
-        .fold(Logger.error(s"Could not find enrolment tracking data for bundleId $formBundleId"))(email ⇒
+        .fold(logger.error(s"Could not find enrolment tracking data for bundleId $formBundleId"))(email ⇒
           sendEmail(email))
         .andThen { case _ ⇒ submissionTrackingService deleteSubmissionTracking formBundleId }
         .map(_ ⇒ Ok(""))
         .recover { case _ ⇒ Ok("") }
 
     } else {
-      Logger.error(s"Tax enrolment failed for $formBundleId: ${data.errorResponse} ($data)")
+      logger.error(s"Tax enrolment failed for $formBundleId: ${data.errorResponse} ($data)")
       Future successful Ok("")
     }
   }
@@ -234,7 +233,7 @@ class FhddsApplicationController @Inject()(
   def get(fhddsRegistrationNumber: String) = Action.async { implicit request ⇒
     desConnector.display(fhddsRegistrationNumber)(hc) map { resp ⇒
       val dfsResponseStatus = resp.status
-      Logger.info(s"Got back subscription data for $fhddsRegistrationNumber with status $dfsResponseStatus")
+      logger.info(s"Got back subscription data for $fhddsRegistrationNumber with status $dfsResponseStatus")
       dfsResponseStatus match {
         case 200 ⇒ Ok(resp.json)
         case 400 ⇒ BadRequest("Submission has not passed validation. Invalid parameter FHDDS Registration Number.")
@@ -259,7 +258,7 @@ class FhddsApplicationController @Inject()(
       case Withdrawal ⇒ FhddsStatus.Withdrawn
       case Deregistered ⇒ FhddsStatus.Deregistered
       case _ ⇒
-        Logger.error(s"Unknown status received from des: $desStatus")
+        logger.error(s"Unknown status received from des: $desStatus")
         throw new IllegalArgumentException(s"des status: $desStatus")
     }
 

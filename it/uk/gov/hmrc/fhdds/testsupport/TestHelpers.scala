@@ -1,15 +1,17 @@
 package uk.gov.hmrc.fhdds.testsupport
 
 
+import org.scalatest.OptionValues
 import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.{Matchers, OptionValues, WordSpec, WordSpecLike}
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.{AnyWordSpec, AnyWordSpecLike}
 import org.scalatestplus.play.WsScalaTestClient
 
 trait TestHelpers
-  extends WordSpec
+  extends AnyWordSpec
     with OptionValues
     with WsScalaTestClient
-    with WordSpecLike
+    with AnyWordSpecLike
     with Matchers
     with ScalaFutures {
 

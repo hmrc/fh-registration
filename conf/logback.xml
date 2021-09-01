@@ -51,7 +51,7 @@
     <logger name="application" level="INFO"/>
     <logger name="org.asynchttpclient.netty.channel.DefaultChannelPool" level="INFO"/>
 
-    <logger name="reactivemongo" level="INFO"/>
+    <logger name="reactivemongo" level="WARN"/>
 
     <logger name="connector" level="INFO">
         <appender-ref ref="STDOUT"/>

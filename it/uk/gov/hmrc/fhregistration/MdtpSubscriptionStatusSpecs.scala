@@ -2,7 +2,6 @@ package uk.gov.hmrc.fhregistration
 
 import play.api.test.WsTestClient
 import uk.gov.hmrc.fhdds.testsupport.{TestConfiguration, TestHelpers}
-import uk.gov.hmrc.fhregistration.models.des.StatusResponse
 
 class MdtpSubscriptionStatusSpecs
   extends TestHelpers with TestConfiguration {

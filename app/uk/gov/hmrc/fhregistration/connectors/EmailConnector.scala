@@ -17,14 +17,14 @@
 package uk.gov.hmrc.fhregistration.connectors
 
 import com.google.inject.ImplementedBy
-import javax.inject.Inject
-import play.api.Mode
 import play.api.mvc.Request
-import play.api.{Configuration, Environment, Logger}
+import play.api.{Configuration, Environment, Logging, Mode}
 import uk.gov.hmrc.fhregistration.models.fhdds.{SendEmailRequest, UserData}
+import uk.gov.hmrc.http.HttpReads.Implicits.readRaw
 import uk.gov.hmrc.http.{BadGatewayException, HeaderCarrier, HttpClient}
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
-import uk.gov.hmrc.http.HttpReads.Implicits.readRaw
+
+import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success}
 
@@ -32,7 +32,7 @@ class DefaultEmailConnector @Inject()(
   val http: HttpClient,
   val configuration: Configuration,
   environment: Environment
-) extends ServicesConfig(configuration) with EmailConnector {
+) extends ServicesConfig(configuration) with EmailConnector with Logging {
 
   val emailUrl: String = baseUrl("email") + "/hmrc/email"
   override val defaultEmailTemplateID: String =
@@ -52,7 +52,7 @@ class DefaultEmailConnector @Inject()(
     val email: SendEmailRequest =
       SendEmailRequest(templateId = emailTemplateId, to = toList, parameters = emailParameters, force = true)
 
-    Logger.debug(s"Sending email, SendEmailRequest=$email")
+    logger.debug(s"Sending email, SendEmailRequest=$email")
 
     val futureResult = http.POST(emailUrl, email).map { response ⇒
       if (response.status >= 200 && response.status < 300)
@@ -63,9 +63,9 @@ class DefaultEmailConnector @Inject()(
 
     futureResult.onComplete {
       case Success(_) ⇒
-        Logger.info(s"Email sent")
+        logger.info(s"Email sent")
       case Failure(t) ⇒
-        Logger.error(s"Email failure", t)
+        logger.error(s"Email failure", t)
     }
     futureResult
   }

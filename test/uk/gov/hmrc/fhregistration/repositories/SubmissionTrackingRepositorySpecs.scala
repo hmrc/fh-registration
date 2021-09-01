@@ -16,15 +16,17 @@
 
 package uk.gov.hmrc.fhregistration.repositories
 
+import org.scalatest.BeforeAndAfterEach
 import org.scalatest.concurrent.Eventually
-import org.scalatest.{BeforeAndAfterEach, Matchers, WordSpec}
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpec
 import play.modules.reactivemongo.ReactiveMongoComponent
 import uk.gov.hmrc.fhregistration.models.fhdds.EnrolmentProgress
 import uk.gov.hmrc.fhregistration.util.LogCapturing
 import uk.gov.hmrc.mongo.{Awaiting, CurrentTime, MongoSpecSupport}
 
 class SubmissionTrackingRepositorySpecs
-    extends WordSpec with Matchers with MongoSpecSupport with BeforeAndAfterEach with Awaiting with CurrentTime
+    extends AnyWordSpec with Matchers with MongoSpecSupport with BeforeAndAfterEach with Awaiting with CurrentTime
     with Eventually with LogCapturing {
 
   implicit val reactiveMongoComponent = new ReactiveMongoComponent {
@@ -33,10 +35,8 @@ class SubmissionTrackingRepositorySpecs
 
   val repository = new DefaultSubmissionTrackingRepository()
 
-  override protected def beforeEach(): Unit = {
+  override protected def beforeEach(): Unit =
     await(repository.drop)
-    await(repository.ensureIndexes)
-  }
 
   "Inserting a new record" should {
     "Be successful" in {
