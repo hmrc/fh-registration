@@ -112,7 +112,7 @@ class DefaultSubmissionTrackingRepository @Inject()(implicit mongo: MongoCompone
           Updates.set("email", submissionTracking.email),
           Updates.set("submissionTime", submissionTracking.submissionTime),
           Updates.set("enrolmentProgressOpt", Codecs.toBson(submissionTracking.enrolmentProgressOpt)),
-          Updates.set("registrationNumber", submissionTracking.registrationNumber)
+          Updates.set("registrationNumber", Codecs.toBson(submissionTracking.registrationNumber))
         ),
         options = FindOneAndUpdateOptions().upsert(true).returnDocument(ReturnDocument.AFTER)
       )
