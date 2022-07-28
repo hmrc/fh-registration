@@ -54,11 +54,11 @@ class FhddsApplicationController @Inject()(
   import actions._
 
   def findAllSubmissions = Action.async { _ =>
-    repo.findAll().map(x => Ok(Json.toJson(x)))
+    repo.findAll().map(submissionTrackingList => Ok(Json.toJson(submissionTrackingList)))
   }
 
   def getSubmission(formBundleId: String) = Action.async { _ =>
-    repo.findSubmissionTrakingByFormBundleId(formBundleId).map(x => Ok(Json.toJson(x)))
+    repo.findSubmissionTrackingByFormBundleId(formBundleId).map(x => Ok(Json.toJson(x)))
 
   }
 

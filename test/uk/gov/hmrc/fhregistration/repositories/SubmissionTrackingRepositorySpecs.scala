@@ -46,7 +46,7 @@ class SubmissionTrackingRepositorySpecs
       val byUserId = await(repository.findSubmissionTrackingByUserId(anUserId)).get
       byUserId shouldEqual tracking
 
-      val byFormBunldeId = await(repository.findSubmissionTrakingByFormBundleId(aFormBundleId)).get
+      val byFormBunldeId = await(repository.findSubmissionTrackingByFormBundleId(aFormBundleId)).get
       byFormBunldeId shouldEqual tracking
 
     }
