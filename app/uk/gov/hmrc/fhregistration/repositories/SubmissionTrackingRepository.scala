@@ -125,7 +125,7 @@ class DefaultSubmissionTrackingRepository @Inject()(implicit mongo: MongoCompone
     collection
       .findOneAndUpdate(
         filter = Filters.equal(FormBundleIdField, formBundleId),
-        update = Updates.set("EnrolmentProgressField", progress.toString)
+        update = Updates.set(EnrolmentProgressField, progress.toString)
       )
       .collect()
       .toFuture()
