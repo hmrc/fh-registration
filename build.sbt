@@ -14,12 +14,14 @@ val appName = "fh-registration"
 
 val playVersion = "play-28"
 
+val mongoVersion = "0.68.0"
+
 lazy val appDependencies: Seq[ModuleID] = compile ++ test()
 
 val compile = Seq(
   ws,
   "uk.gov.hmrc"             %% s"bootstrap-backend-$playVersion"    % "5.12.0",
-  "uk.gov.hmrc"             %% "simple-reactivemongo"               % s"8.0.0-$playVersion",
+  "uk.gov.hmrc.mongo"       %% s"hmrc-mongo-$playVersion"                 % mongoVersion,
   "com.github.tototoshi"    %% "play-json-naming"                   % "1.5.0",
   "org.typelevel"           %% "cats-core"                          % "2.6.1",
   compilerPlugin("com.github.ghik" % "silencer-plugin"  % "1.7.4" cross CrossVersion.full),
@@ -30,8 +32,8 @@ def test(scope: String = "test,it") = Seq(
   "org.scalatest"           %% "scalatest"                    % "3.2.9"   % scope,
   "org.scalatestplus.play"  %% "scalatestplus-play"           % "5.1.0"   % scope,
   "com.vladsch.flexmark"     % "flexmark-all"                 % "0.35.10" % scope,
-  "org.scalatestplus"       %% "mockito-3-4"                % "3.2.9.0" % scope,
-  "uk.gov.hmrc"             %% "reactivemongo-test"           % s"5.0.0-$playVersion"   % scope,
+  "org.scalatestplus"       %% "mockito-3-4"                  % "3.2.9.0" % scope,
+  "uk.gov.hmrc.mongo"       %% s"hmrc-mongo-test-$playVersion"      % mongoVersion % scope,
   "com.github.tomakehurst"   %  "wiremock-standalone"         % "2.27.1"  % scope,
 )
 

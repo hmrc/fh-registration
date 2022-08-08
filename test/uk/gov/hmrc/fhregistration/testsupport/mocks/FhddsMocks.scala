@@ -24,14 +24,12 @@ import uk.gov.hmrc.fhregistration.controllers.FhddsApplicationController
 import uk.gov.hmrc.fhregistration.repositories.{DefaultSubmissionTrackingRepository, SubmissionTracking, SubmissionTrackingRepository}
 import uk.gov.hmrc.fhregistration.services.{AuditService, DefaultSubmissionTrackingService}
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
-import org.mockito.ArgumentMatchers.any
-import reactivemongo.api.ReadPreference
 import org.mockito.Mockito.when
 import org.scalatestplus.mockito.MockitoSugar
 import play.api.mvc.ControllerComponents
 
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.Future
 
 trait FhddsMocks extends ScalaFutures with MockitoSugar {
 
@@ -43,10 +41,10 @@ trait FhddsMocks extends ScalaFutures with MockitoSugar {
   val mockSubmissionTrackingRepository: SubmissionTrackingRepository = mock[SubmissionTrackingRepository]
   val mockSubmissionTrackingService =
     new DefaultSubmissionTrackingService(mockSubmissionTrackingRepository, Clock.systemDefaultZone())
-  val mockControllerComponents = mock[ControllerComponents]
-  val mockActions = mock[Actions]
-  val mockRepository = mock[DefaultSubmissionTrackingRepository]
-  when(mockRepository.findAll(any[ReadPreference])(any[ExecutionContext])) thenReturn
+  val mockControllerComponents: ControllerComponents = mock[ControllerComponents]
+  val mockActions: Actions = mock[Actions]
+  val mockRepository: DefaultSubmissionTrackingRepository = mock[DefaultSubmissionTrackingRepository]
+  when(mockRepository.findAll()) thenReturn
     Future.successful(List(new SubmissionTracking("1", "2", "3", 0, None, None)))
 
   var fhddsApplicationControllerWithMocks = new FhddsApplicationController(

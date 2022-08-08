@@ -114,7 +114,7 @@ class DefaultSubmissionTrackingService @Inject()(repository: SubmissionTrackingR
   }
 
   override def getSubmissionTrackingEmail(formBundleId: String): OptionT[Future, String] =
-    OptionT(repository.findSubmissionTrakingByFormBundleId(formBundleId)).map(_.email)
+    OptionT(repository.findSubmissionTrackingByFormBundleId(formBundleId)).map(_.email)
 
   override def deleteSubmissionTracking(formBundleId: String): Future[_] =
     repository

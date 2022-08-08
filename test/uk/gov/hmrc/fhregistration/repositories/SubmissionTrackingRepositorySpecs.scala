@@ -16,27 +16,25 @@
 
 package uk.gov.hmrc.fhregistration.repositories
 
-import org.scalatest.BeforeAndAfterEach
-import org.scalatest.concurrent.Eventually
+import org.scalatest.BeforeAndAfterAll
+import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
-import play.modules.reactivemongo.ReactiveMongoComponent
+import play.api.test.Helpers._
 import uk.gov.hmrc.fhregistration.models.fhdds.EnrolmentProgress
-import uk.gov.hmrc.fhregistration.util.LogCapturing
-import uk.gov.hmrc.mongo.{Awaiting, CurrentTime, MongoSpecSupport}
+import uk.gov.hmrc.fhregistration.repositories.SubmissionTrackingRepositorySpecs._
+import uk.gov.hmrc.mongo.test.DefaultPlayMongoRepositorySupport
+
+import scala.concurrent.ExecutionContext.Implicits
 
 class SubmissionTrackingRepositorySpecs
-    extends AnyWordSpec with Matchers with MongoSpecSupport with BeforeAndAfterEach with Awaiting with CurrentTime
-    with Eventually with LogCapturing {
+    extends AnyWordSpec with Matchers with DefaultPlayMongoRepositorySupport[SubmissionTracking] with BeforeAndAfterAll
+    with ScalaFutures {
 
-  implicit val reactiveMongoComponent = new ReactiveMongoComponent {
-    override def mongoConnector = mongoConnectorForTest
-  }
+  override lazy val repository = new DefaultSubmissionTrackingRepository()(mongoComponent, Implicits.global)
 
-  val repository = new DefaultSubmissionTrackingRepository()
-
-  override protected def beforeEach(): Unit =
-    await(repository.drop)
+  override protected def beforeAll(): Unit =
+    dropDatabase()
 
   "Inserting a new record" should {
     "Be successful" in {
@@ -46,7 +44,7 @@ class SubmissionTrackingRepositorySpecs
       val byUserId = await(repository.findSubmissionTrackingByUserId(anUserId)).get
       byUserId shouldEqual tracking
 
-      val byFormBunldeId = await(repository.findSubmissionTrakingByFormBundleId(aFormBundleId)).get
+      val byFormBunldeId = await(repository.findSubmissionTrackingByFormBundleId(aFormBundleId)).get
       byFormBunldeId shouldEqual tracking
 
     }
@@ -107,13 +105,16 @@ class SubmissionTrackingRepositorySpecs
     }
   }
 
-  def mkSubmissionTracking = SubmissionTracking(
-    anUserId,
-    aFormBundleId,
-    anEmail,
-    System.currentTimeMillis(),
-    EnrolmentProgress.Pending,
-    "XXFH00000123432"
+}
+
+object SubmissionTrackingRepositorySpecs {
+  def mkSubmissionTracking: SubmissionTracking = SubmissionTracking(
+    userId = anUserId,
+    formBundleId = aFormBundleId,
+    email = anEmail,
+    submissionTime = System.currentTimeMillis(),
+    enrolmentProgress = EnrolmentProgress.Pending,
+    registrationNumber = "XXFH00000123432"
   )
 
   val anUserId = "userid-1"
