@@ -49,7 +49,6 @@ class DefaultSubmissionTrackingRepository @Inject()(implicit mongo: MongoCompone
       collectionName = "submission-tracking",
       mongoComponent = mongo,
       domainFormat = SubmissionTracking.formats,
-      replaceIndexes = true,
       indexes = Seq(
         IndexModel(
           Indexes.ascending(UserIdField),
