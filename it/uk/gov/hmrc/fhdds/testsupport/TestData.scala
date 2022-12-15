@@ -49,9 +49,9 @@ object TestData {
   val validAmendSubmissionRequest: SubmissionRequest = SubmissionRequest(testUserEmail, validAmendFormData)
 
   val someTaxEnrolmentResponse: JsObject = Json.obj(
-    "serviceName" → JsString("serviceName"),
-    "callback" → JsString("callback"),
-    "etmpId" → JsString("etmpId"))
+    "serviceName" -> JsString("serviceName"),
+    "callback" -> JsString("callback"),
+    "etmpId" -> JsString("etmpId"))
 
   val aSubmissionRequest: SubmissionRequest = SubmissionRequest(
     emailAddress = "a@a.test",

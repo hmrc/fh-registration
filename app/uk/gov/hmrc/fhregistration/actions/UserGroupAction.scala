@@ -36,15 +36,15 @@ case class UserGroupAction(val authConnector: AuthConnector, cc: ControllerCompo
     implicit val r = request
 
     authorised().retrieve(internalId and groupIdentifier) {
-      case Some(userId) ~ Some(groupId) ⇒
+      case Some(userId) ~ Some(groupId) =>
         Future successful Right(new UserGroupRequest[A](userId, groupId, request))
-      case _ ⇒
+      case _ =>
         logger.error("group id not found")
         Future successful error(BadRequest, "group id not found")
     }
 
   } recover {
-    case e ⇒
+    case e =>
       logger.warn("Unauthorized user", e)
       error(Unauthorized, s"Unauthorized: ${e.getMessage}")
   }

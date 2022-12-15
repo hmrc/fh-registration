@@ -14,18 +14,16 @@ val appName = "fh-registration"
 
 val playVersion = "play-28"
 
-val mongoVersion = "0.68.0"
+val mongoVersion = "0.74.0"
 
 lazy val appDependencies: Seq[ModuleID] = compile ++ test()
 
 val compile = Seq(
   ws,
-  "uk.gov.hmrc"             %% s"bootstrap-backend-$playVersion"    % "7.8.0",
+  "uk.gov.hmrc"             %% s"bootstrap-backend-$playVersion"    % "7.12.0",
   "uk.gov.hmrc.mongo"       %% s"hmrc-mongo-$playVersion"                 % mongoVersion,
   "com.github.tototoshi"    %% "play-json-naming"                   % "1.5.0",
-  "org.typelevel"           %% "cats-core"                          % "2.6.1",
-  compilerPlugin("com.github.ghik" % "silencer-plugin"  % "1.7.4" cross CrossVersion.full),
-  "com.github.ghik"         % "silencer-lib"                        % "1.7.4" % Provided cross CrossVersion.full
+  "org.typelevel"           %% "cats-core"                          % "2.9.0",
 )
 
 def test(scope: String = "test,it") = Seq(
@@ -62,14 +60,16 @@ lazy val microservice = Project(appName, file("."))
   .settings(scoverageSettings: _*)
   .settings(scalaSettings: _*)
   .settings(publishingSettings: _*)
-  .settings(scalaVersion := "2.12.13")
+  .settings(scalaVersion := "2.13.10")
   .settings(defaultSettings(): _*)
   .settings(
     libraryDependencies ++= appDependencies,
     retrieveManaged := true,
     update / evictionWarningOptions := EvictionWarningOptions.default.withWarnScalaVersionEviction(false),
     Compile / scalafmtOnCompile := true,
-    Test / scalafmtOnCompile := true
+    Test / scalafmtOnCompile := true,
+    scalacOptions += "-Wconf:src=routes/.*:s",
+    scalacOptions += "-Wconf:cat=unused-imports&src=html/.*:s",
   )
   .configs(IntegrationTest)
   .settings(inConfig(IntegrationTest)(Defaults.itSettings): _*)
@@ -82,7 +82,6 @@ lazy val microservice = Project(appName, file("."))
     IntegrationTest / parallelExecution := false,
     IntegrationTest / scalafmtOnCompile := true)
   .settings(resolvers += "third-party-maven-releases" at "https://artefacts.tax.service.gov.uk/artifactory/third-party-maven-releases/")
-  .settings(scalacOptions += "-P:silencer:pathFilters=routes")
   .settings(Global / lintUnusedKeysOnLoad := false)
 
 def oneForkedJvmPerTest(tests: Seq[TestDefinition]) = {

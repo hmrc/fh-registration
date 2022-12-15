@@ -19,7 +19,7 @@ class MdtpSubscriptionStatusSpecs
           .audit.writesAuditOrMerged()
           .des.getStatus(s"$receivedRegistrationNumber")
 
-        val response = WsTestClient.withClient { client ⇒
+        val response = WsTestClient.withClient { client =>
           client
             .url(s"http://localhost:$port/fhdds/subscription/$receivedRegistrationNumber/status")
             .get().futureValue
@@ -34,7 +34,7 @@ class MdtpSubscriptionStatusSpecs
           .audit.writesAuditOrMerged()
           .des.getStatus(s"$processingRegistrationNumber")
 
-        val response = WsTestClient.withClient { client ⇒
+        val response = WsTestClient.withClient { client =>
           client
             .url(s"http://localhost:$port/fhdds/subscription/$processingRegistrationNumber/status")
             .get().futureValue
@@ -49,7 +49,7 @@ class MdtpSubscriptionStatusSpecs
           .audit.writesAuditOrMerged()
           .des.getStatus(s"$successfulRegistrationNumber")
 
-        val response = WsTestClient.withClient { client ⇒
+        val response = WsTestClient.withClient { client =>
           client
             .url(s"http://localhost:$port/fhdds/subscription/$successfulRegistrationNumber/status")
             .get().futureValue

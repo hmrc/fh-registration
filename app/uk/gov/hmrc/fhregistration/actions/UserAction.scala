@@ -41,16 +41,16 @@ case class UserAction(authConnector: AuthConnector, cc: ControllerComponents)
     implicit val r = request
 
     authorised().retrieve(internalId and allEnrolments) {
-      case Some(id) ~ enrolments ⇒
+      case Some(id) ~ enrolments =>
         Future successful Right(new UserRequest(id, registrationNumber(enrolments), request))
-      case _ ⇒
+      case _ =>
         Future successful error(BadRequest, "Can not find user id")
 
     } recover {
-      case e: AuthorisationException ⇒
+      case e: AuthorisationException =>
         logger.warn(s"Unauthorized user: $e")
         error(Unauthorized, s"Unauthorized: ${e.getMessage}")
-      case e: Throwable ⇒
+      case e: Throwable =>
         logger.warn(s"Bad gateway while authorizing user: $e")
         error(BadGateway, s"Bad gateway: ${e.getMessage}")
     }
@@ -58,10 +58,10 @@ case class UserAction(authConnector: AuthConnector, cc: ControllerComponents)
 
   private def registrationNumber(enrolments: Enrolments): Option[String] = {
     val fhddsRegistrationNumbers = for {
-      enrolment ← enrolments.enrolments
+      enrolment <- enrolments.enrolments
       if enrolment.key equalsIgnoreCase serviceName
 
-      identifier ← enrolment.identifiers
+      identifier <- enrolment.identifiers
       if identifier.key equalsIgnoreCase identifierName
       if identifier.value.slice(2, 4) == "FH"
 

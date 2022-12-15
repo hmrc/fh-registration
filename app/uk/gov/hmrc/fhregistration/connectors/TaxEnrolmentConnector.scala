@@ -61,7 +61,7 @@ class DefaultTaxEnrolmentConnector @Inject()(
         subscriberUrl(etmpFormBundleNumber),
         requestBody(safeId, etmpFormBundleNumber)
       )
-      .map { response ⇒
+      .map { response =>
         if (is2xx(response.status)) response
         else throw new RuntimeException(s"Unexpected response code '${response.status}'")
       }
@@ -69,7 +69,7 @@ class DefaultTaxEnrolmentConnector @Inject()(
 
   override def deleteGroupEnrolment(groupId: String, registrationNumber: String)(
     implicit hc: HeaderCarrier): Future[_] =
-    http.DELETE[HttpResponse](groupEnrolmentUrl(groupId, registrationNumber)).map { response ⇒
+    http.DELETE[HttpResponse](groupEnrolmentUrl(groupId, registrationNumber)).map { response =>
       if (is2xx(response.status)) response.body
       else throw new RuntimeException(s"Unexpected response code '${response.status}'")
 
@@ -77,9 +77,9 @@ class DefaultTaxEnrolmentConnector @Inject()(
 
   private def requestBody(etmpId: String, etmpFormBundleNumber: String): JsObject =
     Json.obj(
-      "serviceName" → JsString(serviceName),
-      "callback" → JsString(callback(etmpFormBundleNumber)),
-      "etmpId" → JsString(etmpId)
+      "serviceName" -> JsString(serviceName),
+      "callback"    -> JsString(callback(etmpFormBundleNumber)),
+      "etmpId"      -> JsString(etmpId)
     )
 }
 

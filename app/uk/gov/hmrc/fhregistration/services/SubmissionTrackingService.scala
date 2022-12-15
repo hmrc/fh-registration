@@ -51,25 +51,25 @@ class DefaultSubmissionTrackingService @Inject()(repository: SubmissionTrackingR
   override def enrolmentProgress(userId: String, registrationNumber: Option[String]): Future[EnrolmentProgress] = {
     val now = clock.millis()
     for {
-      _ ← clearSubmissionTrackingForRegNumber(userId, registrationNumber)
-      tracking ← repository.findSubmissionTrackingByUserId(userId)
+      _        <- clearSubmissionTrackingForRegNumber(userId, registrationNumber)
+      tracking <- repository.findSubmissionTrackingByUserId(userId)
     } yield {
       tracking match {
-        case Some(tracking) ⇒
+        case Some(tracking) =>
           if (tracking.enrolmentProgress == EnrolmentProgress.Pending && (now - tracking.submissionTime) > SubmissionTrackingAgeThresholdMs) {
             logger.error(s"Submission tracking is too old for user $userId. Was made at ${tracking.submissionTime}")
             EnrolmentProgress.Error
           } else {
             tracking.enrolmentProgress
           }
-        case None ⇒
+        case None =>
           EnrolmentProgress.Unknown
       }
     }
   }
 
   private def clearSubmissionTrackingForRegNumber(userId: String, registrationNumber: Option[String]): Future[Int] =
-    registrationNumber.fold(Future successful 0) { r ⇒
+    registrationNumber.fold(Future successful 0) { r =>
       repository.deleteSubmissionTackingByRegistrationNumber(userId, r)
     }
 
@@ -90,11 +90,11 @@ class DefaultSubmissionTrackingService @Inject()(repository: SubmissionTrackingR
 
     val result = repository.insertSubmissionTracking(submissionTracking)
     result
-      .map { _ ⇒
+      .map { _ =>
         logger.info(s"Submission tracking record saved for $safeId and etmpFormBundleNumber $etmpFormBundleNumber")
       }
       .recover {
-        case error ⇒
+        case error =>
           logger.error(
             s"Submission tracking record FAILED for $safeId and etmpFormBundleNumber $etmpFormBundleNumber",
             error)
@@ -104,11 +104,11 @@ class DefaultSubmissionTrackingService @Inject()(repository: SubmissionTrackingR
   override def updateSubscriptionTracking(
     etmpFormBundleNumber: String,
     enrolmentProgress: EnrolmentProgress): Future[_] = {
-    val result = repository updateEnrolmentProgress (etmpFormBundleNumber, enrolmentProgress)
+    val result = repository.updateEnrolmentProgress(etmpFormBundleNumber, enrolmentProgress)
     result
-      .map(_ ⇒ logger.info(s"Submission tracking record saved for etmpFormBundleNumber $etmpFormBundleNumber"))
+      .map(_ => logger.info(s"Submission tracking record saved for etmpFormBundleNumber $etmpFormBundleNumber"))
       .recover {
-        case error ⇒
+        case error =>
           logger.error(s"Submission tracking record FAILED for etmpFormBundleNumber $etmpFormBundleNumber", error)
       }
   }
@@ -120,11 +120,11 @@ class DefaultSubmissionTrackingService @Inject()(repository: SubmissionTrackingR
     repository
       .deleteSubmissionTackingByFormBundleId(formBundleId)
       .andThen {
-        case Success(1) ⇒ logger.info(s"Submission tracking deleted for $formBundleId")
-        case Success(0) ⇒ logger.warn(s"Submission tracking not found for $formBundleId")
-        case Success(n) ⇒
+        case Success(1) => logger.info(s"Submission tracking deleted for $formBundleId")
+        case Success(0) => logger.warn(s"Submission tracking not found for $formBundleId")
+        case Success(n) =>
           logger.error(s"Submission tracking delete for $formBundleId returned an unexpected number of docs: $n")
-        case Failure(e) ⇒ logger.error(s"Submission tracking delete failed for $formBundleId", e)
+        case Failure(e) => logger.error(s"Submission tracking delete failed for $formBundleId", e)
       }
 
 }

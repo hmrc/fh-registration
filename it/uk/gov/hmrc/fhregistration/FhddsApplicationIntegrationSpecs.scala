@@ -24,10 +24,10 @@ class FhddsApplicationIntegrationSpecs
           .user.isAuthorised()
 
 
-        val result = WsTestClient.withClient { client ⇒ client
+        val result = WsTestClient.withClient { client => client
           .url(s"http://localhost:$port/fhdds/subscription/subscribe/$testSafeId")
           .addHttpHeaders("Content-Type" -> "application/json")
-          .addHttpHeaders("Authorization" → "Bearer token")
+          .addHttpHeaders("Authorization" -> "Bearer token")
           .post(Json.toJson(validSubmissionRequest)).futureValue
         }
 
@@ -55,7 +55,7 @@ class FhddsApplicationIntegrationSpecs
           .taxEnrolment.subscribe
           .email.sendEmail
 
-        val result = WsTestClient.withClient { client ⇒
+        val result = WsTestClient.withClient { client =>
           client
             .url(s"http://localhost:$port/fhdds/subscription/subscribe/$testSafeId")
             .addHttpHeaders("Content-Type" -> "application/json")
@@ -76,10 +76,10 @@ class FhddsApplicationIntegrationSpecs
         .email.sendEmail
         .user.isAuthorised()
 
-      val result = WsTestClient.withClient { client ⇒ client
+      val result = WsTestClient.withClient { client => client
         .url(s"http://localhost:$port/fhdds/subscription/subscribe/$testSafeId?currentRegNumber=$testRegistrationNumber")
-        .addHttpHeaders("Content-Type" → "application/json")
-        .addHttpHeaders("Authorization" → "Bearer token")
+        .addHttpHeaders("Content-Type" -> "application/json")
+        .addHttpHeaders("Authorization" -> "Bearer token")
         .post(Json.toJson(validSubmissionRequest)).futureValue
       }
 
@@ -102,7 +102,7 @@ class FhddsApplicationIntegrationSpecs
 
   private def makeTaxEnrolmentsCallback = {
     val taxEnrolmentsCallback = TaxEnrolmentsCallback("", "SUCCEEDED", None)
-    val callbackResult = WsTestClient.withClient { client ⇒
+    val callbackResult = WsTestClient.withClient { client =>
       client
         .url(s"http://localhost:$port/fhdds/tax-enrolment/callback/subscriptions/$testEtmpFormBundleNumber")
         .post(Json.toJson(taxEnrolmentsCallback)).futureValue
@@ -112,10 +112,10 @@ class FhddsApplicationIntegrationSpecs
   }
 
   private def enrolmentProgress = {
-    val pendingResult = WsTestClient.withClient { client ⇒
+    val pendingResult = WsTestClient.withClient { client =>
       client
         .url(s"http://localhost:$port/fhdds/subscription/enrolmentProgress")
-        .addHttpHeaders("Authorization" → "Bearer token")
+        .addHttpHeaders("Authorization" -> "Bearer token")
         .get().futureValue
     }
     pendingResult.json.as[EnrolmentProgress]
