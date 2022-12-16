@@ -2,7 +2,7 @@ package uk.gov.hmrc.fhdds.testsupport
 
 import java.net.ServerSocket
 import play.api.Logging
-
+import scala.language.postfixOps
 import scala.annotation.tailrec
 
 object Port extends Logging  {

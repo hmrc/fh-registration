@@ -34,7 +34,7 @@ object TestData {
   val testSafeId = "XE0001234567890"
   val testRegistrationNumber = "XEFH0001234567890"
   val anotherRegistrationNumber = "XEFH0001234567891"
-  val testEtmpFormBundleNumber: String = Array.fill(9)((math.random * 10).toInt).mkString
+  val testEtmpFormBundleNumber: String = Array.fill(9)((math.random() * 10).toInt).mkString
   val validFormData: String = {
     scala.io.Source.fromFile(s"$directoryPath$file").mkString
   }
