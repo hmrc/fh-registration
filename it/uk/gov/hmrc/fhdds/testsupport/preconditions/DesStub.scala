@@ -11,9 +11,9 @@ case class DesStub()(implicit builder: PreconditionBuilder) {
 
   import DesSubmissionResponse.submissionResponseFormat
 
-  val receivedJson: JsValue = JsObject(Seq("subscriptionStatus" → JsString("Reg Form Received")))
-  val processingJson: JsValue = JsObject(Seq("subscriptionStatus" → JsString("Sent to RCM")))
-  val successfulJson: JsValue = JsObject(Seq("subscriptionStatus" → JsString("Successful")))
+  val receivedJson: JsValue = JsObject(Seq("subscriptionStatus" -> JsString("Reg Form Received")))
+  val processingJson: JsValue = JsObject(Seq("subscriptionStatus" -> JsString("Sent to RCM")))
+  val successfulJson: JsValue = JsObject(Seq("subscriptionStatus" -> JsString("Successful")))
 
   def acceptsSubscription(safeId: String, registrationNumber: String, etmpFormNumberBundle: String) = {
     stubFor(
@@ -65,9 +65,9 @@ case class DesStub()(implicit builder: PreconditionBuilder) {
         .willReturn(
           ok(
             registrationID match {
-              case "receivedRegistrationNumber" ⇒ receivedJson.toString()
-              case "processingRegistrationNumber" ⇒ processingJson.toString()
-              case "successfulRegistrationNumber" ⇒ successfulJson.toString()
+              case "receivedRegistrationNumber" => receivedJson.toString()
+              case "processingRegistrationNumber" => processingJson.toString()
+              case "successfulRegistrationNumber" => successfulJson.toString()
             }
           )
         )

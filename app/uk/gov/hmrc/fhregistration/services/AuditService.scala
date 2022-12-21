@@ -106,8 +106,8 @@ class DefaultAuditService @Inject()(
   )(implicit hc: HeaderCarrier): DataEvent = {
 
     val additionalDetails: Seq[(String, String)] = Seq(
-      "submissionRef" → registrationNumber,
-      "submissionData" → data.toString()
+      "submissionRef"  -> registrationNumber,
+      "submissionData" -> data.toString()
     )
 
     DataEvent(

@@ -34,7 +34,7 @@ object TestData {
   val testSafeId = "XE0001234567890"
   val testRegistrationNumber = "XEFH0001234567890"
   val anotherRegistrationNumber = "XEFH0001234567891"
-  val testEtmpFormBundleNumber: String = Array.fill(9)((math.random * 10).toInt).mkString
+  val testEtmpFormBundleNumber: String = Array.fill(9)((math.random() * 10).toInt).mkString
   val validFormData: String = {
     scala.io.Source.fromFile(s"$directoryPath$file").mkString
   }
@@ -49,9 +49,9 @@ object TestData {
   val validAmendSubmissionRequest: SubmissionRequest = SubmissionRequest(testUserEmail, validAmendFormData)
 
   val someTaxEnrolmentResponse: JsObject = Json.obj(
-    "serviceName" → JsString("serviceName"),
-    "callback" → JsString("callback"),
-    "etmpId" → JsString("etmpId"))
+    "serviceName" -> JsString("serviceName"),
+    "callback" -> JsString("callback"),
+    "etmpId" -> JsString("etmpId"))
 
   val aSubmissionRequest: SubmissionRequest = SubmissionRequest(
     emailAddress = "a@a.test",

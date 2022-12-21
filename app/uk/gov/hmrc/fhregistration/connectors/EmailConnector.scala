@@ -54,7 +54,7 @@ class DefaultEmailConnector @Inject()(
 
     logger.debug(s"Sending email, SendEmailRequest=$email")
 
-    val futureResult = http.POST(emailUrl, email).map { response ⇒
+    val futureResult = http.POST(emailUrl, email).map { response =>
       if (response.status >= 200 && response.status < 300)
         true
       else
@@ -62,9 +62,9 @@ class DefaultEmailConnector @Inject()(
     }
 
     futureResult.onComplete {
-      case Success(_) ⇒
+      case Success(_) =>
         logger.info(s"Email sent")
-      case Failure(t) ⇒
+      case Failure(t) =>
         logger.error(s"Email failure", t)
     }
     futureResult

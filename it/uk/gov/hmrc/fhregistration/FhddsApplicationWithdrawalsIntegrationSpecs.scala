@@ -14,11 +14,11 @@ class FhddsApplicationWithdrawalsIntegrationSpecs
           .des.acceptsWithdrawal(testRegistrationNumber)
           .email.sendEmail
 
-        val responseForWithdrawal = WsTestClient.withClient { client ⇒
+        val responseForWithdrawal = WsTestClient.withClient { client =>
           client
             .url(s"http://localhost:$port/fhdds/subscription/withdrawal/$testRegistrationNumber")
             .addHttpHeaders("Content-Type" -> "application/json")
-            .addHttpHeaders("Authorization" → "Bearer token")
+            .addHttpHeaders("Authorization" -> "Bearer token")
             .post(testInvalidWithdrawalBody).futureValue
         }
         responseForWithdrawal.status shouldBe 400
@@ -33,11 +33,11 @@ class FhddsApplicationWithdrawalsIntegrationSpecs
           .email.sendEmail
           .user.isAuthorisedWithNoGroup()
 
-        val responseForWithdrawal = WsTestClient.withClient { client ⇒
+        val responseForWithdrawal = WsTestClient.withClient { client =>
           client
             .url(s"http://localhost:$port/fhdds/subscription/withdrawal/$testRegistrationNumber")
             .addHttpHeaders("Content-Type" -> "application/json")
-            .addHttpHeaders("Authorization" → "Bearer token")
+            .addHttpHeaders("Authorization" -> "Bearer token")
             .post(testWithdrawalBody).futureValue
         }
         responseForWithdrawal.status shouldBe 400
@@ -52,11 +52,11 @@ class FhddsApplicationWithdrawalsIntegrationSpecs
           .user.isAuthorised()
           .taxEnrolment.acceptsDeEnrolment()
 
-        val responseForWithdrawal = WsTestClient.withClient { client ⇒
+        val responseForWithdrawal = WsTestClient.withClient { client =>
           client
             .url(s"http://localhost:$port/fhdds/subscription/withdrawal/$testRegistrationNumber")
             .addHttpHeaders("Content-Type" -> "application/json")
-            .addHttpHeaders("Authorization" → "Bearer token")
+            .addHttpHeaders("Authorization" -> "Bearer token")
             .post(testWithdrawalBody).futureValue
         }
         responseForWithdrawal.status shouldBe 200

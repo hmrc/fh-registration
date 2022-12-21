@@ -19,7 +19,7 @@ trait TestConfiguration
     with BeforeAndAfterEach
     with BeforeAndAfterAll {
 
-  me: Suite with TestSuite ⇒
+  me: Suite with TestSuite =>
 
   val wiremockHost: String = "localhost"
   val wiremockPort: Int = Port.randomAvailable
@@ -46,11 +46,10 @@ trait TestConfiguration
 
   private def replaceWithWiremock(services: Seq[String]) =
     services.foldLeft(Map.empty[String, Any]) { (configMap, service) =>
-      configMap + (
-        s"microservice.services.$service.host" -> wiremockHost,
-        s"microservice.services.$service.port" -> wiremockPort)
-    } +
-      (s"auditing.consumer.baseUri.host" -> wiremockHost, s"auditing.consumer.baseUri.port" -> wiremockPort)
+          configMap.+(
+                  s"microservice.services.$service.host" -> wiremockHost,
+                  s"microservice.services.$service.port" -> wiremockPort)
+        }.+(s"auditing.consumer.baseUri.host" -> wiremockHost, s"auditing.consumer.baseUri.port" -> wiremockPort)
 
   val wireMockServer = new WireMockServer(wireMockConfig().port(wiremockPort))
 

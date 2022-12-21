@@ -18,13 +18,13 @@ class FhddsApplicationAmendIntegrationSpecs
           .des.acceptsAmendSubscription(testRegistrationNumber, testEtmpFormBundleNumber)
           .email.sendEmail
 
-        WsTestClient.withClient { client ⇒
+        WsTestClient.withClient { client =>
           whenReady(
             client
               .url(s"http://localhost:$port/fhdds/subscription/amend/$testRegistrationNumber")
               .addHttpHeaders("Content-Type" -> "application/json")
               .post(Json.toJson(validAmendSubmissionRequest)))
-          { result ⇒
+          { result =>
             result.status shouldBe 200
           }
         }
@@ -40,13 +40,13 @@ class FhddsApplicationAmendIntegrationSpecs
           .des.acceptsAmendSubscription(testRegistrationNumber, testEtmpFormBundleNumber)
           .email.sendEmail
 
-        WsTestClient.withClient { client ⇒
+        WsTestClient.withClient { client =>
           whenReady(
             client
               .url(s"http://localhost:$port/fhdds/subscription/amend/$testRegistrationNumber")
               .addHttpHeaders("Content-Type" -> "application/json")
               .post(Json.toJson("")))
-          { result ⇒
+          { result =>
             result.status shouldBe 400
           }
         }

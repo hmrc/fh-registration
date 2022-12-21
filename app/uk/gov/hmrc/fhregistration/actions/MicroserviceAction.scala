@@ -32,7 +32,7 @@ class MicroserviceAction @Inject()(implicit val ec: ExecutionContext) extends Re
   def error(status: Status, message: String) = {
     val body = JsObject(
       Seq(
-        "reason" → JsString(message)
+        "reason" -> JsString(message)
       )
     )
 

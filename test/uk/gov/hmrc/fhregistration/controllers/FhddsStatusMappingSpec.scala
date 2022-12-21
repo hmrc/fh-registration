@@ -28,84 +28,84 @@ class FhddsStatusMappingSpec extends UnitSpec with FhddsMocks {
 
   "mdtpSubscriptionStatus" should {
     "map MDTP subscription status to received from DES status" in {
-      val json: JsValue = JsObject(Seq("subscriptionStatus" → JsString("Reg Form Received")))
+      val json: JsValue = JsObject(Seq("subscriptionStatus" -> JsString("Reg Form Received")))
       val mdtpStatus = fhddsApplicationController.mdtpSubscriptionStatus(json.as[StatusResponse].subscriptionStatus)
 
       mdtpStatus shouldBe FhddsStatus.Received
     }
 
     "map MDTP subscription status to Processing from DES status for Sent To DS" in {
-      val json: JsValue = JsObject(Seq("subscriptionStatus" → JsString("Sent To DS")))
+      val json: JsValue = JsObject(Seq("subscriptionStatus" -> JsString("Sent To DS")))
       val mdtpStatus = fhddsApplicationController.mdtpSubscriptionStatus(json.as[StatusResponse].subscriptionStatus)
 
       mdtpStatus shouldBe FhddsStatus.Processing
     }
 
     "map MDTP subscription status to Processing from DES status for In processing" in {
-      val json: JsValue = JsObject(Seq("subscriptionStatus" → JsString("In processing")))
+      val json: JsValue = JsObject(Seq("subscriptionStatus" -> JsString("In processing")))
       val mdtpStatus = fhddsApplicationController.mdtpSubscriptionStatus(json.as[StatusResponse].subscriptionStatus)
 
       mdtpStatus shouldBe FhddsStatus.Processing
     }
 
     "map MDTP subscription status to Processing from DES status for DS Outcome In Progress" in {
-      val json: JsValue = JsObject(Seq("subscriptionStatus" → JsString("DS Outcome In Progress")))
+      val json: JsValue = JsObject(Seq("subscriptionStatus" -> JsString("DS Outcome In Progress")))
       val mdtpStatus = fhddsApplicationController.mdtpSubscriptionStatus(json.as[StatusResponse].subscriptionStatus)
 
       mdtpStatus shouldBe FhddsStatus.Processing
     }
 
     "map MDTP subscription status to Processing from DES status for Sent to RCM" in {
-      val json: JsValue = JsObject(Seq("subscriptionStatus" → JsString("Sent to RCM")))
+      val json: JsValue = JsObject(Seq("subscriptionStatus" -> JsString("Sent to RCM")))
       val mdtpStatus = fhddsApplicationController.mdtpSubscriptionStatus(json.as[StatusResponse].subscriptionStatus)
 
       mdtpStatus shouldBe FhddsStatus.Processing
     }
 
     "map MDTP subscription status to Successful from DES status" in {
-      val json: JsValue = JsObject(Seq("subscriptionStatus" → JsString("Successful")))
+      val json: JsValue = JsObject(Seq("subscriptionStatus" -> JsString("Successful")))
       val mdtpStatus = fhddsApplicationController.mdtpSubscriptionStatus(json.as[StatusResponse].subscriptionStatus)
 
       mdtpStatus shouldBe FhddsStatus.Approved
     }
 
     "map MDTP subscription status to Rejected from DES status" in {
-      val json: JsValue = JsObject(Seq("subscriptionStatus" → JsString("Rejected")))
+      val json: JsValue = JsObject(Seq("subscriptionStatus" -> JsString("Rejected")))
       val mdtpStatus = fhddsApplicationController.mdtpSubscriptionStatus(json.as[StatusResponse].subscriptionStatus)
 
       mdtpStatus shouldBe FhddsStatus.Rejected
     }
 
     "map MDTP subscription status to ApprovedWithConditions from DES status" in {
-      val json: JsValue = JsObject(Seq("subscriptionStatus" → JsString("Approved with Conditions")))
+      val json: JsValue = JsObject(Seq("subscriptionStatus" -> JsString("Approved with Conditions")))
       val mdtpStatus = fhddsApplicationController.mdtpSubscriptionStatus(json.as[StatusResponse].subscriptionStatus)
 
       mdtpStatus shouldBe FhddsStatus.ApprovedWithConditions
     }
 
     "map MDTP subscription status to Revoked from DES status" in {
-      val json: JsValue = JsObject(Seq("subscriptionStatus" → JsString("Revoked")))
+      val json: JsValue = JsObject(Seq("subscriptionStatus" -> JsString("Revoked")))
       val mdtpStatus = fhddsApplicationController.mdtpSubscriptionStatus(json.as[StatusResponse].subscriptionStatus)
 
       mdtpStatus shouldBe FhddsStatus.Revoked
     }
 
     "map MDTP subscription status to Withdrawal from DES status" in {
-      val json: JsValue = JsObject(Seq("subscriptionStatus" → JsString("Withdrawal")))
+      val json: JsValue = JsObject(Seq("subscriptionStatus" -> JsString("Withdrawal")))
       val mdtpStatus = fhddsApplicationController.mdtpSubscriptionStatus(json.as[StatusResponse].subscriptionStatus)
 
       mdtpStatus shouldBe FhddsStatus.Withdrawn
     }
 
     "map MDTP subscription status to Deregistered from DES status" in {
-      val json: JsValue = JsObject(Seq("subscriptionStatus" → JsString("De-Registered")))
+      val json: JsValue = JsObject(Seq("subscriptionStatus" -> JsString("De-Registered")))
       val mdtpStatus = fhddsApplicationController.mdtpSubscriptionStatus(json.as[StatusResponse].subscriptionStatus)
 
       mdtpStatus shouldBe FhddsStatus.Deregistered
     }
 
     "throw exception in case of unexpected status " in {
-      val json: JsValue = JsObject(Seq("subscriptionStatus" → JsString("Contract Object Inactive")))
+      val json: JsValue = JsObject(Seq("subscriptionStatus" -> JsString("Contract Object Inactive")))
 
       an[IllegalArgumentException] should be thrownBy fhddsApplicationController.mdtpSubscriptionStatus(
         json.as[StatusResponse].subscriptionStatus)

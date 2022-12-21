@@ -23,6 +23,7 @@ import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpecLike
 import play.api.libs.json.{JsValue, Json}
 import play.api.mvc.Result
+import scala.language.postfixOps
 
 import java.nio.charset.Charset
 import scala.concurrent.ExecutionContext.Implicits.global
