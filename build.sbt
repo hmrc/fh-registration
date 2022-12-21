@@ -32,7 +32,7 @@ def test(scope: String = "test,it") = Seq(
   "com.vladsch.flexmark"     % "flexmark-all"                 % "0.35.10" % scope,
   "org.scalatestplus"       %% "mockito-3-4"                  % "3.2.9.0" % scope,
   "uk.gov.hmrc.mongo"       %% s"hmrc-mongo-test-$playVersion"      % mongoVersion % scope,
-  "com.github.tomakehurst"   %  "wiremock-standalone"         % "2.27.1"  % scope,
+  "com.github.tomakehurst"   %  "wiremock-standalone"         % "2.27.2"  % scope,
 )
 
 lazy val plugins : Seq[Plugins] = Seq.empty
@@ -81,7 +81,6 @@ lazy val microservice = Project(appName, file("."))
     IntegrationTest / testGrouping := oneForkedJvmPerTest((IntegrationTest / definedTests).value),
     IntegrationTest / parallelExecution := false,
     IntegrationTest / scalafmtOnCompile := true)
-  .settings(resolvers += "third-party-maven-releases" at "https://artefacts.tax.service.gov.uk/artifactory/third-party-maven-releases/")
   .settings(Global / lintUnusedKeysOnLoad := false)
 
 def oneForkedJvmPerTest(tests: Seq[TestDefinition]) = {
