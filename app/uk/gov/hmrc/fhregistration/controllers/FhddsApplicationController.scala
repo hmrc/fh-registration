@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 HM Revenue & Customs
+ * Copyright 2023 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -239,7 +239,7 @@ class FhddsApplicationController @Inject()(
         case 400 => BadRequest("Submission has not passed validation. Invalid parameter FHDDS Registration Number.")
         case 404 => NotFound("No SAP Number found for the provided FHDDS Registration Number.")
         case 403 => Forbidden("Unexpected business error received.")
-        case _   =>
+        case _ =>
           logger.error(s"FhddsApplicationController.get - Unexpected error from DES connector with status: ${resp.status} and body: ${resp.body}")
           BadGateway("DES is currently experiencing problems that require live service intervention.")
       }
