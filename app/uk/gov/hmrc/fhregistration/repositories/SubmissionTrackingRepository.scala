@@ -24,7 +24,7 @@ import uk.gov.hmrc.fhregistration.models.fhdds.EnrolmentProgress.EnrolmentProgre
 import uk.gov.hmrc.fhregistration.repositories.SubmissionTracking._
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.play.json.{Codecs, PlayMongoRepository}
-
+import javax.inject.Singleton
 import scala.concurrent.{ExecutionContext, Future}
 
 @ImplementedBy(classOf[DefaultSubmissionTrackingRepository])
@@ -44,6 +44,7 @@ trait SubmissionTrackingRepository {
   def updateEnrolmentProgress(formBundleId: String, progress: EnrolmentProgress): Future[Seq[SubmissionTracking]]
 }
 
+@Singleton
 class DefaultSubmissionTrackingRepository @Inject()(implicit mongo: MongoComponent, implicit val ec: ExecutionContext)
     extends PlayMongoRepository[SubmissionTracking](
       collectionName = "submission-tracking",

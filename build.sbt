@@ -20,7 +20,7 @@ lazy val appDependencies: Seq[ModuleID] = compile ++ test()
 
 val compile = Seq(
   ws,
-  "uk.gov.hmrc"             %% s"bootstrap-backend-$playVersion"    % "7.12.0",
+  "uk.gov.hmrc"             %% s"bootstrap-backend-$playVersion"    % "7.22.0",
   "uk.gov.hmrc.mongo"       %% s"hmrc-mongo-$playVersion"                 % mongoVersion,
   "com.github.tototoshi"    %% "play-json-naming"                   % "1.5.0",
   "org.typelevel"           %% "cats-core"                          % "2.9.0",
@@ -33,7 +33,7 @@ def test(scope: String = "test,it") = Seq(
   "org.scalatestplus"       %% "mockito-3-4"                  % "3.2.9.0" % scope,
   "uk.gov.hmrc.mongo"       %% s"hmrc-mongo-test-$playVersion"      % mongoVersion % scope,
   "com.github.tomakehurst"   %  "wiremock-standalone"         % "2.27.2"  % scope,
-  "uk.gov.hmrc"             %% "bootstrap-test-play-28"       % "7.22.0"  % scope
+  "uk.gov.hmrc"             %% s"bootstrap-test-$playVersion"       % "7.22.0"  % scope
 )
 
 lazy val plugins : Seq[Plugins] = Seq.empty
@@ -60,7 +60,6 @@ lazy val microservice = Project(appName, file("."))
   .settings(playSettings : _*)
   .settings(scoverageSettings: _*)
   .settings(scalaSettings: _*)
-  .settings(publishingSettings: _*)
   .settings(scalaVersion := "2.13.8")
   .settings(defaultSettings(): _*)
   .settings(
