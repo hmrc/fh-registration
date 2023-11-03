@@ -33,6 +33,7 @@ def test(scope: String = "test,it") = Seq(
   "org.scalatestplus"       %% "mockito-3-4"                  % "3.2.9.0" % scope,
   "uk.gov.hmrc.mongo"       %% s"hmrc-mongo-test-$playVersion"      % mongoVersion % scope,
   "com.github.tomakehurst"   %  "wiremock-standalone"         % "2.27.2"  % scope,
+  "uk.gov.hmrc"             %% "bootstrap-test-play-28"       % "7.22.0"  % scope
 )
 
 lazy val plugins : Seq[Plugins] = Seq.empty

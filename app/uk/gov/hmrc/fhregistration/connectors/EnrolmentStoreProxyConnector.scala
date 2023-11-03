@@ -24,14 +24,14 @@ import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpErrorFunctions, HttpResp
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 
 import javax.inject.Inject
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 class DefaultEnrolmentStoreProxyConnector @Inject()(
   val http: HttpClient,
   val configuration: Configuration,
   environment: Environment
-) extends ServicesConfig(configuration) with EnrolmentStoreProxyConnector with Logging {
+)(implicit ec: ExecutionContext)
+    extends ServicesConfig(configuration) with EnrolmentStoreProxyConnector with Logging {
 
   val serviceBaseUrl = s"${baseUrl("enrolment-store-proxy")}/enrolment-store-proxy"
   lazy val serviceName = config("tax-enrolments").getOptional[String]("serviceName").getOrElse("HMRC-OBTDS-ORG")

@@ -25,9 +25,8 @@ import uk.gov.hmrc.fhregistration.models.fhdds.EnrolmentProgress.EnrolmentProgre
 import uk.gov.hmrc.fhregistration.repositories.{SubmissionTracking, SubmissionTrackingRepository}
 
 import java.time.Clock
-import javax.inject.Inject
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
+import javax.inject.{Inject, Singleton}
+import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success}
 
 @ImplementedBy(classOf[DefaultSubmissionTrackingService])
@@ -44,7 +43,9 @@ trait SubmissionTrackingService {
   def deleteSubmissionTracking(formBundleId: String): Future[_]
 }
 
-class DefaultSubmissionTrackingService @Inject()(repository: SubmissionTrackingRepository, clock: Clock)
+@Singleton
+class DefaultSubmissionTrackingService @Inject()(repository: SubmissionTrackingRepository, clock: Clock)(
+  implicit ec: ExecutionContext)
     extends SubmissionTrackingService with Logging {
   val SubmissionTrackingAgeThresholdMs = 60 * 60 * 1000L
 
