@@ -27,7 +27,6 @@ import uk.gov.hmrc.fhregistration.util.UnitSpec
 import uk.gov.hmrc.mongo.test.DefaultPlayMongoRepositorySupport
 
 import java.time.Clock
-import scala.concurrent.ExecutionContext
 import scala.concurrent.ExecutionContext.Implicits
 
 class SubmissionTrackingServiceSpecs
