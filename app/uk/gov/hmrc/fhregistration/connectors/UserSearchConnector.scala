@@ -24,14 +24,14 @@ import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpErrorFunctions}
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 
 import javax.inject.Inject
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 class DefaultUserSearchConnector @Inject()(
   val http: HttpClient,
   val configuration: Configuration,
   environment: Environment
-) extends ServicesConfig(configuration) with UserSearchConnector with Logging {
+)(implicit ec: ExecutionContext)
+    extends ServicesConfig(configuration) with UserSearchConnector with Logging {
 
   val serviceBaseUrl = s"${baseUrl("user-search")}/users-groups-search"
 
