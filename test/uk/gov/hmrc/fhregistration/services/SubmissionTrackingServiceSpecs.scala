@@ -28,6 +28,7 @@ import uk.gov.hmrc.mongo.test.DefaultPlayMongoRepositorySupport
 
 import java.time.Clock
 import scala.concurrent.ExecutionContext.Implicits
+import play.api.test.Helpers._
 
 class SubmissionTrackingServiceSpecs
     extends UnitSpec with ScalaFutures with MockitoSugar with BeforeAndAfterAll
@@ -69,7 +70,7 @@ class SubmissionTrackingServiceSpecs
     "be Error" when {
       "the tracking was marked as error" in {
         await(service.saveSubscriptionTracking("safeid", "some-user", "formbundelid", "a@a.co", "ZZFH0000001231456"))
-        val result = await(service.updateSubscriptionTracking("formbundelid", EnrolmentProgress.Error))
+        await(service.updateSubscriptionTracking("formbundelid", EnrolmentProgress.Error))
         await(service.enrolmentProgress("some-user", None)) shouldBe EnrolmentProgress.Error
       }
 
