@@ -97,7 +97,7 @@ class FhddsApplicationController @Inject()(
       }
     }
 
-  def enrolmentProgress() = userAction.async { implicit request =>
+  def enrolmentProgress = userAction.async { implicit request =>
     submissionTrackingService.enrolmentProgress(request.userId, request.registrationNumber) map { progress =>
       Ok(Json toJson progress)
     }

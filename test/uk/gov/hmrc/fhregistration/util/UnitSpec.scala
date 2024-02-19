@@ -19,10 +19,13 @@ package uk.gov.hmrc.fhregistration.util
 import org.scalatest.OptionValues
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpecLike
+import org.scalatestplus.play.guice.GuiceOneServerPerSuite
+import uk.gov.hmrc.fhregistration.repositories.DefaultSubmissionTrackingRepository
+
 import scala.concurrent.Future
 import scala.language.implicitConversions
 
-trait UnitSpec extends AnyWordSpecLike with Matchers with OptionValues {
+trait UnitSpec extends AnyWordSpecLike with Matchers with OptionValues with GuiceOneServerPerSuite {
   implicit def liftFuture[A](v: A): Future[A] = Future.successful(v)
-
+  lazy val repository = app.injector.instanceOf[DefaultSubmissionTrackingRepository]
 }

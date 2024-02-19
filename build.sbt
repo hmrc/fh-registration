@@ -12,26 +12,7 @@ import uk.gov.hmrc.versioning.SbtGitVersioning.autoImport.majorVersion
 
 val appName = "fh-registration"
 
-//val playVersion = "play-28"
-//
-//val mongoVersion = "0.74.0"
-
-lazy val appDependencies: Seq[ModuleID] = AppDependencies.compile ++ AppDependencies.test()
-
-//val compile = Seq(
-//  ws,
-//  "uk.gov.hmrc"             %% s"bootstrap-backend-$playVersion"    % "7.22.0",
-//  "uk.gov.hmrc.mongo"       %% s"hmrc-mongo-$playVersion"                 % mongoVersion,
-//  "com.github.tototoshi"    %% "play-json-naming"                   % "1.5.0",
-//  "org.typelevel"           %% "cats-core"                          % "2.9.0",
-//)
-//
-//def test(scope: String = "test,it") = Seq(
-//  "org.scalatest"           %% "scalatest"                    % "3.2.9"   % scope,
-//  "org.scalatestplus"       %% "mockito-3-4"                  % "3.2.9.0" % scope,
-//  "uk.gov.hmrc.mongo"       %% s"hmrc-mongo-test-$playVersion"      % mongoVersion % scope,
-//  "uk.gov.hmrc"             %% s"bootstrap-test-$playVersion"       % "7.22.0"  % scope
-//)
+lazy val appDependencies: Seq[ModuleID] = AppDependencies()
 
 lazy val plugins : Seq[Plugins] = Seq.empty
 lazy val playSettings : Seq[Setting[_]] = Seq.empty
@@ -65,6 +46,7 @@ lazy val microservice = Project(appName, file("."))
     update / evictionWarningOptions := EvictionWarningOptions.default.withWarnScalaVersionEviction(false),
     Compile / scalafmtOnCompile := true,
     Test / scalafmtOnCompile := true,
+    scalacOptions += "-Wconf:src=routes/.*:s",
     scalacOptions += "-Wconf:cat=unused-imports&src=html/.*:s",
   )
   .configs(IntegrationTest)
