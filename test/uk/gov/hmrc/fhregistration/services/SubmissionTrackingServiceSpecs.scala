@@ -19,24 +19,17 @@ package uk.gov.hmrc.fhregistration.services
 import org.mockito.Mockito.{reset, when}
 import org.scalatest.BeforeAndAfterAll
 import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.matchers.should.Matchers
 import org.scalatestplus.mockito.MockitoSugar
+import play.api.test.Helpers._
 import uk.gov.hmrc.fhregistration.models.fhdds.EnrolmentProgress
-import uk.gov.hmrc.fhregistration.repositories.{DefaultSubmissionTrackingRepository, SubmissionTracking}
 import uk.gov.hmrc.fhregistration.util.UnitSpec
-import uk.gov.hmrc.mongo.test.DefaultPlayMongoRepositorySupport
 
 import java.time.Clock
-import scala.concurrent.ExecutionContext.Implicits
 
-class SubmissionTrackingServiceSpecs
-    extends UnitSpec with ScalaFutures with MockitoSugar with BeforeAndAfterAll
-    with DefaultPlayMongoRepositorySupport[SubmissionTracking] with Matchers {
-
-  val repository = new DefaultSubmissionTrackingRepository()(mongoComponent, Implicits.global)
+class SubmissionTrackingServiceSpecs extends UnitSpec with ScalaFutures with MockitoSugar with BeforeAndAfterAll {
 
   override protected def beforeAll(): Unit = {
-    dropDatabase()
+    repository.collection.drop()
     reset(mockClock)
     when(mockClock.millis()).thenReturn(System.currentTimeMillis())
   }
@@ -69,7 +62,7 @@ class SubmissionTrackingServiceSpecs
     "be Error" when {
       "the tracking was marked as error" in {
         await(service.saveSubscriptionTracking("safeid", "some-user", "formbundelid", "a@a.co", "ZZFH0000001231456"))
-        val result = await(service.updateSubscriptionTracking("formbundelid", EnrolmentProgress.Error))
+        await(service.updateSubscriptionTracking("formbundelid", EnrolmentProgress.Error))
         await(service.enrolmentProgress("some-user", None)) shouldBe EnrolmentProgress.Error
       }
 

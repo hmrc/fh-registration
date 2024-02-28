@@ -12,29 +12,7 @@ import uk.gov.hmrc.versioning.SbtGitVersioning.autoImport.majorVersion
 
 val appName = "fh-registration"
 
-val playVersion = "play-28"
-
-val mongoVersion = "0.74.0"
-
-lazy val appDependencies: Seq[ModuleID] = compile ++ test()
-
-val compile = Seq(
-  ws,
-  "uk.gov.hmrc"             %% s"bootstrap-backend-$playVersion"    % "7.22.0",
-  "uk.gov.hmrc.mongo"       %% s"hmrc-mongo-$playVersion"                 % mongoVersion,
-  "com.github.tototoshi"    %% "play-json-naming"                   % "1.5.0",
-  "org.typelevel"           %% "cats-core"                          % "2.9.0",
-)
-
-def test(scope: String = "test,it") = Seq(
-  "org.scalatest"           %% "scalatest"                    % "3.2.9"   % scope,
-  "org.scalatestplus.play"  %% "scalatestplus-play"           % "5.1.0"   % scope,
-  "com.vladsch.flexmark"     % "flexmark-all"                 % "0.35.10" % scope,
-  "org.scalatestplus"       %% "mockito-3-4"                  % "3.2.9.0" % scope,
-  "uk.gov.hmrc.mongo"       %% s"hmrc-mongo-test-$playVersion"      % mongoVersion % scope,
-  "com.github.tomakehurst"   %  "wiremock-standalone"         % "2.27.2"  % scope,
-  "uk.gov.hmrc"             %% s"bootstrap-test-$playVersion"       % "7.22.0"  % scope
-)
+lazy val appDependencies: Seq[ModuleID] = AppDependencies()
 
 lazy val plugins : Seq[Plugins] = Seq.empty
 lazy val playSettings : Seq[Setting[_]] = Seq.empty
@@ -54,13 +32,13 @@ lazy val scoverageSettings = {
 
 lazy val microservice = Project(appName, file("."))
   .enablePlugins(Seq(play.sbt.PlayScala, SbtDistributablesPlugin) ++ plugins : _*)
-  .settings(majorVersion := 0)
+  .settings(majorVersion := 0, libraryDependencySchemes += "org.scala-lang.modules" %% "scala-xml" % VersionScheme.Always)
   .settings(Compile / unmanagedResourceDirectories += baseDirectory.value / "resources")
   .settings(PlayKeys.playDefaultPort := 1119)
   .settings(playSettings : _*)
   .settings(scoverageSettings: _*)
   .settings(scalaSettings: _*)
-  .settings(scalaVersion := "2.13.8")
+  .settings(scalaVersion := "2.13.12")
   .settings(defaultSettings(): _*)
   .settings(
     libraryDependencies ++= appDependencies,

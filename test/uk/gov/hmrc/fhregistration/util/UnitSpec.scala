@@ -16,47 +16,16 @@
 
 package uk.gov.hmrc.fhregistration.util
 
-import akka.stream.Materializer
-import akka.util.ByteString
 import org.scalatest.OptionValues
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpecLike
-import play.api.libs.json.{JsValue, Json}
-import play.api.mvc.Result
-import scala.language.postfixOps
+import org.scalatestplus.play.guice.GuiceOneServerPerSuite
+import uk.gov.hmrc.fhregistration.repositories.DefaultSubmissionTrackingRepository
 
-import java.nio.charset.Charset
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.duration._
-import scala.concurrent.{Await, Future}
+import scala.concurrent.Future
 import scala.language.implicitConversions
 
-trait UnitSpec extends AnyWordSpecLike with Matchers with OptionValues {
-
-  implicit val defaultTimeout: FiniteDuration = 5 seconds
-
-  implicit def extractAwait[A](future: Future[A]): A = await[A](future)
-
-  def await[A](future: Future[A])(implicit timeout: Duration): A = Await.result(future, timeout)
-
+trait UnitSpec extends AnyWordSpecLike with Matchers with OptionValues with GuiceOneServerPerSuite {
   implicit def liftFuture[A](v: A): Future[A] = Future.successful(v)
-
-  def status(of: Result): Int = of.header.status
-
-  def status(of: Future[Result])(implicit timeout: Duration): Int = status(Await.result(of, timeout))
-
-  def jsonBodyOf(result: Result)(implicit mat: Materializer): JsValue =
-    Json.parse(bodyOf(result))
-
-  def jsonBodyOf(resultF: Future[Result])(implicit mat: Materializer): Future[JsValue] =
-    resultF.map(jsonBodyOf)
-
-  def bodyOf(result: Result)(implicit mat: Materializer): String = {
-    val bodyBytes: ByteString = await(result.body.consumeData)
-
-    bodyBytes.decodeString(Charset.defaultCharset().name)
-  }
-
-  def bodyOf(resultF: Future[Result])(implicit mat: Materializer): Future[String] =
-    resultF.map(bodyOf)
+  lazy val repository = app.injector.instanceOf[DefaultSubmissionTrackingRepository]
 }

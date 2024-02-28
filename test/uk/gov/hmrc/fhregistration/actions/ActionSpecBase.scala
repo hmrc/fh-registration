@@ -16,30 +16,30 @@
 
 package uk.gov.hmrc.fhregistration.actions
 
-import akka.util.Timeout
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.matchers.should.Matchers
 import org.scalatestplus.mockito.MockitoSugar
 import play.api.http.Status
 import play.api.mvc.{ActionFunction, ActionRefiner, Results}
+import play.api.test.Helpers._
 import uk.gov.hmrc.fhregistration.util.UnitSpec
 
-import scala.concurrent.{Await, Promise}
+import scala.concurrent.Promise
 
 trait ActionSpecBase
     extends UnitSpec with ScalaFutures with MockitoSugar with BeforeAndAfterEach with Matchers with Results
     with Status {
 
-  def refinedRequest[P[_], R[_], A](action: ActionRefiner[R, P], request: R[A])(implicit timeout: Timeout) = {
-    val p = Promise[P[_]]
+  def refinedRequest[P[_], R[_], A](action: ActionRefiner[R, P], request: R[A]) = {
+    val p = Promise[P[_]]()
     val result = action.invokeBlock(request, { r: P[A] =>
       p success r
       Ok
     })
 
     status(result) shouldBe OK
-    Await.result(p.future, timeout.duration)
+    await(p.future)
   }
 
   def result[P[_], R[_], A](action: ActionFunction[R, P], request: R[A]) =

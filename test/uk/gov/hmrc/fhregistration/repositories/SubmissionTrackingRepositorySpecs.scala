@@ -18,23 +18,15 @@ package uk.gov.hmrc.fhregistration.repositories
 
 import org.scalatest.BeforeAndAfterAll
 import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.matchers.should.Matchers
-import org.scalatest.wordspec.AnyWordSpec
 import play.api.test.Helpers._
 import uk.gov.hmrc.fhregistration.models.fhdds.EnrolmentProgress
 import uk.gov.hmrc.fhregistration.repositories.SubmissionTrackingRepositorySpecs._
-import uk.gov.hmrc.mongo.test.DefaultPlayMongoRepositorySupport
+import uk.gov.hmrc.fhregistration.util.UnitSpec
 
-import scala.concurrent.ExecutionContext.Implicits
-
-class SubmissionTrackingRepositorySpecs
-    extends AnyWordSpec with Matchers with DefaultPlayMongoRepositorySupport[SubmissionTracking] with BeforeAndAfterAll
-    with ScalaFutures {
-
-  override lazy val repository = new DefaultSubmissionTrackingRepository()(mongoComponent, Implicits.global)
+class SubmissionTrackingRepositorySpecs extends UnitSpec with BeforeAndAfterAll with ScalaFutures {
 
   override protected def beforeAll(): Unit =
-    dropDatabase()
+    repository.collection.drop()
 
   "Inserting a new record" should {
     "Be successful" in {

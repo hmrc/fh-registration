@@ -24,6 +24,7 @@ import uk.gov.hmrc.auth.core.{AuthConnector, Enrolments}
 import uk.gov.hmrc.auth.core.retrieve.{Retrieval, ~}
 
 import scala.concurrent.Future
+import play.api.test.Helpers._
 
 class UserGroupActionSpec extends ActionSpecBase {
 
