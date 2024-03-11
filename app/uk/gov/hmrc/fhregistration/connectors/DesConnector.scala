@@ -100,6 +100,7 @@ class DefaultDesConnector @Inject()(
     logger.info(s"Sending fhdds registration data to DES for safeId $safeId")
     implicit val headerCarrier: HeaderCarrier = headerCarrierBuilder(hc)
     http.POST[JsValue, HttpResponse](desSubmissionUrl(safeId), submission, headers = desHeaders).map { resp =>
+      logger.debug(s"Submission payload sent to DES - $submission")
       logger.info(s"DES response with status ${resp.status} and body - ${resp.body}")
       resp.json.as[DesSubmissionResponse]
     }
