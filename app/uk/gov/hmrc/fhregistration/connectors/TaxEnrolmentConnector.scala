@@ -62,8 +62,13 @@ class DefaultTaxEnrolmentConnector @Inject()(
         requestBody(safeId, etmpFormBundleNumber)
       )
       .map { response =>
-        if (is2xx(response.status)) response
-        else throw new RuntimeException(s"Unexpected response code '${response.status}'")
+        if (is2xx(response.status)) {
+          logger.info(s"Request to tax enrolments authorisation response: ${response.body}")
+          response
+        }
+        else
+          logger.warn(s"in tax enrolment subscribe, Unexpected response code '${response.status} with response body ${response.body}'")
+          throw new RuntimeException(s"Unexpected response code '${response.status} with response body ${response.body}'")
       }
   }
 
