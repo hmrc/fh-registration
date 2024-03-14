@@ -77,7 +77,6 @@ class DefaultDesConnector @Inject()(
         logger.error("[RATE LIMITED] Received 429 from DES - converting to 503")
         throw UpstreamErrorResponse("429 received from DES - converted to 503", 429, 503)
       case _ =>
-        logger.info(s"Received response with body - ${response.body}")
         response
     }
 
