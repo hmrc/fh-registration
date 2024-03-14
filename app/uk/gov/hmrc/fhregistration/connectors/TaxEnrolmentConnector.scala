@@ -68,7 +68,7 @@ class DefaultTaxEnrolmentConnector @Inject()(
         }
         else
           logger.warn(s"in tax enrolment subscribe, Unexpected response code '${response.status} with response body ${response.body}'")
-          throw new RuntimeException(s"Unexpected response code '${response.status} with response body ${response.body}'")
+          throw new RuntimeException(s"in tax enrolment, Unexpected response code '${response.status} with response body ${response.body}'")
       }
   }
 
