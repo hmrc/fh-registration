@@ -26,10 +26,11 @@ import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
-class DefaultTaxEnrolmentConnector @Inject()(
+class DefaultTaxEnrolmentConnector @Inject() (
   val http: HttpClient,
   val configuration: Configuration,
-  environment: Environment)(implicit val ec: ExecutionContext)
+  environment: Environment
+)(implicit val ec: ExecutionContext)
     extends ServicesConfig(configuration) with TaxEnrolmentConnector with Logging {
 
   val callbackBase = config("tax-enrolments")
@@ -48,13 +49,15 @@ class DefaultTaxEnrolmentConnector @Inject()(
     s"$serviceBaseUrl/groups/$groupId/enrolments/$enrolmentKey"
   }
 
-  /**
-    * Subscribe to tax enrolments
-    * @param safeId - the id of the entity in ETMP
-    * @param etmpFormBundleNumber - use this as the subscription id as requested by ETMP
+  /** Subscribe to tax enrolments
+    * @param safeId
+    *   \- the id of the entity in ETMP
+    * @param etmpFormBundleNumber
+    *   \- use this as the subscription id as requested by ETMP
     */
-  override def subscribe(safeId: String, etmpFormBundleNumber: String)(
-    implicit hc: HeaderCarrier): Future[HttpResponse] = {
+  override def subscribe(safeId: String, etmpFormBundleNumber: String)(implicit
+    hc: HeaderCarrier
+  ): Future[HttpResponse] = {
     logger.info(s"Request to tax enrolments authorisation header is present: ${hc.authorization.isDefined}")
     http
       .PUT[JsObject, HttpResponse](
@@ -65,15 +68,19 @@ class DefaultTaxEnrolmentConnector @Inject()(
         if (is2xx(response.status)) {
           logger.info(s"Request to tax enrolments authorisation response: ${response.body}")
           response
-        }
-        else
-          logger.warn(s"in tax enrolment subscribe, Unexpected response code '${response.status} with response body ${response.body}'")
-          throw new RuntimeException(s"in tax enrolment, Unexpected response code '${response.status} with response body ${response.body}'")
+        } else
+          logger.warn(
+            s"in tax enrolment subscribe, Unexpected response code '${response.status} with response body ${response.body}'"
+          )
+        throw new RuntimeException(
+          s"in tax enrolment, Unexpected response code '${response.status} with response body ${response.body}'"
+        )
       }
   }
 
-  override def deleteGroupEnrolment(groupId: String, registrationNumber: String)(
-    implicit hc: HeaderCarrier): Future[_] =
+  override def deleteGroupEnrolment(groupId: String, registrationNumber: String)(implicit
+    hc: HeaderCarrier
+  ): Future[_] =
     http.DELETE[HttpResponse](groupEnrolmentUrl(groupId, registrationNumber)).map { response =>
       if (is2xx(response.status)) response.body
       else throw new RuntimeException(s"Unexpected response code '${response.status}'")

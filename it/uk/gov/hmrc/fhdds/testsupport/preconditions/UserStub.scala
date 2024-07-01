@@ -3,7 +3,7 @@ package uk.gov.hmrc.fhdds.testsupport.preconditions
 import com.github.tomakehurst.wiremock.client.WireMock._
 import uk.gov.hmrc.fhdds.testsupport.TestData
 
-case class UserStub()(implicit builder: PreconditionBuilder) { //extends SessionBuilder {
+case class UserStub()(implicit builder: PreconditionBuilder) { // extends SessionBuilder {
 
 //  def isAuthorised(implicit requestHolder: RequestHolder): PreconditionBuilder = {
 //    requestHolder.request = requestWithSession(requestHolder.request, "anyUserId")
@@ -103,11 +103,11 @@ case class UserStub()(implicit builder: PreconditionBuilder) { //extends Session
     builder
   }
 
-
   def isNotAuthorised(reason: String = "MissingBearerToken") = {
     stubFor(
       post(urlPathEqualTo("/auth/authorise"))
-        .willReturn(unauthorized().withHeader("WWW-Authenticate", s"""MDTP detail="$reason"""")))
+        .willReturn(unauthorized().withHeader("WWW-Authenticate", s"""MDTP detail="$reason""""))
+    )
 
     builder
   }

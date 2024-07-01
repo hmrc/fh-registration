@@ -4,22 +4,20 @@ import play.api.test.WsTestClient
 import uk.gov.hmrc.fhdds.testsupport.TestData._
 import uk.gov.hmrc.fhdds.testsupport.{TestConfiguration, TestHelpers}
 
-class FhddsApplicationWithdrawalsIntegrationSpecs
-  extends TestHelpers with TestConfiguration {
+class FhddsApplicationWithdrawalsIntegrationSpecs extends TestHelpers with TestConfiguration {
 
   "Submitting an withdrawal request" should {
     "return BadRequest" when {
       "the request is invalid" in {
-        given().audit.writesAuditOrMerged()
-          .des.acceptsWithdrawal(testRegistrationNumber)
-          .email.sendEmail
+        given().audit.writesAuditOrMerged().des.acceptsWithdrawal(testRegistrationNumber).email.sendEmail
 
         val responseForWithdrawal = WsTestClient.withClient { client =>
           client
             .url(s"http://localhost:$port/fhdds/subscription/withdrawal/$testRegistrationNumber")
             .addHttpHeaders("Content-Type" -> "application/json")
             .addHttpHeaders("Authorization" -> "Bearer token")
-            .post(testInvalidWithdrawalBody).futureValue
+            .post(testInvalidWithdrawalBody)
+            .futureValue
         }
         responseForWithdrawal.status shouldBe 400
       }
@@ -28,17 +26,22 @@ class FhddsApplicationWithdrawalsIntegrationSpecs
     "return BadRequest" when {
       "the user does not belong to a group" in {
 
-        given().audit.writesAuditOrMerged()
-          .des.acceptsWithdrawal(testRegistrationNumber)
-          .email.sendEmail
-          .user.isAuthorisedWithNoGroup()
+        given().audit
+          .writesAuditOrMerged()
+          .des
+          .acceptsWithdrawal(testRegistrationNumber)
+          .email
+          .sendEmail
+          .user
+          .isAuthorisedWithNoGroup()
 
         val responseForWithdrawal = WsTestClient.withClient { client =>
           client
             .url(s"http://localhost:$port/fhdds/subscription/withdrawal/$testRegistrationNumber")
             .addHttpHeaders("Content-Type" -> "application/json")
             .addHttpHeaders("Authorization" -> "Bearer token")
-            .post(testWithdrawalBody).futureValue
+            .post(testWithdrawalBody)
+            .futureValue
         }
         responseForWithdrawal.status shouldBe 400
       }
@@ -46,25 +49,33 @@ class FhddsApplicationWithdrawalsIntegrationSpecs
 
     "return OK" when {
       "the user belongs to group" in {
-        given().audit.writesAuditOrMerged()
-          .des.acceptsWithdrawal(testRegistrationNumber)
-          .email.sendEmail
-          .user.isAuthorised()
-          .taxEnrolment.acceptsDeEnrolment()
+        given().audit
+          .writesAuditOrMerged()
+          .des
+          .acceptsWithdrawal(testRegistrationNumber)
+          .email
+          .sendEmail
+          .user
+          .isAuthorised()
+          .taxEnrolment
+          .acceptsDeEnrolment()
 
         val responseForWithdrawal = WsTestClient.withClient { client =>
           client
             .url(s"http://localhost:$port/fhdds/subscription/withdrawal/$testRegistrationNumber")
             .addHttpHeaders("Content-Type" -> "application/json")
             .addHttpHeaders("Authorization" -> "Bearer token")
-            .post(testWithdrawalBody).futureValue
+            .post(testWithdrawalBody)
+            .futureValue
         }
         responseForWithdrawal.status shouldBe 200
 
-        expect()
-          .des.withdrawalCalled(testRegistrationNumber)
-          .email.emailSent("fhdds_submission_withdrawal")
-          .taxEnrolments.noDeEnrolmentCalled()
+        expect().des
+          .withdrawalCalled(testRegistrationNumber)
+          .email
+          .emailSent("fhdds_submission_withdrawal")
+          .taxEnrolments
+          .noDeEnrolmentCalled()
 
       }
     }

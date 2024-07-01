@@ -31,16 +31,19 @@ trait DesConnector extends HttpErrorFunctions {
   def getStatus(fhddsRegistrationNumber: String)(hc: HeaderCarrier): Future[StatusResponse]
   def sendSubmission(safeId: String, submission: JsValue)(hc: HeaderCarrier): Future[DesSubmissionResponse]
   def sendAmendment(fhddsRegistrationNumber: String, submission: JsValue)(
-    hc: HeaderCarrier): Future[DesSubmissionResponse]
+    hc: HeaderCarrier
+  ): Future[DesSubmissionResponse]
   def sendWithdrawal(fhddsRegistrationNumber: String, submission: JsValue)(
-    hc: HeaderCarrier): Future[DesWithdrawalResponse]
+    hc: HeaderCarrier
+  ): Future[DesWithdrawalResponse]
   def sendDeregistration(fhddsRegistrationNumber: String, submission: JsValue)(
-    hc: HeaderCarrier): Future[DesDeregistrationResponse]
+    hc: HeaderCarrier
+  ): Future[DesDeregistrationResponse]
   def display(fhddsRegistrationNumber: String)(hc: HeaderCarrier): Future[HttpResponse]
 }
 
 @Singleton
-class DefaultDesConnector @Inject()(
+class DefaultDesConnector @Inject() (
   val http: HttpClient,
   val configuration: Configuration,
   environment: Environment,
@@ -89,7 +92,8 @@ class DefaultDesConnector @Inject()(
     http
       .GET[HttpResponse](
         s"$desServiceStatusUri/fulfilment-diligence/subscription/$fhddsRegistrationNumber/status",
-        headers = desHeaders)
+        headers = desHeaders
+      )
       .map { resp =>
         resp.json.as[StatusResponse]
       }
@@ -105,7 +109,8 @@ class DefaultDesConnector @Inject()(
   }
 
   def sendAmendment(fhddsRegistrationNumber: String, submission: JsValue)(
-    hc: HeaderCarrier): Future[DesSubmissionResponse] = {
+    hc: HeaderCarrier
+  ): Future[DesSubmissionResponse] = {
     logger.info(s"Sending fhdds amendment data to DES for regNumber $fhddsRegistrationNumber")
     implicit val headerCarrier: HeaderCarrier = headerCarrierBuilder(hc)
     http.POST[JsValue, HttpResponse](desAmendmentUrl(fhddsRegistrationNumber), submission, headers = desHeaders).map {
@@ -115,7 +120,8 @@ class DefaultDesConnector @Inject()(
   }
 
   def sendWithdrawal(fhddsRegistrationNumber: String, submission: JsValue)(
-    hc: HeaderCarrier): Future[DesWithdrawalResponse] = {
+    hc: HeaderCarrier
+  ): Future[DesWithdrawalResponse] = {
     logger.info(s"Sending fhdds withdrawal data to DES for regNumber $fhddsRegistrationNumber")
     implicit val headerCarrier: HeaderCarrier = headerCarrierBuilder(hc)
     http.PUT[JsValue, HttpResponse](desWithdrawalUrl(fhddsRegistrationNumber), submission, headers = desHeaders).map {
@@ -125,7 +131,8 @@ class DefaultDesConnector @Inject()(
   }
 
   def sendDeregistration(fhddsRegistrationNumber: String, submission: JsValue)(
-    hc: HeaderCarrier): Future[DesDeregistrationResponse] = {
+    hc: HeaderCarrier
+  ): Future[DesDeregistrationResponse] = {
     logger.info(s"Sending fhdds deregistration data to DES for regNumber $fhddsRegistrationNumber")
     implicit val headerCarrier: HeaderCarrier = headerCarrierBuilder(hc)
     http.POST[JsValue, HttpResponse](desDeregisterUrl(fhddsRegistrationNumber), submission, headers = desHeaders).map {

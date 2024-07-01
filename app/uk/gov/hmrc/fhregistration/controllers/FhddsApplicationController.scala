@@ -39,7 +39,7 @@ import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success}
 
-class FhddsApplicationController @Inject()(
+class FhddsApplicationController @Inject() (
   val desConnector: DesConnector,
   val taxEnrolmentConnector: TaxEnrolmentConnector,
   val emailConnector: EmailConnector,
@@ -48,7 +48,8 @@ class FhddsApplicationController @Inject()(
   val auditConnector: AuditConnector,
   val cc: ControllerComponents,
   val actions: Actions,
-  val repo: DefaultSubmissionTrackingRepository)(implicit val ec: ExecutionContext)
+  val repo: DefaultSubmissionTrackingRepository
+)(implicit val ec: ExecutionContext)
     extends BackendController(cc) with Logging {
 
   import actions._
@@ -82,13 +83,12 @@ class FhddsApplicationController @Inject()(
           r.userId,
           desResponse.etmpFormBundleNumber,
           request.emailAddress,
-          response.registrationNumber) andThen {
-          case _ =>
-            subscribeToTaxEnrolment(safeId, desResponse.etmpFormBundleNumber).failed.foreach {
-              case e =>
-                submissionTrackingService
-                  .updateSubscriptionTracking(desResponse.etmpFormBundleNumber, EnrolmentProgress.Error)
-            }
+          response.registrationNumber
+        ) andThen { case _ =>
+          subscribeToTaxEnrolment(safeId, desResponse.etmpFormBundleNumber).failed.foreach { case e =>
+            submissionTrackingService
+              .updateSubscriptionTracking(desResponse.etmpFormBundleNumber, EnrolmentProgress.Error)
+          }
         }
 
         auditSubmission(response.registrationNumber, event)
@@ -157,12 +157,13 @@ class FhddsApplicationController @Inject()(
   def sendEmail(
     email: String,
     emailTemplateId: String = emailConnector.defaultEmailTemplateID,
-    emailParameters: Map[String, String] = Map.empty)(implicit hc: HeaderCarrier, request: Request[AnyRef]) =
+    emailParameters: Map[String, String] = Map.empty
+  )(implicit hc: HeaderCarrier, request: Request[AnyRef]) =
     emailConnector
       .sendEmail(emailTemplateId = emailTemplateId, userData = UserData(email), emailParameters)(hc, request, ec)
       .failed
-      .foreach {
-        case t => logger.error(s"Failed sending email $emailTemplateId", t)
+      .foreach { case t =>
+        logger.error(s"Failed sending email $emailTemplateId", t)
       }
 
   private def auditSubmission(registrationNumber: String, event: DataEvent)(implicit hc: HeaderCarrier) = {
@@ -172,26 +173,29 @@ class FhddsApplicationController @Inject()(
     auditConnector
       .sendEvent(event)(hc, ec)
       .map(auditResult => logger.info(s"Received audit result $auditResult for registrationNumber $registrationNumber"))
-      .recover {
-        case t: Throwable => logger.error(s"Audit failed for registrationNumber $registrationNumber", t)
+      .recover { case t: Throwable =>
+        logger.error(s"Audit failed for registrationNumber $registrationNumber", t)
       }
 
   }
 
-  private def subscribeToTaxEnrolment(safeId: String, etmpFormBundleNumber: String)(
-    implicit hc: HeaderCarrier): Future[_] = {
+  private def subscribeToTaxEnrolment(safeId: String, etmpFormBundleNumber: String)(implicit
+    hc: HeaderCarrier
+  ): Future[_] = {
     logger.info(
-      s"Sending subscription for safeId = $safeId for etmpFormBundelNumber = $etmpFormBundleNumber to tax enrolments")
+      s"Sending subscription for safeId = $safeId for etmpFormBundelNumber = $etmpFormBundleNumber to tax enrolments"
+    )
     taxEnrolmentConnector
       .subscribe(safeId, etmpFormBundleNumber)(hc)
-      .andThen({
+      .andThen {
         case Success(r) =>
           logger.info(
-            s"Tax enrolments for subscription $safeId and etmpFormBundleNumber $etmpFormBundleNumber returned $r")
+            s"Tax enrolments for subscription $safeId and etmpFormBundleNumber $etmpFormBundleNumber returned $r"
+          )
         case Failure(e) =>
           logger
             .error(s"Tax enrolments for subscription $safeId and etmpFormBundleNumber $etmpFormBundleNumber failed", e)
-      })
+      }
   }
 
   def subscriptionCallback(formBundleId: String) = Action.async(parse.json[TaxEnrolmentsCallback]) { implicit request =>
@@ -202,7 +206,8 @@ class FhddsApplicationController @Inject()(
       submissionTrackingService
         .getSubmissionTrackingEmail(formBundleId)
         .fold(logger.error(s"Could not find enrolment tracking data for bundleId $formBundleId"))(email =>
-          sendEmail(email))
+          sendEmail(email)
+        )
         .andThen { case _ => submissionTrackingService deleteSubmissionTracking formBundleId }
         .map(_ => Ok(""))
         .recover { case _ => Ok("") }
@@ -223,8 +228,8 @@ class FhddsApplicationController @Inject()(
   def checkStatus(fhddsRegistrationNumber: String) = Action.async { implicit request =>
     desConnector
       .getStatus(fhddsRegistrationNumber)(hc)
-      .map { _.subscriptionStatus }
-      .map { mdtpSubscriptionStatus }
+      .map(_.subscriptionStatus)
+      .map(mdtpSubscriptionStatus)
       .map { status =>
         Ok(Json toJson status)
       }
@@ -241,7 +246,8 @@ class FhddsApplicationController @Inject()(
         case 403 => Forbidden("Unexpected business error received.")
         case _ =>
           logger.error(
-            s"FhddsApplicationController.get - Unexpected error from DES connector with status: ${resp.status} and body: ${resp.body}")
+            s"FhddsApplicationController.get - Unexpected error from DES connector with status: ${resp.status} and body: ${resp.body}"
+          )
           BadGateway("DES is currently experiencing problems that require live service intervention.")
       }
     }

@@ -83,10 +83,14 @@ class UserActionSpec extends ActionSpecBase {
 
   def setupAuthConnector(internalId: Option[String] = None, enrolments: Set[Enrolment] = Set.empty) = {
     val authResult = Future successful (new ~(internalId, new Enrolments(enrolments)))
-    when(mockAuthConnector.authorise(any(), any[Retrieval[Option[String] ~ Enrolments]])(any(), any())) thenReturn authResult
+    when(
+      mockAuthConnector.authorise(any(), any[Retrieval[Option[String] ~ Enrolments]])(any(), any())
+    ) thenReturn authResult
   }
 
   def setupAuthConnector(throwable: Throwable) =
-    when(mockAuthConnector.authorise(any(), any[Retrieval[Option[String] ~ Enrolments]])(any(), any())) thenReturn Future
+    when(
+      mockAuthConnector.authorise(any(), any[Retrieval[Option[String] ~ Enrolments]])(any(), any())
+    ) thenReturn Future
       .failed(throwable)
 }

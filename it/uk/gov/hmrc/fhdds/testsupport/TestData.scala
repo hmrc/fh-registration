@@ -6,20 +6,17 @@ import play.api.libs.json.{JsObject, JsString, JsValue, Json}
 import uk.gov.hmrc.fhregistration.models.des.{DesSubmissionResponse, DesWithdrawalResponse}
 import uk.gov.hmrc.fhregistration.models.fhdds.SubmissionRequest
 
-
 object TestData {
 
   val file = "fhdds-limited-company-minimum.json"
 
   val directoryPath = s"./it/resources/"
 
-  val validNewFormData: JsValue = {
+  val validNewFormData: JsValue =
     Json.parse(scala.io.Source.fromFile(s"${directoryPath}fhdds-limited-company-large-uk.json").mkString)
-  }
 
-  val validAmendFormData: JsValue = {
+  val validAmendFormData: JsValue =
     Json.parse(scala.io.Source.fromFile(s"${directoryPath}fhdds-limited-company-large-uk-amendment.json").mkString)
-  }
 
   val testUserEmail = "testUser@email.com"
 //  val someBusinessDetails: String = {
@@ -35,9 +32,8 @@ object TestData {
   val testRegistrationNumber = "XEFH0001234567890"
   val anotherRegistrationNumber = "XEFH0001234567891"
   val testEtmpFormBundleNumber: String = Array.fill(9)((math.random() * 10).toInt).mkString
-  val validFormData: String = {
+  val validFormData: String =
     scala.io.Source.fromFile(s"$directoryPath$file").mkString
-  }
   val testWithdrawalBody =
     s"""{"emailAddress": "$testUserEmail", "withdrawal": {"withdrawalDate": "2017-11-29","withdrawalReason": "Applied in Error"}}"""
 
@@ -50,24 +46,23 @@ object TestData {
 
   val someTaxEnrolmentResponse: JsObject = Json.obj(
     "serviceName" -> JsString("serviceName"),
-    "callback" -> JsString("callback"),
-    "etmpId" -> JsString("etmpId"))
+    "callback"    -> JsString("callback"),
+    "etmpId"      -> JsString("etmpId")
+  )
 
-  val aSubmissionRequest: SubmissionRequest = SubmissionRequest(
-    emailAddress = "a@a.test",
-    submission = Json.parse(validFormData))
+  val aSubmissionRequest: SubmissionRequest =
+    SubmissionRequest(emailAddress = "a@a.test", submission = Json.parse(validFormData))
 
-  def desSubmissionResponse(etmpFormBundleNumber: String, registrationNumberFHDDS: String) = {
+  def desSubmissionResponse(etmpFormBundleNumber: String, registrationNumberFHDDS: String) =
     DesSubmissionResponse(
       processingDate = new Date(),
       etmpFormBundleNumber = etmpFormBundleNumber,
-      registrationNumberFHDDS = registrationNumberFHDDS)
-  }
+      registrationNumberFHDDS = registrationNumberFHDDS
+    )
 
-  def desWithdrawalResponse: DesWithdrawalResponse = {
+  def desWithdrawalResponse: DesWithdrawalResponse =
     DesWithdrawalResponse(
       processingDate = new Date()
     )
-  }
 
 }

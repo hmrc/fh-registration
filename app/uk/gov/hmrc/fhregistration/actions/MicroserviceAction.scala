@@ -24,7 +24,7 @@ import uk.gov.hmrc.play.http.HeaderCarrierConverter
 
 import scala.concurrent.ExecutionContext
 
-class MicroserviceAction @Inject()(implicit val ec: ExecutionContext) extends Results {
+class MicroserviceAction @Inject() (implicit val ec: ExecutionContext) extends Results {
 
   implicit def hc(implicit request: Request[_]): HeaderCarrier =
     HeaderCarrierConverter.fromRequest(request)

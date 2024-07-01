@@ -37,16 +37,17 @@ trait SubmissionTrackingService {
     userId: String,
     etmpFormBundleNumber: String,
     emailAddress: String,
-    registrationNumber: String): Future[_]
+    registrationNumber: String
+  ): Future[_]
   def updateSubscriptionTracking(etmpFormBundleNumber: String, enrolmentProgress: EnrolmentProgress): Future[_]
   def getSubmissionTrackingEmail(formBundleId: String): OptionT[Future, String]
   def deleteSubmissionTracking(formBundleId: String): Future[_]
 }
 
 @Singleton
-class DefaultSubmissionTrackingService @Inject()(repository: SubmissionTrackingRepository, clock: Clock)(
-  implicit ec: ExecutionContext)
-    extends SubmissionTrackingService with Logging {
+class DefaultSubmissionTrackingService @Inject() (repository: SubmissionTrackingRepository, clock: Clock)(implicit
+  ec: ExecutionContext
+) extends SubmissionTrackingService with Logging {
   val SubmissionTrackingAgeThresholdMs = 60 * 60 * 1000L
 
   override def enrolmentProgress(userId: String, registrationNumber: Option[String]): Future[EnrolmentProgress] = {
@@ -54,18 +55,18 @@ class DefaultSubmissionTrackingService @Inject()(repository: SubmissionTrackingR
     for {
       _        <- clearSubmissionTrackingForRegNumber(userId, registrationNumber)
       tracking <- repository.findSubmissionTrackingByUserId(userId)
-    } yield {
-      tracking match {
-        case Some(tracking) =>
-          if (tracking.enrolmentProgress == EnrolmentProgress.Pending && (now - tracking.submissionTime) > SubmissionTrackingAgeThresholdMs) {
-            logger.error(s"Submission tracking is too old for user $userId. Was made at ${tracking.submissionTime}")
-            EnrolmentProgress.Error
-          } else {
-            tracking.enrolmentProgress
-          }
-        case None =>
-          EnrolmentProgress.Unknown
-      }
+    } yield tracking match {
+      case Some(tracking) =>
+        if (
+          tracking.enrolmentProgress == EnrolmentProgress.Pending && (now - tracking.submissionTime) > SubmissionTrackingAgeThresholdMs
+        ) {
+          logger.error(s"Submission tracking is too old for user $userId. Was made at ${tracking.submissionTime}")
+          EnrolmentProgress.Error
+        } else {
+          tracking.enrolmentProgress
+        }
+      case None =>
+        EnrolmentProgress.Unknown
     }
   }
 
@@ -79,7 +80,8 @@ class DefaultSubmissionTrackingService @Inject()(repository: SubmissionTrackingR
     userId: String,
     etmpFormBundleNumber: String,
     emailAddress: String,
-    registrationNumber: String): Future[_] = {
+    registrationNumber: String
+  ): Future[_] = {
     val submissionTracking = SubmissionTracking(
       userId,
       etmpFormBundleNumber,
@@ -94,23 +96,23 @@ class DefaultSubmissionTrackingService @Inject()(repository: SubmissionTrackingR
       .map { _ =>
         logger.info(s"Submission tracking record saved for $safeId and etmpFormBundleNumber $etmpFormBundleNumber")
       }
-      .recover {
-        case error =>
-          logger.error(
-            s"Submission tracking record FAILED for $safeId and etmpFormBundleNumber $etmpFormBundleNumber",
-            error)
+      .recover { case error =>
+        logger.error(
+          s"Submission tracking record FAILED for $safeId and etmpFormBundleNumber $etmpFormBundleNumber",
+          error
+        )
       }
   }
 
   override def updateSubscriptionTracking(
     etmpFormBundleNumber: String,
-    enrolmentProgress: EnrolmentProgress): Future[_] = {
+    enrolmentProgress: EnrolmentProgress
+  ): Future[_] = {
     val result = repository.updateEnrolmentProgress(etmpFormBundleNumber, enrolmentProgress)
     result
       .map(_ => logger.info(s"Submission tracking record saved for etmpFormBundleNumber $etmpFormBundleNumber"))
-      .recover {
-        case error =>
-          logger.error(s"Submission tracking record FAILED for etmpFormBundleNumber $etmpFormBundleNumber", error)
+      .recover { case error =>
+        logger.error(s"Submission tracking record FAILED for etmpFormBundleNumber $etmpFormBundleNumber", error)
       }
   }
 

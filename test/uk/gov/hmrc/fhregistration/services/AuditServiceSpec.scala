@@ -33,7 +33,8 @@ class AuditServiceSpec extends UnitSpec with MockitoSugar {
       val result = auditService.buildSubmissionCreateAuditEvent(
         new SubmissionRequest("test@test.test", new JsString("jsCreateVal")),
         "someSafeID",
-        "testCreateValue")
+        "testCreateValue"
+      )
 
       result.tags.getOrElse("path", "") shouldBe "/fulfilment-diligence/subscription/someSafeID/id-type/safe"
       result.tags.getOrElse("transactionName", "") shouldBe "FHDDS - testCreateValue"
@@ -44,7 +45,8 @@ class AuditServiceSpec extends UnitSpec with MockitoSugar {
     "buildSubmissionAmendAuditEvent" in {
       val result = auditService.buildSubmissionAmendAuditEvent(
         new SubmissionRequest("test@test.test", new JsString("jsAmendVal")),
-        "testAmendValue")
+        "testAmendValue"
+      )
 
       result.tags.getOrElse("path", "") shouldBe "/fulfilment-diligence/subscription/testAmendValue/id-type/fhdds"
       result.tags.getOrElse("transactionName", "") shouldBe "FHDDS - testAmendValue"
@@ -55,7 +57,8 @@ class AuditServiceSpec extends UnitSpec with MockitoSugar {
     "buildSubmissionWithdrawalAuditEvent" in {
       val result = auditService.buildSubmissionWithdrawalAuditEvent(
         new WithdrawalRequest("test@test.test", new JsString("jsWithdrawalVal")),
-        "testWithdrawalValue")
+        "testWithdrawalValue"
+      )
 
       result.tags.getOrElse("path", "") shouldBe "/fulfilment-diligence/subscription/testWithdrawalValue/withdrawal"
       result.tags.getOrElse("transactionName", "") shouldBe "FHDDS - testWithdrawalValue"
@@ -66,7 +69,8 @@ class AuditServiceSpec extends UnitSpec with MockitoSugar {
     "buildSubmissionDeregisterAuditEvent" in {
       val result = auditService.buildSubmissionDeregisterAuditEvent(
         new DeregistrationRequest("test@test.test", new JsString("jsDeregisterVal")),
-        "testDeregisterValue")
+        "testDeregisterValue"
+      )
 
       result.tags.getOrElse("path", "") shouldBe "/fulfilment-diligence/subscription/testDeregisterValue/deregister"
       result.tags.getOrElse("transactionName", "") shouldBe "FHDDS - testDeregisterValue"

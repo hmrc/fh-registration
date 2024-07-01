@@ -52,7 +52,7 @@ trait AuditService {
 }
 
 @Singleton
-class DefaultAuditService @Inject()(
+class DefaultAuditService @Inject() (
   val http: HttpClient,
   val configuration: Configuration,
   environment: Environment
@@ -70,7 +70,8 @@ class DefaultAuditService @Inject()(
     buildSubmissionAuditEvent(
       submissionRequest.submission,
       registrationNumber,
-      s"/fulfilment-diligence/subscription/$safeId/id-type/safe")
+      s"/fulfilment-diligence/subscription/$safeId/id-type/safe"
+    )
 
   def buildSubmissionAmendAuditEvent(
     submissionRequest: SubmissionRequest,
@@ -79,7 +80,8 @@ class DefaultAuditService @Inject()(
     buildSubmissionAuditEvent(
       submissionRequest.submission,
       registrationNumber,
-      s"/fulfilment-diligence/subscription/$registrationNumber/id-type/fhdds")
+      s"/fulfilment-diligence/subscription/$registrationNumber/id-type/fhdds"
+    )
 
   def buildSubmissionWithdrawalAuditEvent(
     withdrawalRequest: WithdrawalRequest,
@@ -88,7 +90,8 @@ class DefaultAuditService @Inject()(
     buildSubmissionAuditEvent(
       withdrawalRequest.withdrawal,
       registrationNumber,
-      s"/fulfilment-diligence/subscription/$registrationNumber/withdrawal")
+      s"/fulfilment-diligence/subscription/$registrationNumber/withdrawal"
+    )
 
   def buildSubmissionDeregisterAuditEvent(
     deregistrationRequest: DeregistrationRequest,
@@ -97,7 +100,8 @@ class DefaultAuditService @Inject()(
     buildSubmissionAuditEvent(
       deregistrationRequest.deregistration,
       registrationNumber,
-      s"/fulfilment-diligence/subscription/$registrationNumber/deregister")
+      s"/fulfilment-diligence/subscription/$registrationNumber/deregister"
+    )
 
   private def buildSubmissionAuditEvent(
     data: JsValue,

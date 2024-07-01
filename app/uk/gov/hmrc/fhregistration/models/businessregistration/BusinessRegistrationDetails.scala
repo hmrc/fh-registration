@@ -32,7 +32,8 @@ case class BusinessRegistrationDetails(
   lastName: Option[String] = None,
   utr: Option[String] = None,
   identification: Option[Identification] = None,
-  isBusinessDetailsEditable: Boolean = false)
+  isBusinessDetailsEditable: Boolean = false
+)
 
 object BusinessRegistrationDetails {
   implicit val formats = JsonNaming snakecase Json.format[BusinessRegistrationDetails]

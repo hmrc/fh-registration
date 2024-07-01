@@ -5,7 +5,6 @@ import com.github.tomakehurst.wiremock.matching.RequestPatternBuilder
 
 trait VerifierFunctions {
 
-
   def calls(r: RequestPatternBuilder) =
     findAll(r)
 

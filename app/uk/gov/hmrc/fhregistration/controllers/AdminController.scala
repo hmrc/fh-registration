@@ -28,7 +28,7 @@ import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
 import scala.concurrent.ExecutionContext
 
-class AdminController @Inject()(
+class AdminController @Inject() (
   val submissionTrackingService: SubmissionTrackingService,
   val auditService: AuditService,
   val auditConnector: AuditConnector,
@@ -36,67 +36,54 @@ class AdminController @Inject()(
   val repo: DefaultSubmissionTrackingRepository,
   val userSearchConnector: UserSearchConnector,
   val cc: ControllerComponents,
-  val enrolmentStoreProxyConnector: EnrolmentStoreProxyConnector)(implicit val ec: ExecutionContext)
+  val enrolmentStoreProxyConnector: EnrolmentStoreProxyConnector
+)(implicit val ec: ExecutionContext)
     extends BackendController(cc) {
 
   def findUserDetails(userId: String) = Action.async { implicit request =>
     for {
       response: JsObject <- userSearchConnector.retrieveUserInfo(userId)
-    } yield {
-      Ok(response)
-    }
+    } yield Ok(response)
   }
 
   def findGroupDetails(groupId: String) = Action.async { implicit request =>
     for {
       response <- userSearchConnector.retrieveGroupInfo(groupId)
-    } yield {
-      Ok(Json.toJson(response))
-    }
+    } yield Ok(Json.toJson(response))
   }
 
-  //ES8
+  // ES8
   def allocateEnrolmentToGroup(userId: String, groupId: String, registrationNumber: String) = Action.async {
     implicit request =>
       for {
         response <- enrolmentStoreProxyConnector.allocateEnrolmentToGroup(userId, groupId, registrationNumber)
-      } yield {
-        Ok(response.body)
-      }
+      } yield Ok(response.body)
   }
 
-  //ES11
+  // ES11
   def allocateEnrolmentToUser(userId: String, registrationNumber: String) = Action.async { implicit request =>
     for {
       response <- enrolmentStoreProxyConnector.allocateEnrolmentToUser(userId, registrationNumber)
-    } yield {
-      Ok(response.body)
-    }
+    } yield Ok(response.body)
   }
 
-  //ES12
+  // ES12
   def deAssignEnrolment(userId: String, registrationNumber: String) = Action.async { implicit request =>
     for {
       response <- enrolmentStoreProxyConnector.deassignEnrolmentFromUser(userId, registrationNumber)
-    } yield {
-      Ok(response.body)
-    }
+    } yield Ok(response.body)
   }
 
   def userEnrolments(userId: String) = Action.async { implicit request =>
     for {
       response <- enrolmentStoreProxyConnector.userEnrolments(userId)
-    } yield {
-      Ok(response)
-    }
+    } yield Ok(response)
   }
 
   def groupEnrolments(groupId: String) = Action.async { implicit request =>
     for {
       response <- enrolmentStoreProxyConnector.groupEnrolments(groupId)
-    } yield {
-      Ok(response)
-    }
+    } yield Ok(response)
   }
 
 }

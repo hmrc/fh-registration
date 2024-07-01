@@ -26,7 +26,7 @@ import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
-class DefaultUserSearchConnector @Inject()(
+class DefaultUserSearchConnector @Inject() (
   val http: HttpClient,
   val configuration: Configuration,
   environment: Environment
