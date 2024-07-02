@@ -65,9 +65,7 @@ case class UserAction(authConnector: AuthConnector, cc: ControllerComponents)
       if identifier.key equalsIgnoreCase identifierName
       if identifier.value.slice(2, 4) == "FH"
 
-    } yield {
-      identifier.value
-    }
+    } yield identifier.value
 
     fhddsRegistrationNumbers.headOption
   }

@@ -108,7 +108,8 @@ class FhddsStatusMappingSpec extends UnitSpec with FhddsMocks {
       val json: JsValue = JsObject(Seq("subscriptionStatus" -> JsString("Contract Object Inactive")))
 
       an[IllegalArgumentException] should be thrownBy fhddsApplicationController.mdtpSubscriptionStatus(
-        json.as[StatusResponse].subscriptionStatus)
+        json.as[StatusResponse].subscriptionStatus
+      )
     }
   }
 

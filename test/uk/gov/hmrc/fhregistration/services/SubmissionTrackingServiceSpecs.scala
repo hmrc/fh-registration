@@ -82,7 +82,8 @@ class SubmissionTrackingServiceSpecs extends UnitSpec with ScalaFutures with Moc
       await(service.enrolmentProgress("some-user", None)) shouldBe EnrolmentProgress.Error
 
       await(
-        service.saveSubscriptionTracking("safeid", "some-user", "another-formbundelid", "a@a.co", "ZZFH0000001231456"))
+        service.saveSubscriptionTracking("safeid", "some-user", "another-formbundelid", "a@a.co", "ZZFH0000001231456")
+      )
 
       await(service.enrolmentProgress("some-user", None)) shouldBe EnrolmentProgress.Pending
     }

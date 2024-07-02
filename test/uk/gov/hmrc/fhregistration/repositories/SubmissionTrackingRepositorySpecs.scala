@@ -79,7 +79,8 @@ class SubmissionTrackingRepositorySpecs extends UnitSpec with BeforeAndAfterAll 
       await(repository.insertSubmissionTracking(tracking))
 
       val nDeleted = await(
-        repository.deleteSubmissionTackingByRegistrationNumber(tracking.userId, tracking.registrationNumber.get + "1"))
+        repository.deleteSubmissionTackingByRegistrationNumber(tracking.userId, tracking.registrationNumber.get + "1")
+      )
       nDeleted shouldBe 0
 
       val byUserId = await(repository.findSubmissionTrackingByUserId(anUserId))

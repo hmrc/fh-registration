@@ -45,7 +45,7 @@ trait SubmissionTrackingRepository {
 }
 
 @Singleton
-class DefaultSubmissionTrackingRepository @Inject()(implicit mongo: MongoComponent, implicit val ec: ExecutionContext)
+class DefaultSubmissionTrackingRepository @Inject() (implicit mongo: MongoComponent, implicit val ec: ExecutionContext)
     extends PlayMongoRepository[SubmissionTracking](
       collectionName = "submission-tracking",
       mongoComponent = mongo,
@@ -99,7 +99,8 @@ class DefaultSubmissionTrackingRepository @Inject()(implicit mongo: MongoCompone
         Filters.and(
           Filters.equal(UserIdField, userId),
           Filters.equal(RegistrationNumberField, registrationNumber)
-        ))
+        )
+      )
       .toFuture()
       .map(_.getDeletedCount.toInt)
 
@@ -122,7 +123,8 @@ class DefaultSubmissionTrackingRepository @Inject()(implicit mongo: MongoCompone
 
   override def updateEnrolmentProgress(
     formBundleId: String,
-    progress: EnrolmentProgress): Future[Seq[SubmissionTracking]] =
+    progress: EnrolmentProgress
+  ): Future[Seq[SubmissionTracking]] =
     collection
       .findOneAndUpdate(
         filter = Filters.equal(FormBundleIdField, formBundleId),

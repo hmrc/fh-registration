@@ -3,8 +3,7 @@ package uk.gov.hmrc.fhregistration
 import play.api.test.WsTestClient
 import uk.gov.hmrc.fhdds.testsupport.{TestConfiguration, TestHelpers}
 
-class MdtpSubscriptionStatusSpecs
-  extends TestHelpers with TestConfiguration {
+class MdtpSubscriptionStatusSpecs extends TestHelpers with TestConfiguration {
 
   val receivedRegistrationNumber = "receivedRegistrationNumber"
   val processingRegistrationNumber = "processingRegistrationNumber"
@@ -15,14 +14,13 @@ class MdtpSubscriptionStatusSpecs
     "When bta calls fh-registration to retrieve a status and gets a 200 response with status" when {
       "if the the form is received" in {
 
-        given()
-          .audit.writesAuditOrMerged()
-          .des.getStatus(s"$receivedRegistrationNumber")
+        given().audit.writesAuditOrMerged().des.getStatus(s"$receivedRegistrationNumber")
 
         val response = WsTestClient.withClient { client =>
           client
             .url(s"http://localhost:$port/fhdds/subscription/$receivedRegistrationNumber/status")
-            .get().futureValue
+            .get()
+            .futureValue
         }
         response.status shouldBe 200
         response.json.as[String] shouldBe "received"
@@ -30,14 +28,13 @@ class MdtpSubscriptionStatusSpecs
 
       "if the the form is processing" in {
 
-        given()
-          .audit.writesAuditOrMerged()
-          .des.getStatus(s"$processingRegistrationNumber")
+        given().audit.writesAuditOrMerged().des.getStatus(s"$processingRegistrationNumber")
 
         val response = WsTestClient.withClient { client =>
           client
             .url(s"http://localhost:$port/fhdds/subscription/$processingRegistrationNumber/status")
-            .get().futureValue
+            .get()
+            .futureValue
         }
         response.status shouldBe 200
         response.json.as[String] shouldBe "processing"
@@ -45,14 +42,13 @@ class MdtpSubscriptionStatusSpecs
 
       "if the the form is successful" in {
 
-        given()
-          .audit.writesAuditOrMerged()
-          .des.getStatus(s"$successfulRegistrationNumber")
+        given().audit.writesAuditOrMerged().des.getStatus(s"$successfulRegistrationNumber")
 
         val response = WsTestClient.withClient { client =>
           client
             .url(s"http://localhost:$port/fhdds/subscription/$successfulRegistrationNumber/status")
-            .get().futureValue
+            .get()
+            .futureValue
         }
         response.status shouldBe 200
         response.json.as[String] shouldBe "approved"

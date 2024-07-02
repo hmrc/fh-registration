@@ -20,7 +20,7 @@ import javax.inject.Inject
 import play.api.mvc.ControllerComponents
 import uk.gov.hmrc.auth.core.AuthConnector
 
-class Actions @Inject()(val authConnector: AuthConnector, cc: ControllerComponents) {
+class Actions @Inject() (val authConnector: AuthConnector, cc: ControllerComponents) {
 
   def userAction = UserAction(authConnector, cc)
   def userGroupAction = UserGroupAction(authConnector, cc)

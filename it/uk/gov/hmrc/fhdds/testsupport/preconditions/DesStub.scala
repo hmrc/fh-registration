@@ -1,11 +1,9 @@
 package uk.gov.hmrc.fhdds.testsupport.preconditions
 
-
 import com.github.tomakehurst.wiremock.client.WireMock._
 import play.api.libs.json.{JsObject, JsString, JsValue, Json}
 import uk.gov.hmrc.fhdds.testsupport.TestData
 import uk.gov.hmrc.fhregistration.models.des.DesSubmissionResponse
-
 
 case class DesStub()(implicit builder: PreconditionBuilder) {
 
@@ -65,7 +63,7 @@ case class DesStub()(implicit builder: PreconditionBuilder) {
         .willReturn(
           ok(
             registrationID match {
-              case "receivedRegistrationNumber" => receivedJson.toString()
+              case "receivedRegistrationNumber"   => receivedJson.toString()
               case "processingRegistrationNumber" => processingJson.toString()
               case "successfulRegistrationNumber" => successfulJson.toString()
             }

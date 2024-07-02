@@ -43,10 +43,9 @@ case class UserGroupAction(val authConnector: AuthConnector, cc: ControllerCompo
         Future successful error(BadRequest, "group id not found")
     }
 
-  } recover {
-    case e =>
-      logger.warn("Unauthorized user", e)
-      error(Unauthorized, s"Unauthorized: ${e.getMessage}")
+  } recover { case e =>
+    logger.warn("Unauthorized user", e)
+    error(Unauthorized, s"Unauthorized: ${e.getMessage}")
   }
 
 }

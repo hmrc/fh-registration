@@ -1,6 +1,5 @@
 package uk.gov.hmrc.fhdds.testsupport.preconditions
 
-
 import com.github.tomakehurst.wiremock.client.WireMock._
 
 case class EmailStub()(implicit builder: PreconditionBuilder) {
