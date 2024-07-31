@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.fhregistration.models.fhdds
 
-import play.api.libs.json.{JsValue, Json}
+import play.api.libs.json.{JsValue, Json, OFormat}
 
 case class WithdrawalRequest(
   emailAddress: String,
@@ -24,5 +24,5 @@ case class WithdrawalRequest(
 )
 
 object WithdrawalRequest {
-  implicit val withdrawalRequestFormat = Json.format[WithdrawalRequest]
+  implicit val withdrawalRequestFormat: OFormat[WithdrawalRequest] = Json.format[WithdrawalRequest]
 }

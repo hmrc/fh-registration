@@ -32,7 +32,7 @@ case class SubmissionTracking(
 }
 
 object SubmissionTracking {
-  implicit val formats = Json.format[SubmissionTracking]
+  implicit val formats: OFormat[SubmissionTracking] = Json.format[SubmissionTracking]
 
   def apply(
     userId: String,

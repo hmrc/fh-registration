@@ -16,10 +16,10 @@
 
 package uk.gov.hmrc.fhregistration.models.fhdds
 
-import play.api.libs.json.Json
+import play.api.libs.json.{Json, OFormat}
 
 case class UserData(email: String)
 
 object UserData {
-  implicit val formats = Json.format[UserData]
+  implicit val formats: OFormat[UserData] = Json.format[UserData]
 }

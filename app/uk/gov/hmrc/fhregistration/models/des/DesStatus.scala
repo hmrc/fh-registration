@@ -36,5 +36,5 @@ object DesStatus extends Enumeration {
   val Deregistered = Value("De-Registered")
   val ContractObjectInactive = Value("Contract Object Inactive")
 
-  implicit val format = Format(Reads.enumNameReads(DesStatus), Writes.enumNameWrites[this.type])
+  implicit val format: Format[Value] = Format(Reads.enumNameReads(DesStatus), Writes.enumNameWrites[this.type])
 }
