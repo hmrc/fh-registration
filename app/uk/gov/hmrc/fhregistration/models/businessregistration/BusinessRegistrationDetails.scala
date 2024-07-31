@@ -36,5 +36,6 @@ case class BusinessRegistrationDetails(
 )
 
 object BusinessRegistrationDetails {
-  implicit val formats: Format[BusinessRegistrationDetails] = JsonNaming snakecase Json.format[BusinessRegistrationDetails]
+  implicit val formats: Format[BusinessRegistrationDetails] =
+    JsonNaming snakecase Json.format[BusinessRegistrationDetails]
 }
