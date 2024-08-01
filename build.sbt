@@ -9,8 +9,6 @@ import uk.gov.hmrc.versioning.SbtGitVersioning.autoImport.majorVersion
 
 val appName = "fh-registration"
 
-lazy val appDependencies: Seq[ModuleID] = AppDependencies()
-
 lazy val plugins : Seq[Plugins] = Seq.empty
 lazy val playSettings : Seq[Setting[_]] = Seq.empty
 
@@ -38,7 +36,7 @@ lazy val microservice = Project(appName, file("."))
   .settings(scalaVersion := "2.13.12")
   .settings(defaultSettings(): _*)
   .settings(
-    libraryDependencies ++= appDependencies,
+    libraryDependencies ++= AppDependencies.all,
     retrieveManaged := true,
     update / evictionWarningOptions := EvictionWarningOptions.default.withWarnScalaVersionEviction(false),
     Compile / scalafmtOnCompile := true,
@@ -53,13 +51,6 @@ lazy val microservice = Project(appName, file("."))
     IntegrationTest / resourceDirectory := baseDirectory.value / "it/resources",
     IntegrationTest / unmanagedSourceDirectories := (IntegrationTest / baseDirectory)(base => Seq(base / "it")).value,
     addTestReportOption(IntegrationTest, "int-test-reports"),
-    IntegrationTest / testGrouping := oneForkedJvmPerTest((IntegrationTest / definedTests).value),
     IntegrationTest / parallelExecution := false,
     IntegrationTest / scalafmtOnCompile := true)
   .settings(Global / lintUnusedKeysOnLoad := false)
-
-def oneForkedJvmPerTest(tests: Seq[TestDefinition]) = {
-  tests.map { test =>
-    new Group(test.name, Seq(test), SubProcess(ForkOptions().withRunJVMOptions(Vector(s"-Dtest.name=${test.name}"))))
-  }
-}

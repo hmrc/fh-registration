@@ -4,7 +4,7 @@ import com.github.tomakehurst.wiremock.client.WireMock._
 import org.scalatest.matchers.should.Matchers
 import play.api.libs.json.{JsObject, Json}
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 case class DesVerifier()(implicit builder: VerifierBuilder) extends Matchers {
 

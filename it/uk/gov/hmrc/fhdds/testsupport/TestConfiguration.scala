@@ -24,7 +24,7 @@ trait TestConfiguration
   abstract override implicit val patienceConfig: PatienceConfig =
     PatienceConfig(timeout = Span(4, Seconds), interval = Span(50, Millis))
 
-  def given() = new PreconditionBuilder
+  def `given`() = new PreconditionBuilder
 
   def expect() = new VerifierBuilder
 

@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.fhregistration.models
 
-import play.api.libs.json.Json
+import play.api.libs.json.{Json, OFormat}
 
 case class TaxEnrolmentsCallback(
   url: String,
@@ -28,5 +28,5 @@ case class TaxEnrolmentsCallback(
 }
 
 object TaxEnrolmentsCallback {
-  implicit val format = Json.format[TaxEnrolmentsCallback]
+  implicit val format: OFormat[TaxEnrolmentsCallback] = Json.format[TaxEnrolmentsCallback]
 }

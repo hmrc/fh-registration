@@ -17,11 +17,10 @@
 package uk.gov.hmrc.fhregistration.models.des
 
 import java.util.Date
-
-import play.api.libs.json.Json
+import play.api.libs.json.{Json, OFormat}
 
 case class DesDeregistrationResponse(processingDate: Date)
 
 object DesDeregistrationResponse {
-  implicit val format = Json.format[DesDeregistrationResponse]
+  implicit val format: OFormat[DesDeregistrationResponse] = Json.format[DesDeregistrationResponse]
 }

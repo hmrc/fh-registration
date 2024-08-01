@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.fhregistration.models.fhdds
 
-import play.api.libs.json.{JsValue, Json}
+import play.api.libs.json.{JsValue, Json, OFormat}
 
 case class DeregistrationRequest(
   emailAddress: String,
@@ -24,5 +24,5 @@ case class DeregistrationRequest(
 )
 
 object DeregistrationRequest {
-  implicit val format = Json.format[DeregistrationRequest]
+  implicit val format: OFormat[DeregistrationRequest] = Json.format[DeregistrationRequest]
 }
