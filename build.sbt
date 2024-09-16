@@ -1,6 +1,5 @@
 import play.sbt.PlayImport.PlayKeys
 import sbt.Keys._
-import sbt.Tests.{Group, SubProcess}
 import sbt._
 import uk.gov.hmrc._
 import DefaultBuildSettings._
