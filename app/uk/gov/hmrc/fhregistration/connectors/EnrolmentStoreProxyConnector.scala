@@ -20,14 +20,15 @@ import com.google.inject.ImplementedBy
 import play.api.libs.json.{JsObject, Json}
 import play.api.{Configuration, Environment, Logging}
 import uk.gov.hmrc.http.HttpReads.Implicits._
-import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpErrorFunctions, HttpResponse}
+import uk.gov.hmrc.http.client.HttpClientV2
+import uk.gov.hmrc.http.{HeaderCarrier, HttpErrorFunctions, HttpResponse, StringContextOps}
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
 class DefaultEnrolmentStoreProxyConnector @Inject() (
-  val http: HttpClient,
+  val http: HttpClientV2,
   val configuration: Configuration,
   environment: Environment
 )(implicit ec: ExecutionContext)
@@ -58,24 +59,38 @@ class DefaultEnrolmentStoreProxyConnector @Inject() (
       "type"   -> "principal",
       "action" -> "enrolAndActivate"
     )
-    http.POST[JsObject, HttpResponse](es8Url(groupId, registrationNumber), jsonRequest)
+    http
+      .post(url"${es8Url(groupId, registrationNumber)}")
+      .withBody[JsObject](jsonRequest)
+      .execute[HttpResponse]
   }
 
   override def allocateEnrolmentToUser(userId: String, registrationNumber: String)(implicit
     hc: HeaderCarrier
-  ): Future[HttpResponse] =
-    http.POSTEmpty[HttpResponse](es11Url(userId, registrationNumber))
+  ): Future[HttpResponse] = {
+    http
+      .post(url"${es11Url(userId, registrationNumber)}")
+      .execute[HttpResponse]
+  }
 
   override def deassignEnrolmentFromUser(userId: String, registrationNumber: String)(implicit
     hc: HeaderCarrier
-  ): Future[HttpResponse] =
-    http.DELETE[HttpResponse](es12Url(userId, registrationNumber))
+  ): Future[HttpResponse] = {
+    http
+      .delete(url"${es12Url(userId, registrationNumber)}")
+      .execute[HttpResponse]
+  }
 
-  override def userEnrolments(userId: String)(implicit hc: HeaderCarrier): Future[JsObject] =
-    http.GET[JsObject](es2Url(userId))
+  override def userEnrolments(userId: String)(implicit hc: HeaderCarrier): Future[JsObject] = {
+    http
+      .get(url"${es2Url(userId)}")
+      .execute[JsObject]
+  }
 
   override def groupEnrolments(groupId: String)(implicit hc: HeaderCarrier): Future[JsObject] =
-    http.GET[JsObject](es3Url(groupId))
+    http
+      .get(url"${es3Url(groupId)}")
+      .execute[JsObject]
 
 }
 
