@@ -67,25 +67,22 @@ class DefaultEnrolmentStoreProxyConnector @Inject() (
 
   override def allocateEnrolmentToUser(userId: String, registrationNumber: String)(implicit
     hc: HeaderCarrier
-  ): Future[HttpResponse] = {
+  ): Future[HttpResponse] =
     http
       .post(url"${es11Url(userId, registrationNumber)}")
       .execute[HttpResponse]
-  }
 
   override def deassignEnrolmentFromUser(userId: String, registrationNumber: String)(implicit
     hc: HeaderCarrier
-  ): Future[HttpResponse] = {
+  ): Future[HttpResponse] =
     http
       .delete(url"${es12Url(userId, registrationNumber)}")
       .execute[HttpResponse]
-  }
 
-  override def userEnrolments(userId: String)(implicit hc: HeaderCarrier): Future[JsObject] = {
+  override def userEnrolments(userId: String)(implicit hc: HeaderCarrier): Future[JsObject] =
     http
       .get(url"${es2Url(userId)}")
       .execute[JsObject]
-  }
 
   override def groupEnrolments(groupId: String)(implicit hc: HeaderCarrier): Future[JsObject] =
     http

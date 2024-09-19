@@ -64,7 +64,7 @@ class DefaultTaxEnrolmentConnector @Inject() (
       .put(url"${subscriberUrl(etmpFormBundleNumber)}")
       .withBody[JsObject](requestBody(safeId, etmpFormBundleNumber))
       .execute[HttpResponse]
-      .map(response => {
+      .map { response =>
 //        TODO: TIDY UP THIS if/else/throw
         if (is2xx(response.status)) {
           logger.info(s"Request to tax enrolments authorisation response: ${response.body}")
@@ -76,20 +76,19 @@ class DefaultTaxEnrolmentConnector @Inject() (
         throw new RuntimeException(
           s"in tax enrolment, Unexpected response code '${response.status} with response body ${response.body}'"
         )
-      })
+      }
   }
 
   override def deleteGroupEnrolment(groupId: String, registrationNumber: String)(implicit
     hc: HeaderCarrier
-  ): Future[_] = {
+  ): Future[_] =
     http
       .delete(url"${groupEnrolmentUrl(groupId, registrationNumber)}")
       .execute[HttpResponse]
-      .map(response => {
+      .map { response =>
         if (is2xx(response.status)) response.body
         else throw new RuntimeException(s"Unexpected response code '${response.status}'")
-      })
-  }
+      }
 
   private def requestBody(etmpId: String, etmpFormBundleNumber: String): JsObject =
     Json.obj(

@@ -21,6 +21,7 @@ import play.api.libs.json.JsValue
 import play.api.{Configuration, Environment, Logging}
 import uk.gov.hmrc.fhregistration.models.des.{DesDeregistrationResponse, DesSubmissionResponse, DesWithdrawalResponse, StatusResponse}
 import uk.gov.hmrc.http._
+import uk.gov.hmrc.http.HttpReads.Implicits.readRaw
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 
@@ -71,7 +72,7 @@ class DefaultDesConnector @Inject() (
   private def headerCarrierBuilder(hc: HeaderCarrier) = hc.copy(authorization = None)
 
   private val desAuthorizationHeader = "Authorization" -> s"Bearer $desToken"
-  private val desEnvironmentHeader = "Environment" -> environmentKey
+  private val desEnvironmentHeader = "Environment"     -> environmentKey
 
   private[connectors] def customDESRead(response: HttpResponse): HttpResponse =
     response.status match {

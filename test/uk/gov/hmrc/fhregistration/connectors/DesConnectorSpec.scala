@@ -21,13 +21,14 @@ import org.scalatestplus.mockito.MockitoSugar
 import play.api.{Configuration, Environment}
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 import uk.gov.hmrc.fhregistration.util.UnitSpec
-import uk.gov.hmrc.http.{HttpClient, HttpResponse, UpstreamErrorResponse}
+import uk.gov.hmrc.http.client.HttpClientV2
+import uk.gov.hmrc.http.{HttpResponse, UpstreamErrorResponse}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
 class DesConnectorSpec extends UnitSpec with MockitoSugar {
   class DefaultDesConnectorMock(
-    val httpClient: HttpClient,
+    val httpClient: HttpClientV2,
     val config: Configuration,
     environment: Environment,
     servicesConfig: ServicesConfig
@@ -38,7 +39,7 @@ class DesConnectorSpec extends UnitSpec with MockitoSugar {
 
   "URLs and URIs" should {
     val desConnectorMock =
-      new DefaultDesConnectorMock(mock[HttpClient], mock[Configuration], mock[Environment], mock[ServicesConfig])
+      new DefaultDesConnectorMock(mock[HttpClientV2], mock[Configuration], mock[Environment], mock[ServicesConfig])
 
     "desServiceStatusUri" in {
       desConnectorMock.desServiceStatusUri shouldBe "des-service"
@@ -63,11 +64,11 @@ class DesConnectorSpec extends UnitSpec with MockitoSugar {
 
   "customDesRead" should {
     val desConnectorMock =
-      new DefaultDesConnectorMock(mock[HttpClient], mock[Configuration], mock[Environment], mock[ServicesConfig])
+      new DefaultDesConnectorMock(mock[HttpClientV2], mock[Configuration], mock[Environment], mock[ServicesConfig])
 
     "successfully convert 429 from DES to 503" in {
       val httpResponse = HttpResponse(429, "429")
-      val ex = intercept[UpstreamErrorResponse](desConnectorMock.customDESRead("test", "testUrl", httpResponse))
+      val ex = intercept[UpstreamErrorResponse](desConnectorMock.customDESRead(httpResponse))
       ex shouldBe UpstreamErrorResponse("429 received from DES - converted to 503", 429, 503)
     }
   }

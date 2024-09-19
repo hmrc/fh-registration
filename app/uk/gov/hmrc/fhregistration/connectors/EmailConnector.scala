@@ -57,15 +57,16 @@ class DefaultEmailConnector @Inject() (
 
     logger.debug(s"Sending email, SendEmailRequest=$email")
 
-    val futureResult = http.post(url"$emailUrl")
+    val futureResult = http
+      .post(url"$emailUrl")
       .withBody(Json.toJson(email))
       .execute[HttpResponse]
-      .map(response => {
+      .map { response =>
         if (response.status >= 200 && response.status < 300)
           true
         else
           throw new BadGatewayException("Sending email is failed and it not queued for sending.")
-      })
+      }
 
     futureResult.onComplete {
       case Success(_) =>
