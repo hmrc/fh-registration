@@ -21,12 +21,12 @@ import play.api.libs.json.JsString
 import play.api.{Configuration, Environment}
 import uk.gov.hmrc.fhregistration.models.fhdds.{DeregistrationRequest, SubmissionRequest, WithdrawalRequest}
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.http.HttpClient
 import uk.gov.hmrc.fhregistration.util.UnitSpec
+import uk.gov.hmrc.http.client.HttpClientV2
 
 class AuditServiceSpec extends UnitSpec with MockitoSugar {
   "buildSubmission methods return correct DataEvent" should {
-    val auditService = new DefaultAuditService(mock[HttpClient], mock[Configuration], mock[Environment])
+    val auditService = new DefaultAuditService(mock[HttpClientV2], mock[Configuration], mock[Environment])
     implicit val hc = new HeaderCarrier()
 
     "buildSubmissionCreateAuditEvent" in {

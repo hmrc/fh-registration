@@ -21,6 +21,8 @@ import play.api.libs.json.JsValue
 import play.api.{Configuration, Environment, Logging}
 import uk.gov.hmrc.fhregistration.models.des.{DesDeregistrationResponse, DesSubmissionResponse, DesWithdrawalResponse, StatusResponse}
 import uk.gov.hmrc.http._
+import uk.gov.hmrc.http.HttpReads.Implicits.readRaw
+import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 
 import javax.inject.{Inject, Singleton}
@@ -44,7 +46,7 @@ trait DesConnector extends HttpErrorFunctions {
 
 @Singleton
 class DefaultDesConnector @Inject() (
-  val http: HttpClient,
+  val http: HttpClientV2,
   val configuration: Configuration,
   environment: Environment,
   servicesConfig: ServicesConfig
@@ -69,9 +71,10 @@ class DefaultDesConnector @Inject() (
 
   private def headerCarrierBuilder(hc: HeaderCarrier) = hc.copy(authorization = None)
 
-  def desHeaders = Seq("Authorization" -> s"Bearer $desToken", "Environment" -> environmentKey)
+  private val desAuthorizationHeader = "Authorization" -> s"Bearer $desToken"
+  private val desEnvironmentHeader = "Environment"     -> environmentKey
 
-  private[connectors] def customDESRead(http: String, url: String, response: HttpResponse): HttpResponse =
+  private[connectors] def customDESRead(response: HttpResponse): HttpResponse =
     response.status match {
       case 403 =>
         logger.error(s"Received error 403 from DES with message - ${response.json}")
@@ -83,29 +86,28 @@ class DefaultDesConnector @Inject() (
         response
     }
 
-  implicit val httpRds: HttpReads[HttpResponse] = new HttpReads[HttpResponse] {
-    def read(http: String, url: String, res: HttpResponse): HttpResponse = customDESRead(http, url, res)
-  }
-
   def getStatus(fhddsRegistrationNumber: String)(hc: HeaderCarrier): Future[StatusResponse] = {
     implicit val headerCarrier: HeaderCarrier = headerCarrierBuilder(hc)
+    val url = s"$desServiceStatusUri/fulfilment-diligence/subscription/$fhddsRegistrationNumber/status"
     http
-      .GET[HttpResponse](
-        s"$desServiceStatusUri/fulfilment-diligence/subscription/$fhddsRegistrationNumber/status",
-        headers = desHeaders
-      )
-      .map { resp =>
-        resp.json.as[StatusResponse]
-      }
+      .get(url"$url")
+      .execute[HttpResponse]
+      .map(customDESRead)
+      .map(_.json.as[StatusResponse])
   }
 
   def sendSubmission(safeId: String, submission: JsValue)(hc: HeaderCarrier): Future[DesSubmissionResponse] = {
     logger.info(s"Sending fhdds registration data to DES for safeId $safeId")
     implicit val headerCarrier: HeaderCarrier = headerCarrierBuilder(hc)
-    http.POST[JsValue, HttpResponse](desSubmissionUrl(safeId), submission, headers = desHeaders).map { resp =>
-      logger.info(s"DES response with status ${resp.status}")
-      resp.json.as[DesSubmissionResponse]
-    }
+
+    http
+      .post(url"${desSubmissionUrl(safeId)}")
+      .setHeader(desAuthorizationHeader)
+      .setHeader(desEnvironmentHeader)
+      .withBody[JsValue](submission)
+      .execute[HttpResponse]
+      .map(customDESRead)
+      .map(_.json.as[DesSubmissionResponse])
   }
 
   def sendAmendment(fhddsRegistrationNumber: String, submission: JsValue)(
@@ -113,10 +115,15 @@ class DefaultDesConnector @Inject() (
   ): Future[DesSubmissionResponse] = {
     logger.info(s"Sending fhdds amendment data to DES for regNumber $fhddsRegistrationNumber")
     implicit val headerCarrier: HeaderCarrier = headerCarrierBuilder(hc)
-    http.POST[JsValue, HttpResponse](desAmendmentUrl(fhddsRegistrationNumber), submission, headers = desHeaders).map {
-      resp =>
-        resp.json.as[DesSubmissionResponse]
-    }
+
+    http
+      .post(url"${desAmendmentUrl(fhddsRegistrationNumber)}")
+      .setHeader(desAuthorizationHeader)
+      .setHeader(desEnvironmentHeader)
+      .withBody[JsValue](submission)
+      .execute[HttpResponse]
+      .map(customDESRead)
+      .map(_.json.as[DesSubmissionResponse])
   }
 
   def sendWithdrawal(fhddsRegistrationNumber: String, submission: JsValue)(
@@ -124,10 +131,15 @@ class DefaultDesConnector @Inject() (
   ): Future[DesWithdrawalResponse] = {
     logger.info(s"Sending fhdds withdrawal data to DES for regNumber $fhddsRegistrationNumber")
     implicit val headerCarrier: HeaderCarrier = headerCarrierBuilder(hc)
-    http.PUT[JsValue, HttpResponse](desWithdrawalUrl(fhddsRegistrationNumber), submission, headers = desHeaders).map {
-      resp =>
-        resp.json.as[DesWithdrawalResponse]
-    }
+
+    http
+      .put(url"${desWithdrawalUrl(fhddsRegistrationNumber)}")
+      .setHeader(desAuthorizationHeader)
+      .setHeader(desEnvironmentHeader)
+      .withBody[JsValue](submission)
+      .execute[HttpResponse]
+      .map(customDESRead)
+      .map(_.json.as[DesWithdrawalResponse])
   }
 
   def sendDeregistration(fhddsRegistrationNumber: String, submission: JsValue)(
@@ -135,16 +147,25 @@ class DefaultDesConnector @Inject() (
   ): Future[DesDeregistrationResponse] = {
     logger.info(s"Sending fhdds deregistration data to DES for regNumber $fhddsRegistrationNumber")
     implicit val headerCarrier: HeaderCarrier = headerCarrierBuilder(hc)
-    http.POST[JsValue, HttpResponse](desDeregisterUrl(fhddsRegistrationNumber), submission, headers = desHeaders).map {
-      resp =>
-        resp.json.as[DesDeregistrationResponse]
-    }
 
+    http
+      .post(url"${desDeregisterUrl(fhddsRegistrationNumber)}")
+      .setHeader(desAuthorizationHeader)
+      .setHeader(desEnvironmentHeader)
+      .withBody[JsValue](submission)
+      .execute[HttpResponse]
+      .map(customDESRead)
+      .map(_.json.as[DesDeregistrationResponse])
   }
 
   def display(fhddsRegistrationNumber: String)(hc: HeaderCarrier): Future[HttpResponse] = {
     implicit val headerCarrier: HeaderCarrier = headerCarrierBuilder(hc)
+    val url = s"$desServiceStatusUri/fulfilment-diligence/subscription/$fhddsRegistrationNumber/get"
     http
-      .GET(s"$desServiceStatusUri/fulfilment-diligence/subscription/$fhddsRegistrationNumber/get", headers = desHeaders)
+      .get(url"$url")
+      .setHeader(desAuthorizationHeader)
+      .setHeader(desEnvironmentHeader)
+      .execute[HttpResponse]
+      .map(customDESRead)
   }
 }

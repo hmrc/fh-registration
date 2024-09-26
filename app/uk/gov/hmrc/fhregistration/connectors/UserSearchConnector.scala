@@ -20,14 +20,15 @@ import com.google.inject.ImplementedBy
 import play.api.libs.json.JsObject
 import play.api.{Configuration, Environment, Logging}
 import uk.gov.hmrc.http.HttpReads.Implicits._
-import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpErrorFunctions}
+import uk.gov.hmrc.http.client.HttpClientV2
+import uk.gov.hmrc.http.{HeaderCarrier, HttpErrorFunctions, StringContextOps}
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
 class DefaultUserSearchConnector @Inject() (
-  val http: HttpClient,
+  val http: HttpClientV2,
   val configuration: Configuration,
   environment: Environment
 )(implicit ec: ExecutionContext)
@@ -41,11 +42,11 @@ class DefaultUserSearchConnector @Inject() (
 
   override def retrieveUserInfo(userId: String)(implicit hc: HeaderCarrier): Future[JsObject] = {
     logger.info(s"Request to user groups search")
-    http.GET[JsObject](userInfoUrl(userId))
+    http.get(url"${userInfoUrl(userId)}").execute[JsObject]
   }
 
   override def retrieveGroupInfo(groupId: String)(implicit hc: HeaderCarrier): Future[List[JsObject]] =
-    http.GET[List[JsObject]](groupInfoUrl(groupId))
+    http.get(url"${groupInfoUrl(groupId)}").execute[List[JsObject]]
 
 }
 

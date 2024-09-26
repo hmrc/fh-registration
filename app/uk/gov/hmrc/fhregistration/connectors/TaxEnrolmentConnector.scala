@@ -20,6 +20,7 @@ import com.google.inject.ImplementedBy
 import play.api.libs.json.{JsObject, JsString, Json}
 import play.api.{Configuration, Environment, Logging}
 import uk.gov.hmrc.http.HttpReads.Implicits.readRaw
+import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, _}
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 
@@ -27,7 +28,7 @@ import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
 class DefaultTaxEnrolmentConnector @Inject() (
-  val http: HttpClient,
+  val http: HttpClientV2,
   val configuration: Configuration,
   environment: Environment
 )(implicit val ec: ExecutionContext)
@@ -60,11 +61,11 @@ class DefaultTaxEnrolmentConnector @Inject() (
   ): Future[HttpResponse] = {
     logger.info(s"Request to tax enrolments authorisation header is present: ${hc.authorization.isDefined}")
     http
-      .PUT[JsObject, HttpResponse](
-        subscriberUrl(etmpFormBundleNumber),
-        requestBody(safeId, etmpFormBundleNumber)
-      )
+      .put(url"${subscriberUrl(etmpFormBundleNumber)}")
+      .withBody[JsObject](requestBody(safeId, etmpFormBundleNumber))
+      .execute[HttpResponse]
       .map { response =>
+//        TODO: TIDY UP THIS if/else/throw
         if (is2xx(response.status)) {
           logger.info(s"Request to tax enrolments authorisation response: ${response.body}")
           response
@@ -81,11 +82,13 @@ class DefaultTaxEnrolmentConnector @Inject() (
   override def deleteGroupEnrolment(groupId: String, registrationNumber: String)(implicit
     hc: HeaderCarrier
   ): Future[_] =
-    http.DELETE[HttpResponse](groupEnrolmentUrl(groupId, registrationNumber)).map { response =>
-      if (is2xx(response.status)) response.body
-      else throw new RuntimeException(s"Unexpected response code '${response.status}'")
-
-    }
+    http
+      .delete(url"${groupEnrolmentUrl(groupId, registrationNumber)}")
+      .execute[HttpResponse]
+      .map { response =>
+        if (is2xx(response.status)) response.body
+        else throw new RuntimeException(s"Unexpected response code '${response.status}'")
+      }
 
   private def requestBody(etmpId: String, etmpFormBundleNumber: String): JsObject =
     Json.obj(
