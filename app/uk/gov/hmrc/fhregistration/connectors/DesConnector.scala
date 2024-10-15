@@ -77,7 +77,7 @@ class DefaultDesConnector @Inject() (
   private[connectors] def customDESRead(response: HttpResponse): HttpResponse =
     response.status match {
       case 403 =>
-        logger.error(s"Received error 403 from DES with message - ${response.json}")
+        logger.error(s"Received error 403 from DES with message - ${response.body}")
         response
       case 429 =>
         logger.error("[RATE LIMITED] Received 429 from DES - converting to 503")
