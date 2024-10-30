@@ -91,6 +91,8 @@ class DefaultDesConnector @Inject() (
     val url = s"$desServiceStatusUri/fulfilment-diligence/subscription/$fhddsRegistrationNumber/status"
     http
       .get(url"$url")
+      .setHeader(desAuthorizationHeader)
+      .setHeader(desEnvironmentHeader)
       .execute[HttpResponse]
       .map(customDESRead)
       .map(_.json.as[StatusResponse])
