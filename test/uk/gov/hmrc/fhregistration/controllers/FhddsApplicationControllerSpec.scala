@@ -16,9 +16,8 @@
 
 package uk.gov.hmrc.fhregistration.controllers
 
-
 import org.apache.pekko.stream.Materializer
-import org.mockito.ArgumentMatchers.any
+import org.mockito.ArgumentMatchers.{any, eq => eqTo}
 import org.mockito.Mockito._
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatestplus.mockito.MockitoSugar
@@ -38,7 +37,6 @@ import uk.gov.hmrc.fhregistration.models.fhdds._
 import uk.gov.hmrc.fhregistration.repositories.{DefaultSubmissionTrackingRepository, SubmissionTracking}
 import uk.gov.hmrc.fhregistration.services.{AuditService, SubmissionTrackingService}
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.play.audit.http.connector.AuditResult.Success
 import uk.gov.hmrc.play.audit.http.connector.{AuditConnector, AuditResult}
 
 import java.text.SimpleDateFormat
@@ -59,13 +57,9 @@ class FhddsApplicationControllerSpec extends PlaySpec with MockitoSugar with Sca
   private val cc: ControllerComponents = Helpers.stubControllerComponents()
   private val mockAuthConnector = mock[AuthConnector]
 
-
   val application: Application = new GuiceApplicationBuilder()
     .build()
   val mcc: MessagesControllerComponents = application.injector.instanceOf[MessagesControllerComponents]
-
-
-
 
   implicit val materializer: Materializer = mock[Materializer]
   implicit val hc: HeaderCarrier = HeaderCarrier()
@@ -112,15 +106,6 @@ class FhddsApplicationControllerSpec extends PlaySpec with MockitoSugar with Sca
       contentAsJson(result) mustBe Json.toJson(mockSubmissionTracking)
     }
 
-
-
-
-
-
-
-
-
-
     "handle amendments in amend" in {
       val fhddsRegistrationNumber = "reg123"
       val submissionRequest = SubmissionRequest(
@@ -157,67 +142,55 @@ class FhddsApplicationControllerSpec extends PlaySpec with MockitoSugar with Sca
       )
     }
 
-
-
     "handle withdrawals in withdrawal" in {
       val fhddsRegistrationNumber = "XMFH00000123456"
       val userId = "user123"
       val groupId = "group456"
-      val registrationNumber = "testRegNumber"
-      val withdrawalRequest = WithdrawalRequest("email@example.com", Json.obj())
-      val desWithdrawalResponse = DesWithdrawalResponse(dateFromString("2023-12-01"))
-      val request = FakeRequest().withBody(Json.toJson(withdrawalRequest)).withHeaders(
-        "X-User-Id" -> userId,
-        "X-Group-Id" -> groupId
+
+      val withdrawalRequest = WithdrawalRequest(
+        emailAddress = "email@example.com",
+        withdrawal = Json.obj("reason" -> "reason for withdrawal")
       )
-      val enrolments = Enrolments(
-        Set(
-          Enrolment(
-            key = "HMRC-OBTDS-ORG",
-            identifiers = Seq(EnrolmentIdentifier("ETMPREGISTRATIONNUMBER", fhddsRegistrationNumber)),
-            state = "Activated",
-            delegatedAuthRule = None
-          )
+
+      val desWithdrawalResponse = DesWithdrawalResponse(
+        processingDate = dateFromString("2023-12-01")
+      )
+
+      val request = FakeRequest()
+        .withHeaders(
+          "X-User-Id"  -> userId,
+          "X-Group-Id" -> groupId
         )
-      )
+        .withBody(withdrawalRequest)
 
+      val mockInternalId = "mockUserId"
+      val mockGroupId = "mockGroupId"
+      val mockRetrieval: Option[String] ~ Option[String] = new ~(Some(mockInternalId), Some(mockGroupId))
 
-      when(mockActions.userGroupAction) thenReturn new UserGroupAction(mockAuthConnector, cc)
+      when(mockActions.userGroupAction).thenReturn(new UserGroupAction(mockAuthConnector, mcc))
+      when(mockActions.userAction).thenReturn(new UserAction(mockAuthConnector, mcc))
 
       when(
         mockAuthConnector.authorise(
           any(),
-          any[Retrieval[~[Option[String], Enrolments]]]())(any(), any())
-      ) thenReturn Future.successful(new ~[Option[String], Enrolments](Some(userId), enrolments))
+          any[Retrieval[Option[String] ~ Option[String]]]()
+        )(any[HeaderCarrier](), any())
+      )
+        .thenReturn(Future.successful(mockRetrieval))
 
+      when(mockEmailConnector.sendEmail(any(), any(), any())(any(), any(), any()))
+        .thenReturn(Future.successful((): Unit))
 
       when(mockDesConnector.sendWithdrawal(any(), any())(any()))
         .thenReturn(Future.successful(desWithdrawalResponse))
 
-//      when(mockAuditService.buildSubmissionWithdrawalAuditEvent(any(), any()))
-//        .thenReturn(mock[DataEvent])
-
-      when(mockAuditConnector.sendEvent(any())(any(), any())).thenReturn(Future.successful(Success))
+      when(mockAuditConnector.sendEvent(any())(any(), any())).thenReturn(Future.successful(AuditResult.Success))
 
       val result = controller.withdrawal(fhddsRegistrationNumber)(request)
+
       status(result) mustBe OK
       contentAsJson(result) mustBe Json.toJson(desWithdrawalResponse.processingDate)
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
     "handle deregistration in deregister" in {
       val fhddsRegistrationNumber = "XMFH00000123456"
@@ -231,25 +204,30 @@ class FhddsApplicationControllerSpec extends PlaySpec with MockitoSugar with Sca
 
       val request = FakeRequest()
         .withHeaders(
-          "X-User-Id" -> userId,
+          "X-User-Id"  -> userId,
           "X-Group-Id" -> groupId
         )
         .withBody(deregistrationRequest)
 
       val desDeregistrationResponse = DesDeregistrationResponse(dateFromString("2023-12-01"))
 
+      val mockInternalId = "mockUserId"
+      val mockGroupId = "mockGroupId"
+      val mockRetrieval: Option[String] ~ Option[String] = new ~(Some(mockInternalId), Some(mockGroupId))
+
       when(mockActions.userGroupAction).thenReturn(new UserGroupAction(mockAuthConnector, mcc))
       when(mockActions.userAction).thenReturn(new UserAction(mockAuthConnector, mcc))
 
-      when(mockAuthConnector.authorise(any(), any[Retrieval[((((Enrolments, Option[String]), Option[String]), Option[AffinityGroup]), Option[CredentialRole])]]())(any(), any()))
-        .thenReturn(
-          Future.successful((((
-            Enrolments(Set(Enrolment("HMRC-OBTDS-ORG", Seq(EnrolmentIdentifier("ETMPREGISTRATIONNUMBER", fhddsRegistrationNumber)), "Activated"))),
-            Some(userId)),
-            Some(groupId)),
-            Some(AffinityGroup.Organisation)),
-            Some(User)
-          ))
+      when(
+        mockAuthConnector.authorise(
+          any(),
+          any[Retrieval[Option[String] ~ Option[String]]]()
+        )(any[HeaderCarrier](), any())
+      )
+        .thenReturn(Future.successful(mockRetrieval))
+
+      when(mockEmailConnector.sendEmail(any(), any(), any())(any(), any(), any()))
+        .thenReturn(Future.successful((): Unit))
 
       when(mockDesConnector.sendDeregistration(any(), any())(any()))
         .thenReturn(Future.successful(desDeregistrationResponse))
@@ -261,18 +239,6 @@ class FhddsApplicationControllerSpec extends PlaySpec with MockitoSugar with Sca
       status(result) mustBe OK
       contentAsJson(result) mustBe Json.toJson(desDeregistrationResponse.processingDate)
     }
-
-
-
-
-
-
-
-
-
-
-
-
 
     "return subscription status in checkStatus" in {
       val fhddsRegistrationNumber = "reg123"
@@ -305,7 +271,6 @@ class FhddsApplicationControllerSpec extends PlaySpec with MockitoSugar with Sca
       status(result) mustBe OK
       contentAsJson(result) mustBe Json.toJson(EnrolmentProgress.Pending)
     }
-
 
     "return BadRequest for amend when user id is not found" in {
       val fhddsRegistrationNumber = "reg123"

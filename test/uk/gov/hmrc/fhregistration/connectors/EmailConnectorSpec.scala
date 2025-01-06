@@ -17,6 +17,7 @@
 package uk.gov.hmrc.fhregistration.connectors
 
 import org.mockito.ArgumentMatchers.{any, eq => meq}
+import org.mockito.ArgumentMatchersSugar.eqTo
 import org.mockito.Mockito.{verify, when}
 import play.api.libs.json.Json
 import play.api.mvc.Request
@@ -34,7 +35,6 @@ class EmailConnectorSpec extends HttpClientV2Helper {
   implicit val ec: ExecutionContext = scala.concurrent.ExecutionContext.global
   implicit val request: Request[AnyRef] = FakeRequest()
 
-
   "EmailConnector" should {
     "send email successfully" in {
 
@@ -49,21 +49,27 @@ class EmailConnectorSpec extends HttpClientV2Helper {
       val mockEnvironment = mock[Environment]
       val mockServicesConfig = mock[ServicesConfig]
 
-       when(mockConfiguration.getOptional[String](meq("email.defaultTemplateId"))).thenReturn(Some("defaultTemplate"))
-       when(mockConfiguration.getOptional[String](meq("email.withdrawalEmailTemplateID"))).thenReturn(Some("withdrawalTemplate"))
-       when(mockConfiguration.getOptional[String](meq("email.deregisterEmailTemplateID"))).thenReturn(Some("deregisterTemplate"))
-       when(mockServicesConfig.baseUrl(meq("email"))).thenReturn(emailUrl)
+      when(mockConfiguration.getOptional[String](eqTo("email.defaultTemplateId"))(any()))
+        .thenReturn(Some("defaultTemplate"))
+      when(mockConfiguration.getOptional[String](eqTo("email.withdrawalEmailTemplateID"))(any()))
+        .thenReturn(Some("withdrawalTemplate"))
+      when(mockConfiguration.getOptional[String](eqTo("email.deregisterEmailTemplateID"))(any()))
+        .thenReturn(Some("deregisterTemplate"))
+      when(mockServicesConfig.baseUrl(eqTo("email"))).thenReturn(emailUrl)
 
       when(mockResponse.status).thenReturn(200)
       requestBuilderExecute(Future.successful(mockResponse))
 
       val emailConnector = new DefaultEmailConnector(mockHttp, mockConfiguration, mockEnvironment)
 
-      emailConnector.sendEmail(emailTemplateId, userData, emailParams).map { result =>
-        result shouldBe true
-        verify(requestBuilder).withBody(meq(Json.toJson(sendEmailRequest)))(any(), any(), any())
-        verify(requestBuilder).execute[HttpResponse](any[HttpReads[HttpResponse]], any[ExecutionContext])
-      }.map(_ => succeed)
+      emailConnector
+        .sendEmail(emailTemplateId, userData, emailParams)
+        .map { result =>
+          result shouldBe true
+          verify(requestBuilder).withBody(eqTo(Json.toJson(sendEmailRequest)))(any(), any(), any())
+          verify(requestBuilder).execute[HttpResponse](any[HttpReads[HttpResponse]], any[ExecutionContext])
+        }
+        .map(_ => succeed)
     }
 
   }
