@@ -22,10 +22,9 @@ import org.mockito.Mockito.{verify, when}
 import play.api.libs.json.Json
 import play.api.mvc.Request
 import play.api.test.FakeRequest
-import play.api.{Configuration, Environment}
+import play.api.{Configuration, Environment, Mode}
 import uk.gov.hmrc.fhregistration.models.fhdds.{SendEmailRequest, UserData}
-import uk.gov.hmrc.http.{HeaderCarrier, HttpReads, HttpResponse}
-import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
+import uk.gov.hmrc.http.{BadGatewayException, HeaderCarrier, HttpReads, HttpResponse}
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -47,7 +46,15 @@ class EmailConnectorSpec extends HttpClientV2Helper {
       val mockResponse = mock[HttpResponse]
       val mockConfiguration = mock[Configuration]
       val mockEnvironment = mock[Environment]
-      val mockServicesConfig = mock[ServicesConfig]
+
+      val realConfiguration = Configuration(
+        "microservice.services.email.host" -> "http://test",
+        "microservice.services.email.port" -> "8080",
+        "email.defaultTemplateId" -> "defaultTemplate",
+        "email.withdrawalEmailTemplateID" -> "withdrawalTemplate",
+        "email.deregisterEmailTemplateID" -> "deregisterTemplate"
+      )
+      val realEnvironment = Environment.simple()
 
       when(mockConfiguration.getOptional[String](eqTo("email.defaultTemplateId"))(any()))
         .thenReturn(Some("defaultTemplate"))
@@ -55,12 +62,18 @@ class EmailConnectorSpec extends HttpClientV2Helper {
         .thenReturn(Some("withdrawalTemplate"))
       when(mockConfiguration.getOptional[String](eqTo("email.deregisterEmailTemplateID"))(any()))
         .thenReturn(Some("deregisterTemplate"))
-      when(mockServicesConfig.baseUrl(eqTo("email"))).thenReturn(emailUrl)
+
+      when(mockEnvironment.mode).thenReturn(Mode.Test)
+
+      when(mockResponse.status).thenReturn(200)
+
+      requestBuilderExecute(Future.successful(mockResponse))
 
       when(mockResponse.status).thenReturn(200)
       requestBuilderExecute(Future.successful(mockResponse))
 
-      val emailConnector = new DefaultEmailConnector(mockHttp, mockConfiguration, mockEnvironment)
+      val emailConnector = new DefaultEmailConnector(mockHttp, realConfiguration, realEnvironment)
+
 
       emailConnector
         .sendEmail(emailTemplateId, userData, emailParams)
@@ -72,5 +85,44 @@ class EmailConnectorSpec extends HttpClientV2Helper {
         .map(_ => succeed)
     }
 
+    "fail to send email" in {
+      val emailUrl = "http://test/email"
+      val userData = UserData("test@example.com")
+      val emailTemplateId = "testTemplateId"
+      val emailParams = Map("key" -> "value")
+
+      val mockResponse = mock[HttpResponse]
+      val mockConfiguration = mock[Configuration]
+      val mockEnvironment = mock[Environment]
+
+      val realConfiguration = Configuration(
+        "microservice.services.email.host" -> "http://test",
+        "microservice.services.email.port" -> "8080",
+        "email.defaultTemplateId" -> "defaultTemplate",
+        "email.withdrawalEmailTemplateID" -> "withdrawalTemplate",
+        "email.deregisterEmailTemplateID" -> "deregisterTemplate"
+      )
+      val realEnvironment = Environment.simple()
+
+      when(mockConfiguration.getOptional[String](eqTo("email.defaultTemplateId"))(any()))
+        .thenReturn(Some("defaultTemplate"))
+      when(mockConfiguration.getOptional[String](eqTo("email.withdrawalEmailTemplateID"))(any()))
+        .thenReturn(Some("withdrawalTemplate"))
+      when(mockConfiguration.getOptional[String](eqTo("email.deregisterEmailTemplateID"))(any()))
+        .thenReturn(Some("deregisterTemplate"))
+
+      when(mockEnvironment.mode).thenReturn(Mode.Test)
+
+      when(mockResponse.status).thenReturn(500)
+
+      requestBuilderExecute(Future.successful(mockResponse))
+
+      val emailConnector = new DefaultEmailConnector(mockHttp, realConfiguration, realEnvironment)
+
+      recoverToSucceededIf[BadGatewayException] {
+        emailConnector.sendEmail(emailTemplateId, userData, emailParams)
+      }
+    }
   }
 }
+
