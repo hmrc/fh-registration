@@ -50,9 +50,9 @@ class EmailConnectorSpec extends HttpClientV2Helper {
       val realConfiguration = Configuration(
         "microservice.services.email.host" -> "http://test",
         "microservice.services.email.port" -> "8080",
-        "email.defaultTemplateId" -> "defaultTemplate",
-        "email.withdrawalEmailTemplateID" -> "withdrawalTemplate",
-        "email.deregisterEmailTemplateID" -> "deregisterTemplate"
+        "email.defaultTemplateId"          -> "defaultTemplate",
+        "email.withdrawalEmailTemplateID"  -> "withdrawalTemplate",
+        "email.deregisterEmailTemplateID"  -> "deregisterTemplate"
       )
       val realEnvironment = Environment.simple()
 
@@ -73,7 +73,6 @@ class EmailConnectorSpec extends HttpClientV2Helper {
       requestBuilderExecute(Future.successful(mockResponse))
 
       val emailConnector = new DefaultEmailConnector(mockHttp, realConfiguration, realEnvironment)
-
 
       emailConnector
         .sendEmail(emailTemplateId, userData, emailParams)
@@ -98,9 +97,9 @@ class EmailConnectorSpec extends HttpClientV2Helper {
       val realConfiguration = Configuration(
         "microservice.services.email.host" -> "http://test",
         "microservice.services.email.port" -> "8080",
-        "email.defaultTemplateId" -> "defaultTemplate",
-        "email.withdrawalEmailTemplateID" -> "withdrawalTemplate",
-        "email.deregisterEmailTemplateID" -> "deregisterTemplate"
+        "email.defaultTemplateId"          -> "defaultTemplate",
+        "email.withdrawalEmailTemplateID"  -> "withdrawalTemplate",
+        "email.deregisterEmailTemplateID"  -> "deregisterTemplate"
       )
       val realEnvironment = Environment.simple()
 
@@ -125,4 +124,3 @@ class EmailConnectorSpec extends HttpClientV2Helper {
     }
   }
 }
-

@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.fhregistration.controllers
 
+import cats.data.OptionT
 import org.apache.pekko.stream.Materializer
 import org.mockito.ArgumentMatchers.{any, eq => eqTo}
 import org.mockito.Mockito._
@@ -32,11 +33,12 @@ import uk.gov.hmrc.auth.core._
 import uk.gov.hmrc.auth.core.retrieve.{Retrieval, ~}
 import uk.gov.hmrc.fhregistration.actions.{Actions, UserAction, UserGroupAction}
 import uk.gov.hmrc.fhregistration.connectors.{DesConnector, EmailConnector, TaxEnrolmentConnector}
+import uk.gov.hmrc.fhregistration.models.TaxEnrolmentsCallback
 import uk.gov.hmrc.fhregistration.models.des._
 import uk.gov.hmrc.fhregistration.models.fhdds._
 import uk.gov.hmrc.fhregistration.repositories.{DefaultSubmissionTrackingRepository, SubmissionTracking}
 import uk.gov.hmrc.fhregistration.services.{AuditService, SubmissionTrackingService}
-import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
 import uk.gov.hmrc.play.audit.http.connector.{AuditConnector, AuditResult}
 
 import java.text.SimpleDateFormat
@@ -292,4 +294,158 @@ class FhddsApplicationControllerSpec extends PlaySpec with MockitoSugar with Sca
       status(result) mustBe BAD_REQUEST
     }
   }
+
+  "handle subscription callback with SUCCEEDED state" in {
+    val formBundleId = "formBundle123"
+    val callback = TaxEnrolmentsCallback(
+      url = "http://test/callback",
+      state = "SUCCEEDED",
+      errorResponse = None
+    )
+    val request = FakeRequest().withBody(Json.toJson(callback))
+
+    when(mockSubmissionTrackingService.getSubmissionTrackingEmail(formBundleId))
+      .thenReturn(OptionT(Future.successful(Some("email@example.com"): Option[String])))
+
+    when(mockSubmissionTrackingService.deleteSubmissionTracking(formBundleId))
+      .thenAnswer(_ => Future.successful(()))
+
+    when(mockEmailConnector.sendEmail(any(), any(), any())(any(), any(), any()))
+      .thenReturn(Future.successful((): Unit))
+
+    val result = controller.subscriptionCallback(formBundleId)(request)
+
+    verify(mockEmailConnector).sendEmail(
+      eqTo(mockEmailConnector.defaultEmailTemplateID),
+      eqTo(UserData("email@example.com")),
+      eqTo(Map.empty[String, String])
+    )(any(), any(), any())
+  }
+
+  "handle subscription callback with FAILED state" in {
+    val formBundleId = "formBundle123"
+    val callback = TaxEnrolmentsCallback(
+      url = "http://test/callback",
+      state = "FAILED",
+      errorResponse = Some("Error message")
+    )
+    val request = FakeRequest().withBody(Json.toJson(callback))
+
+    val result = controller.subscriptionCallback(formBundleId)(request)
+
+    verify(mockSubmissionTrackingService, never()).deleteSubmissionTracking(any())
+  }
+
+  "handle missing submission tracking data during callback" in {
+    val formBundleId = "formBundle123"
+    val callback = TaxEnrolmentsCallback(
+      url = "http://test/callback",
+      state = "SUCCEEDED",
+      errorResponse = None
+    )
+    val request = FakeRequest().withBody(Json.toJson(callback))
+
+    when(mockSubmissionTrackingService.getSubmissionTrackingEmail(formBundleId))
+      .thenReturn(OptionT(Future.successful(Some("email@example.com"): Option[String])))
+
+    val result = controller.subscriptionCallback(formBundleId)(request)
+
+    verify(mockSubmissionTrackingService, never()).deleteSubmissionTracking(any())
+  }
+
+  "delete submission successfully" in {
+    val formBundleId = "formBundle123"
+
+    when(mockSubmissionTrackingService.deleteSubmissionTracking(formBundleId))
+      .thenAnswer(_ => Future.successful(()))
+
+    val result = controller.deleteSubmission(formBundleId)(FakeRequest())
+
+    status(result) mustBe OK
+  }
+
+  "return a message when submission is not found during deletion" in {
+    val formBundleId = "formBundle123"
+
+    when(mockSubmissionTrackingService.deleteSubmissionTracking(formBundleId))
+      .thenReturn(Future.failed(new NoSuchElementException("Submission not found")))
+
+    val result = controller.deleteSubmission(formBundleId)(FakeRequest())
+
+    status(result) mustBe OK
+    contentAsString(result) mustBe s"Submission with $formBundleId not found"
+  }
+
+  "return subscription data for a valid FHDDS registration number" in {
+    val fhddsRegistrationNumber = "XMFH00000123456"
+    val desResponse = mock[HttpResponse]
+    when(desResponse.status).thenReturn(200)
+    when(desResponse.json).thenReturn(Json.obj("key" -> "value"))
+
+    when(mockDesConnector.display(eqTo(fhddsRegistrationNumber))(any()))
+      .thenReturn(Future.successful(desResponse))
+
+    val result = controller.get(fhddsRegistrationNumber)(FakeRequest())
+
+    status(result) mustBe OK
+    contentAsJson(result) mustBe Json.obj("key" -> "value")
+  }
+
+  "handle bad request from DES connector" in {
+    val fhddsRegistrationNumber = "XMFH00000123456"
+    val desResponse = mock[HttpResponse]
+    when(desResponse.status).thenReturn(400)
+
+    when(mockDesConnector.display(eqTo(fhddsRegistrationNumber))(any()))
+      .thenReturn(Future.successful(desResponse))
+
+    val result = controller.get(fhddsRegistrationNumber)(FakeRequest())
+
+    status(result) mustBe BAD_REQUEST
+    contentAsString(result) must include("Submission has not passed validation")
+  }
+
+  "handle not found from DES connector" in {
+    val fhddsRegistrationNumber = "XMFH00000123456"
+    val desResponse = mock[HttpResponse]
+    when(desResponse.status).thenReturn(404)
+
+    when(mockDesConnector.display(eqTo(fhddsRegistrationNumber))(any()))
+      .thenReturn(Future.successful(desResponse))
+
+    val result = controller.get(fhddsRegistrationNumber)(FakeRequest())
+
+    status(result) mustBe NOT_FOUND
+    contentAsString(result) must include("No SAP Number found")
+  }
+
+  "handle forbidden response from DES connector" in {
+    val fhddsRegistrationNumber = "XMFH00000123456"
+    val desResponse = mock[HttpResponse]
+    when(desResponse.status).thenReturn(403)
+
+    when(mockDesConnector.display(eqTo(fhddsRegistrationNumber))(any()))
+      .thenReturn(Future.successful(desResponse))
+
+    val result = controller.get(fhddsRegistrationNumber)(FakeRequest())
+
+    status(result) mustBe FORBIDDEN
+    contentAsString(result) must include("Unexpected business error received")
+  }
+
+  "handle unexpected error from DES connector" in {
+    val fhddsRegistrationNumber = "XMFH00000123456"
+    val desResponse = mock[HttpResponse]
+    when(desResponse.status).thenReturn(500)
+    when(desResponse.body).thenReturn("Internal server error")
+
+    when(mockDesConnector.display(eqTo(fhddsRegistrationNumber))(any()))
+      .thenReturn(Future.successful(desResponse))
+
+    val result = controller.get(fhddsRegistrationNumber)(FakeRequest())
+
+    status(result) mustBe BAD_GATEWAY
+    contentAsString(result) must include("DES is currently experiencing problems")
+  }
+
 }
