@@ -36,15 +36,25 @@ class SubmissionTrackingRepositorySpecs extends UnitSpec with BeforeAndAfterAll 
       val byUserId = await(repository.findSubmissionTrackingByUserId(anUserId)).get
       byUserId shouldEqual tracking
 
-      val byFormBunldeId = await(repository.findSubmissionTrackingByFormBundleId(aFormBundleId)).get
-      byFormBunldeId shouldEqual tracking
-
+      val byFormBundleId = await(repository.findSubmissionTrackingByFormBundleId(aFormBundleId)).get
+      byFormBundleId shouldEqual tracking
     }
 
+    "Overwrite an existing record if userId matches" in {
+      val tracking1 = mkSubmissionTracking.copy(formBundleId = "form1")
+      val tracking2 = mkSubmissionTracking.copy(formBundleId = "form2", email = "new@test.com")
+
+      await(repository.insertSubmissionTracking(tracking1))
+      await(repository.insertSubmissionTracking(tracking2)) // This should overwrite tracking1
+
+      val byUserId = await(repository.findSubmissionTrackingByUserId(anUserId)).get
+      byUserId.formBundleId shouldBe "form2"
+      byUserId.email shouldBe "new@test.com"
+    }
   }
 
   "Deleted a record" should {
-    "be successful" in {
+    "Be successful" in {
       val tracking = mkSubmissionTracking
       await(repository.insertSubmissionTracking(tracking))
 
@@ -52,16 +62,20 @@ class SubmissionTrackingRepositorySpecs extends UnitSpec with BeforeAndAfterAll 
       nDeleted shouldBe 1
 
       val byUserId = await(repository.findSubmissionTrackingByUserId(anUserId))
-
       byUserId shouldBe None
 
       val nDeletedZero = await(repository.deleteSubmissionTackingByFormBundleId(aFormBundleId))
       nDeletedZero shouldBe 0
     }
+
+    "Do nothing if the formBundleId does not exist" in {
+      val nDeleted = await(repository.deleteSubmissionTackingByFormBundleId("nonexistent-form"))
+      nDeleted shouldBe 0
+    }
   }
 
   "Delete a record by registration with fhreg number" should {
-    "delete the registration" in {
+    "Delete the registration successfully" in {
       val tracking = mkSubmissionTracking
       await(repository.insertSubmissionTracking(tracking))
 
@@ -70,11 +84,10 @@ class SubmissionTrackingRepositorySpecs extends UnitSpec with BeforeAndAfterAll 
       nDeleted shouldBe 1
 
       val byUserId = await(repository.findSubmissionTrackingByUserId(anUserId))
-
       byUserId shouldBe None
     }
 
-    "don't delete it if it does not match" in {
+    "Do nothing if registration number does not match" in {
       val tracking = mkSubmissionTracking
       await(repository.insertSubmissionTracking(tracking))
 
@@ -84,20 +97,61 @@ class SubmissionTrackingRepositorySpecs extends UnitSpec with BeforeAndAfterAll 
       nDeleted shouldBe 0
 
       val byUserId = await(repository.findSubmissionTrackingByUserId(anUserId))
-
       byUserId shouldBe Some(tracking)
     }
+  }
 
+  "Find all records" should {
+    "Return all stored submission tracking records" in {
+      val tracking1 = mkSubmissionTracking.copy(formBundleId = "form1")
+      val tracking2 = mkSubmissionTracking.copy(formBundleId = "form2", userId = "userid-2")
+
+      await(repository.insertSubmissionTracking(tracking1))
+      await(repository.insertSubmissionTracking(tracking2))
+
+      val allRecords = await(repository.findAll())
+      allRecords should contain theSameElementsAs List(tracking1, tracking2)
+    }
+  }
+
+  "Update enrolment progress" should {
+    "Update the progress for an existing formBundleId" in {
+      val tracking = mkSubmissionTracking
+      await(repository.insertSubmissionTracking(tracking))
+
+      val updatedRecords = await(repository.updateEnrolmentProgress(aFormBundleId, EnrolmentProgress.Error))
+      updatedRecords.size shouldBe 1
+
+      val byFormBundleId = await(repository.findSubmissionTrackingByFormBundleId(aFormBundleId)).get
+      byFormBundleId.enrolmentProgress shouldBe EnrolmentProgress.Error
+    }
+
+    "Do nothing if the formBundleId does not exist" in {
+      val updatedRecords = await(repository.updateEnrolmentProgress("nonexistent-form", EnrolmentProgress.Error))
+      updatedRecords shouldBe empty
+    }
+  }
+
+  "Find submission tracking by userId" should {
+    "Return None if the userId does not exist" in {
+      val result = await(repository.findSubmissionTrackingByUserId(unknownUserId))
+      result shouldBe None
+    }
+  }
+
+  "Find submission tracking by formBundleId" should {
+    "Return None if the formBundleId does not exist" in {
+      val result = await(repository.findSubmissionTrackingByFormBundleId("nonexistent-form"))
+      result shouldBe None
+    }
   }
 
   "enrolmentProgress" should {
     "Return pending if None" in {
       val testSubmissionTracking = SubmissionTracking("", "", "", 0, None, None)
-
       testSubmissionTracking.enrolmentProgress shouldBe EnrolmentProgress.Pending
     }
   }
-
 }
 
 object SubmissionTrackingRepositorySpecs {
@@ -114,5 +168,4 @@ object SubmissionTrackingRepositorySpecs {
   val unknownUserId = "userid-u"
   val aFormBundleId: String = "012345678901"
   val anEmail = "test@test.com"
-
 }

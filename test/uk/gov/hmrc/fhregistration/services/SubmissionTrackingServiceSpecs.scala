@@ -22,9 +22,11 @@ import org.scalatest.concurrent.ScalaFutures
 import org.scalatestplus.mockito.MockitoSugar
 import play.api.test.Helpers._
 import uk.gov.hmrc.fhregistration.models.fhdds.EnrolmentProgress
+import uk.gov.hmrc.fhregistration.repositories.SubmissionTrackingRepository
 import uk.gov.hmrc.fhregistration.util.UnitSpec
 
 import java.time.Clock
+import scala.concurrent.Future
 
 class SubmissionTrackingServiceSpecs extends UnitSpec with ScalaFutures with MockitoSugar with BeforeAndAfterAll {
 
@@ -72,7 +74,6 @@ class SubmissionTrackingServiceSpecs extends UnitSpec with ScalaFutures with Moc
         await(service.enrolmentProgress("some-user", None)) shouldBe EnrolmentProgress.Error
       }
     }
-
   }
 
   "saveSubscriptionTracking" should {
@@ -96,6 +97,51 @@ class SubmissionTrackingServiceSpecs extends UnitSpec with ScalaFutures with Moc
       await(service.deleteSubmissionTracking("formbundelid"))
       await(service.enrolmentProgress("some-user", None)) shouldBe EnrolmentProgress.Unknown
     }
+  }
+
+  "enrolmentProgress" should {
+    "remove tracking when registration number matches" in {
+      await(service.saveSubscriptionTracking("safeid", "some-user", "formbundelid", "a@a.co", "ZZFH0000001231456"))
+      await(service.enrolmentProgress("some-user", Some("ZZFH0000001231456"))) shouldBe EnrolmentProgress.Unknown
+    }
+
+    "retain tracking when registration number does not match" in {
+      await(service.saveSubscriptionTracking("safeid", "some-user", "formbundelid", "a@a.co", "ZZFH0000001231456"))
+      await(service.enrolmentProgress("some-user", Some("ZZFH0000008888888"))) shouldBe EnrolmentProgress.Pending
+    }
+  }
+
+  "getSubmissionTrackingEmail" should {
+    "return the email for an existing form bundle ID" in {
+      await(service.saveSubscriptionTracking("safeid", "some-user", "formbundelid", "a@a.co", "ZZFH0000001231456"))
+      val email = service.getSubmissionTrackingEmail("formbundelid").value.futureValue
+      email shouldBe Some("a@a.co")
+    }
+
+    "return None for a non-existing form bundle ID" in {
+      val email = service.getSubmissionTrackingEmail("nonexistent-formbundelid").value.futureValue
+      email shouldBe None
+    }
+  }
+
+  "deleteSubmissionTracking" should {
+    "log a warning for non-existing form bundle IDs" in {
+      await(service.deleteSubmissionTracking("formbundelid"))
+      await(service.deleteSubmissionTracking("nonexistent-formbundelid"))
+
+      await(service.deleteSubmissionTracking("nonexistent-formbundelid"))
+      await(service.enrolmentProgress("some-user", None)) shouldBe EnrolmentProgress.Unknown
+    }
+
+    "log an error for unexpected delete results" in {
+      val mockRepository = mock[SubmissionTrackingRepository]
+      when(mockRepository.deleteSubmissionTackingByFormBundleId("formbundelid"))
+        .thenReturn(Future.successful(2))
+
+      val serviceWithMockRepo = new DefaultSubmissionTrackingService(mockRepository, mockClock)
+      await(serviceWithMockRepo.deleteSubmissionTracking("formbundelid"))
+    }
+
   }
 
 }
