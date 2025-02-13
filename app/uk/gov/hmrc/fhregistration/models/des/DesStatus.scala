@@ -16,10 +16,9 @@
 
 package uk.gov.hmrc.fhregistration.models.des
 
-import play.api.libs.json.{Format, Reads, Writes}
+import play.api.libs.json._
 
 object DesStatus extends Enumeration {
-
   type DesStatus = Value
 
   val NoFormBundleForm = Value("No Form Bundle Found")
@@ -36,5 +35,17 @@ object DesStatus extends Enumeration {
   val Deregistered = Value("De-Registered")
   val ContractObjectInactive = Value("Contract Object Inactive")
 
-  implicit val format: Format[Value] = Format(Reads.enumNameReads(DesStatus), Writes.enumNameWrites[this.type])
+  implicit val format: Format[DesStatus.Value] = new Format[DesStatus.Value] {
+
+    def reads(json: JsValue): JsResult[DesStatus.Value] = json match {
+      case JsString(value) =>
+        DesStatus.values.find(_.toString == value) match {
+          case Some(status) => JsSuccess(status)
+          case None         => JsError("Invalid DesStatus value")
+        }
+      case _ => JsError("Expected a string value")
+    }
+
+    def writes(status: DesStatus.Value): JsValue = JsString(status.toString)
+  }
 }

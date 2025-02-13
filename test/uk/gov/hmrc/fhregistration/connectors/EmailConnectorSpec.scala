@@ -16,8 +16,7 @@
 
 package uk.gov.hmrc.fhregistration.connectors
 
-import org.mockito.ArgumentMatchers.{any, eq => meq}
-import org.mockito.ArgumentMatchersSugar.eqTo
+import org.mockito.ArgumentMatchers.{any, eq => eqTo}
 import org.mockito.Mockito.{verify, when}
 import play.api.libs.json.Json
 import play.api.mvc.Request

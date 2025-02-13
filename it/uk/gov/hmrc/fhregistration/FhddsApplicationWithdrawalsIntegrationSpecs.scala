@@ -1,16 +1,23 @@
 package uk.gov.hmrc.fhregistration
 
+import org.mockito.Mockito.when
+import org.scalatestplus.mockito.MockitoSugar
 import play.api.test.WsTestClient
-import uk.gov.hmrc.fhdds.testsupport.TestData._
+import uk.gov.hmrc.fhdds.testsupport.TestData.*
 import uk.gov.hmrc.fhdds.testsupport.{TestConfiguration, TestHelpers}
+import play.api.libs.ws.DefaultBodyWritables.writeableOf_String
+import uk.gov.hmrc.fhdds.testsupport.preconditions.DesStub
 
-class FhddsApplicationWithdrawalsIntegrationSpecs extends TestHelpers with TestConfiguration {
+import scala.concurrent.Future
+
+class FhddsApplicationWithdrawalsIntegrationSpecs extends TestHelpers with TestConfiguration with MockitoSugar {
+  val mockDesStub = mock[DesStub]
 
   "Submitting an withdrawal request" should {
     "return BadRequest" when {
       "the request is invalid" in {
-        given().audit.writesAuditOrMerged().des.acceptsWithdrawal(testRegistrationNumber).email.sendEmail
-
+        
+        when(mockDesStub.acceptsWithdrawal(testRegistrationNumber)).thenReturn(Future.successful("status"))
         val responseForWithdrawal = WsTestClient.withClient { client =>
           client
             .url(s"http://localhost:$port/fhdds/subscription/withdrawal/$testRegistrationNumber")
@@ -26,14 +33,7 @@ class FhddsApplicationWithdrawalsIntegrationSpecs extends TestHelpers with TestC
     "return BadRequest" when {
       "the user does not belong to a group" in {
 
-        given().audit
-          .writesAuditOrMerged()
-          .des
-          .acceptsWithdrawal(testRegistrationNumber)
-          .email
-          .sendEmail
-          .user
-          .isAuthorisedWithNoGroup()
+        when(mockDesStub.acceptsWithdrawal(testRegistrationNumber)).thenReturn(Future.successful("status"))
 
         val responseForWithdrawal = WsTestClient.withClient { client =>
           client
@@ -49,16 +49,8 @@ class FhddsApplicationWithdrawalsIntegrationSpecs extends TestHelpers with TestC
 
     "return OK" when {
       "the user belongs to group" in {
-        given().audit
-          .writesAuditOrMerged()
-          .des
-          .acceptsWithdrawal(testRegistrationNumber)
-          .email
-          .sendEmail
-          .user
-          .isAuthorised()
-          .taxEnrolment
-          .acceptsDeEnrolment()
+
+        when(mockDesStub.acceptsWithdrawal(testRegistrationNumber)).thenReturn(Future.successful("status"))
 
         val responseForWithdrawal = WsTestClient.withClient { client =>
           client

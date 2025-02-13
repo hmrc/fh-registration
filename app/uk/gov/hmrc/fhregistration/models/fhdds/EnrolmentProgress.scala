@@ -16,13 +16,24 @@
 
 package uk.gov.hmrc.fhregistration.models.fhdds
 
-import play.api.libs.json.{Format, Reads, Writes}
+import play.api.libs.json._
 
 object EnrolmentProgress extends Enumeration {
 
   type EnrolmentProgress = Value
   val Pending, Unknown, Error = Value
 
-  implicit val format: Format[Value] = Format(Reads.enumNameReads(EnrolmentProgress), Writes.enumNameWrites[this.type])
+  implicit val format: Format[EnrolmentProgress.Value] = new Format[EnrolmentProgress.Value] {
 
+    def reads(json: JsValue): JsResult[EnrolmentProgress.Value] = json match {
+      case JsString(value) =>
+        EnrolmentProgress.values.find(_.toString == value) match {
+          case Some(progress) => JsSuccess(progress)
+          case None           => JsError("Invalid EnrolmentProgress value")
+        }
+      case _ => JsError("Expected a string value")
+    }
+
+    def writes(progress: EnrolmentProgress.Value): JsValue = JsString(progress.toString)
+  }
 }

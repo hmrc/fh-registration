@@ -29,6 +29,7 @@ import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success}
+import play.api.libs.ws.JsonBodyWritables.writeableOf_JsValue
 
 class DefaultEmailConnector @Inject() (
   val http: HttpClientV2,

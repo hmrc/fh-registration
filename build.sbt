@@ -32,7 +32,7 @@ lazy val microservice = Project(appName, file("."))
   .settings(playSettings : _*)
   .settings(scoverageSettings: _*)
   .settings(scalaSettings: _*)
-  .settings(scalaVersion := "2.13.12")
+  .settings(scalaVersion := "3.3.4")
   .settings(defaultSettings(): _*)
   .settings(
     libraryDependencies ++= AppDependencies.all,
@@ -41,7 +41,10 @@ lazy val microservice = Project(appName, file("."))
     Compile / scalafmtOnCompile := true,
     Test / scalafmtOnCompile := true,
     scalacOptions += "-Wconf:src=routes/.*:s",
-    scalacOptions += "-Wconf:cat=unused-imports&src=html/.*:s",
+    scalacOptions += "-Wconf:msg=unused import*:s",
+    scalacOptions += "-Wconf:msg=unused explicit parameter*:s",
+    scalacOptions += "-Wconf:msg=Flag.*repeatedly:s",
+    scalacOptions += "-Wconf:msg=unused local definition*:s"
   )
   .configs(IntegrationTest)
   .settings(inConfig(IntegrationTest)(Defaults.itSettings): _*)
