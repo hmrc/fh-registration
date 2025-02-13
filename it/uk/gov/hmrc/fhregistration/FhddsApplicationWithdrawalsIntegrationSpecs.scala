@@ -16,7 +16,7 @@ class FhddsApplicationWithdrawalsIntegrationSpecs extends TestHelpers with TestC
   "Submitting an withdrawal request" should {
     "return BadRequest" when {
       "the request is invalid" in {
-        
+
         when(mockDesStub.acceptsWithdrawal(testRegistrationNumber)).thenReturn(Future.successful("status"))
         val responseForWithdrawal = WsTestClient.withClient { client =>
           client
