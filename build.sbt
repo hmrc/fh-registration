@@ -26,7 +26,7 @@ lazy val playSettings : Seq[Setting[_]] = Seq.empty
 
 lazy val scoverageSettings: Seq[Setting[_]] = Seq(
   coverageExcludedPackages := Seq("<empty>", "uk.gov.hmrc.BuildInfo", "Reverse.*",".*Routes.*",".*RoutesPrefix.*",".*GuiceInjector","$anon").mkString(","),
-  coverageExcludedFiles := """.*EnrolmentStoreProxyConnector.*,.*UserSearchConnector.*,.*AdminController.*""",
+  coverageExcludedFiles := Seq(".*EnrolmentStoreProxyConnector.*",".*UserSearchConnector.*",".*AdminController.*").mkString(","),
   coverageMinimumStmtTotal := 76,
   coverageFailOnMinimum := true,
   coverageHighlighting := true,
