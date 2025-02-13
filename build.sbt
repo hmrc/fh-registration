@@ -11,18 +11,27 @@ val appName = "fh-registration"
 lazy val plugins : Seq[Plugins] = Seq.empty
 lazy val playSettings : Seq[Setting[_]] = Seq.empty
 
-lazy val scoverageSettings = {
-  import scoverage.ScoverageKeys
-  Seq(
-    // Semicolon-separated list of regexs matching classes to exclude
-    ScoverageKeys.coverageExcludedPackages := List("""uk\.gov\.hmrc\.BuildInfo,.*\.Routes,.*\.RoutesPrefix,.*\.Reverse[^.]*""").mkString(","),
-    ScoverageKeys.coverageMinimumStmtTotal := 76.00,
-    ScoverageKeys.coverageExcludedFiles := """.*EnrolmentStoreProxyConnector.*,.*UserSearchConnector.*,.*AdminController.*""",
-    ScoverageKeys.coverageFailOnMinimum := true,
-    ScoverageKeys.coverageHighlighting := true,
-    Test / parallelExecution := false
-  )
-}
+//lazy val scoverageSettings = {
+//  import scoverage.ScoverageKeys
+//  Seq(
+//    // Semicolon-separated list of regexs matching classes to exclude
+//    ScoverageKeys.coverageExcludedPackages := List("""uk\.gov\.hmrc\.BuildInfo,.*\.Routes,.*\.RoutesPrefix,.*\.Reverse[^.]*""").mkString(","),
+//    ScoverageKeys.coverageMinimumStmtTotal := 76.00,
+//    ScoverageKeys.coverageExcludedFiles := """.*EnrolmentStoreProxyConnector.*,.*UserSearchConnector.*,.*AdminController.*""",
+//    ScoverageKeys.coverageFailOnMinimum := true,
+//    ScoverageKeys.coverageHighlighting := true,
+//    Test / parallelExecution := false
+//  )
+//}
+
+lazy val scoverageSettings: Seq[Setting[_]] = Seq(
+  coverageExcludedPackages := Seq("<empty>", "uk.gov.hmrc.BuildInfo", "Reverse.*",".*Routes.*",".*RoutesPrefix.*",".*GuiceInjector","$anon").mkString(","),
+  coverageExcludedFiles := """.*EnrolmentStoreProxyConnector.*,.*UserSearchConnector.*,.*AdminController.*""",
+  coverageMinimumStmtTotal := 76,
+  coverageFailOnMinimum := true,
+  coverageHighlighting := true,
+  Test / parallelExecution := false
+)
 
 lazy val microservice = Project(appName, file("."))
   .enablePlugins(Seq(play.sbt.PlayScala, SbtDistributablesPlugin) ++ plugins : _*)
