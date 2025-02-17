@@ -14,17 +14,23 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.fhregistration.models.businessregistration
+package uk.gov.hmrc.fhregistration.models.fhdds
 
-import com.github.tototoshi.play.json.JsonNaming
-import play.api.libs.json.JsonNaming.SnakeCase
-import play.api.libs.json.{Format, Json, JsonConfiguration}
+import org.scalatest.funsuite.AnyFunSuite
+import play.api.libs.json.{JsSuccess, Json}
 
-case class Identification(idNumber: String, issuingInstitution: String, issuingCountryCode: String)
+import scala.runtime.stdLibPatches.Predef.assert
 
-object Identification {
-  implicit val formats: Format[Identification] = {
-    implicit val config: JsonConfiguration = JsonConfiguration(SnakeCase)
-    Json.format[Identification]
+class UserDataSpec extends AnyFunSuite {
+
+  test("UserData should serialize and deserialize correctly") {
+    val email = "test@email.com"
+    val userData = UserData(email)
+
+    val json = Json.toJson(userData)
+    assert((json \ "email").as[String] == email)
+
+    val deserialized = json.validate[UserData]
+    assert(deserialized == JsSuccess(userData))
   }
 }

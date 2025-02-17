@@ -19,7 +19,6 @@ object AppDependencies {
     "uk.gov.hmrc"            %% s"bootstrap-test-$playVersion"  % bootstrapVersion,
     "uk.gov.hmrc.mongo"      %% s"hmrc-mongo-test-$playVersion" % hmrcMongoVersion,
     "org.scalatestplus.play" %% "scalatestplus-play"            % "7.0.1",
-    //enr"com.typesafe.play"      %% "play-json"                     % "2.10.5"
   ).map(_ % "test, it")
 
   val all: Seq[ModuleID] = compile ++ test
