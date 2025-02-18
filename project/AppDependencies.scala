@@ -12,7 +12,6 @@ object AppDependencies {
     "uk.gov.hmrc"          %% s"bootstrap-backend-$playVersion" % bootstrapVersion,
     "uk.gov.hmrc.mongo"    %% s"hmrc-mongo-$playVersion"        % hmrcMongoVersion,
     "org.typelevel"        %% "cats-core"                       % "2.12.0",
-    "com.github.tototoshi" %% "play-json-naming"                % "1.5.0" cross CrossVersion.for3Use2_13
   )
 
   val test: Seq[ModuleID] = Seq(

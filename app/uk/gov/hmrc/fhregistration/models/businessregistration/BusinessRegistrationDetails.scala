@@ -16,7 +16,6 @@
 
 package uk.gov.hmrc.fhregistration.models.businessregistration
 
-import com.github.tototoshi.play.json.JsonNaming
 import play.api.libs.json.JsonNaming.SnakeCase
 import play.api.libs.json.{Format, Json, JsonConfiguration}
 
