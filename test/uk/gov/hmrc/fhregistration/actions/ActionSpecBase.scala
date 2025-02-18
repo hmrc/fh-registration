@@ -22,20 +22,20 @@ import org.scalatest.matchers.should.Matchers
 import org.scalatestplus.mockito.MockitoSugar
 import play.api.http.Status
 import play.api.mvc.{ActionFunction, ActionRefiner, Results}
-import play.api.test.Helpers._
+import play.api.test.Helpers.*
 import uk.gov.hmrc.fhregistration.util.UnitSpec
 
-import scala.concurrent.Promise
+import scala.concurrent.{Future, Promise}
 
 trait ActionSpecBase
     extends UnitSpec with ScalaFutures with MockitoSugar with BeforeAndAfterEach with Matchers with Results
     with Status {
 
-  def refinedRequest[P[_], R[_], A](action: ActionRefiner[R, P], request: R[A]) = {
-    val p = Promise[P[_]]()
+  def refinedRequest[P[_], R[_], A](action: ActionRefiner[R, P], request: R[A])(implicit ev: P[A] <:< Any): P[A] = {
+    val p = Promise[P[A]]()
     val result = action.invokeBlock(
       request,
-      { r: P[A] =>
+      { (r: P[A]) =>
         p success r
         Ok
       }
@@ -48,9 +48,7 @@ trait ActionSpecBase
   def result[P[_], R[_], A](action: ActionFunction[R, P], request: R[A]) =
     action.invokeBlock(
       request,
-      { r: P[A] =>
-        Ok
-      }
+      (r: P[A]) => Ok
     )
 
 }

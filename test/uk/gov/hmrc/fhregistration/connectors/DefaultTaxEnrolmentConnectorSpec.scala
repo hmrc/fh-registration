@@ -16,8 +16,7 @@
 
 package uk.gov.hmrc.fhregistration.connectors
 
-import org.mockito.ArgumentMatchers._
-import org.mockito.ArgumentMatchersSugar.eqTo
+import org.mockito.ArgumentMatchers.{any, eq => eqTo}
 import org.mockito.Mockito._
 import org.scalatest.RecoverMethods.recoverToSucceededIf
 import org.scalatest.concurrent.ScalaFutures

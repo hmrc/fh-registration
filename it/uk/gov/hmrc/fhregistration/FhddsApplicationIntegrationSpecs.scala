@@ -1,30 +1,39 @@
 package uk.gov.hmrc.fhregistration
 
+import org.scalatestplus.mockito.MockitoSugar
 import play.api.libs.json.Json
 import play.api.test.WsTestClient
-import uk.gov.hmrc.fhdds.testsupport.TestData._
+import uk.gov.hmrc.fhdds.testsupport.TestData.*
+import uk.gov.hmrc.fhdds.testsupport.preconditions.{AuditStub, DesStub, EmailStub, TaxEnrolmentStub, UserStub}
 import uk.gov.hmrc.fhdds.testsupport.{TestConfiguration, TestHelpers}
 import uk.gov.hmrc.fhregistration.models.TaxEnrolmentsCallback
 import uk.gov.hmrc.fhregistration.models.fhdds.EnrolmentProgress
 import uk.gov.hmrc.fhregistration.models.fhdds.EnrolmentProgress.EnrolmentProgress
+import org.mockito.Mockito.when
+import org.scalatest.wordspec.AnyWordSpecLike
+import play.api.libs.ws.WSBodyWritables.writeableOf_JsValue
 
-class FhddsApplicationIntegrationSpecs extends TestHelpers with TestConfiguration {
+class FhddsApplicationIntegrationSpecs
+    extends TestHelpers with TestConfiguration with MockitoSugar with AnyWordSpecLike {
+
+  val auditMock = mock[AuditStub]
+  val desMock = mock[DesStub]
+  val taxEnrolmentMock = mock[TaxEnrolmentStub]
+  val emailMock = mock[EmailStub]
+  val userMock = mock[UserStub]
 
   "Submit an application" should {
+
     "submit an application to DES, and get DES response" when {
 
       "the request has a valid application payload" in {
 
-        given().audit
-          .writesAuditOrMerged()
-          .des
-          .acceptsSubscription(testSafeId, testRegistrationNumber, testEtmpFormBundleNumber)
-          .taxEnrolment
-          .subscribe
-          .email
-          .sendEmail
-          .user
-          .isAuthorised()
+        when(auditMock.writesAuditOrMerged()).thenReturn(auditMock)
+        when(desMock.acceptsSubscription(testSafeId, testRegistrationNumber, testEtmpFormBundleNumber))
+          .thenReturn(desMock)
+        when(taxEnrolmentMock.subscribe).thenReturn(taxEnrolmentMock)
+        when(emailMock.sendEmail).thenReturn(emailMock)
+        when(userMock.isAuthorised()).thenReturn(userMock)
 
         val result = WsTestClient.withClient { client =>
           client
@@ -53,14 +62,12 @@ class FhddsApplicationIntegrationSpecs extends TestHelpers with TestConfiguratio
       }
 
       "the request without a valid application payload" in {
-        given().audit
-          .writesAuditOrMerged()
-          .des
-          .acceptsSubscription(testSafeId, testRegistrationNumber, testEtmpFormBundleNumber)
-          .taxEnrolment
-          .subscribe
-          .email
-          .sendEmail
+
+        when(auditMock.writesAuditOrMerged()).thenReturn(auditMock)
+        when(desMock.acceptsSubscription(testSafeId, testRegistrationNumber, testEtmpFormBundleNumber))
+          .thenReturn(desMock)
+        when(taxEnrolmentMock.subscribe).thenReturn(taxEnrolmentMock)
+        when(emailMock.sendEmail).thenReturn(emailMock)
 
         val result = WsTestClient.withClient { client =>
           client
@@ -76,18 +83,14 @@ class FhddsApplicationIntegrationSpecs extends TestHelpers with TestConfiguratio
     }
 
     "Submit an application then remove the previous enrolment on callback" in {
-      given().audit
-        .writesAuditOrMerged()
-        .des
-        .acceptsSubscription(testSafeId, anotherRegistrationNumber, testEtmpFormBundleNumber)
-        .taxEnrolment
-        .subscribe
-        .taxEnrolment
-        .acceptsDeEnrolment()
-        .email
-        .sendEmail
-        .user
-        .isAuthorised()
+
+      when(auditMock.writesAuditOrMerged()).thenReturn(auditMock)
+      when(desMock.acceptsSubscription(testSafeId, anotherRegistrationNumber, testEtmpFormBundleNumber))
+        .thenReturn(desMock)
+      when(taxEnrolmentMock.subscribe).thenReturn(taxEnrolmentMock)
+      when(taxEnrolmentMock.acceptsDeEnrolment()).thenReturn(taxEnrolmentMock)
+      when(emailMock.sendEmail).thenReturn(emailMock)
+      when(userMock.isAuthorised()).thenReturn(userMock)
 
       val result = WsTestClient.withClient { client =>
         client

@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.fhregistration.models.fhdds
 
-import play.api.libs.json.{Format, Reads, Writes}
+import play.api.libs.json._
 
 object FhddsStatus extends Enumeration {
 
@@ -31,6 +31,18 @@ object FhddsStatus extends Enumeration {
   val Withdrawn = Value("withdrawn")
   val Deregistered = Value("deregistered")
 
-  implicit val format: Format[Value] = Format(Reads.enumNameReads(FhddsStatus), Writes.enumNameWrites[this.type])
+  implicit val format: Format[FhddsStatus.Value] = new Format[FhddsStatus.Value] {
+
+    def reads(json: JsValue): JsResult[FhddsStatus.Value] = json match {
+      case JsString(value) =>
+        FhddsStatus.values.find(_.toString == value) match {
+          case Some(status) => JsSuccess(status)
+          case None         => JsError("Invalid FhddsStatus value")
+        }
+      case _ => JsError("Expected a string value")
+    }
+
+    def writes(status: FhddsStatus.Value): JsValue = JsString(status.toString)
+  }
 
 }

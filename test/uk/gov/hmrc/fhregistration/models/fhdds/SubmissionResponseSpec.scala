@@ -1,0 +1,37 @@
+/*
+ * Copyright 2023 HM Revenue & Customs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+import org.scalatest.funsuite.AnyFunSuite
+import play.api.libs.json.{JsSuccess, Json}
+import uk.gov.hmrc.fhregistration.models.fhdds.SubmissionResponse
+
+import java.util.Date
+
+class SubmissionResponseSpec extends AnyFunSuite {
+
+  test("SubmissionResponse should serialize and deserialize correctly") {
+    val registrationNumber = "test number"
+    val processingDate = new Date()
+    val submissionResponse = SubmissionResponse(registrationNumber, processingDate)
+
+    val json = Json.toJson(submissionResponse)
+    assert((json \ "registrationNumber").as[String] == registrationNumber)
+    assert((json \ "processingDate").as[Date] == processingDate)
+
+    val deserialized = json.validate[SubmissionResponse]
+    assert(deserialized == JsSuccess(submissionResponse))
+  }
+}

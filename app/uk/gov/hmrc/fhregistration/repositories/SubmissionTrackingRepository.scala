@@ -26,6 +26,7 @@ import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.play.json.{Codecs, PlayMongoRepository}
 import javax.inject.Singleton
 import scala.concurrent.{ExecutionContext, Future}
+import org.mongodb.scala.{ObservableFuture, SingleObservableFuture}
 
 @ImplementedBy(classOf[DefaultSubmissionTrackingRepository])
 trait SubmissionTrackingRepository {
@@ -45,7 +46,7 @@ trait SubmissionTrackingRepository {
 }
 
 @Singleton
-class DefaultSubmissionTrackingRepository @Inject() (implicit mongo: MongoComponent, implicit val ec: ExecutionContext)
+class DefaultSubmissionTrackingRepository @Inject() (implicit mongo: MongoComponent, val ec: ExecutionContext)
     extends PlayMongoRepository[SubmissionTracking](
       collectionName = "submission-tracking",
       mongoComponent = mongo,
