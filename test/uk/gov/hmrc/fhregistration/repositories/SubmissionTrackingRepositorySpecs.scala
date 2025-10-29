@@ -16,18 +16,20 @@
 
 package uk.gov.hmrc.fhregistration.repositories
 
-import org.scalatest.BeforeAndAfterAll
+import org.mongodb.scala.*
+import org.scalatest.BeforeAndAfterEach
 import org.scalatest.concurrent.ScalaFutures
-import play.api.test.Helpers._
+import play.api.test.Helpers.*
 import uk.gov.hmrc.fhregistration.models.fhdds.EnrolmentProgress
 import uk.gov.hmrc.fhregistration.repositories.SubmissionTrackingRepositorySpecs._
 import uk.gov.hmrc.fhregistration.util.UnitSpec
 
-class SubmissionTrackingRepositorySpecs extends UnitSpec with BeforeAndAfterAll with ScalaFutures {
+class SubmissionTrackingRepositorySpecs extends UnitSpec with BeforeAndAfterEach with ScalaFutures {
 
-  override protected def beforeAll(): Unit =
-    repository.collection.drop()
-
+  override protected def beforeEach(): Unit = {
+    super.beforeEach()
+    await(repository.collection.drop().toFuture())
+  }
   "Inserting a new record" should {
     "Be successful" in {
       val tracking = mkSubmissionTracking

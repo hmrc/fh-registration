@@ -47,7 +47,7 @@ class EmailConnectorSpec extends HttpClientV2Helper {
       val mockEnvironment = mock[Environment]
 
       val realConfiguration = Configuration(
-        "microservice.services.email.host" -> "http://test",
+        "microservice.services.email.host" -> "test",
         "microservice.services.email.port" -> "8080",
         "email.defaultTemplateId"          -> "defaultTemplate",
         "email.withdrawalEmailTemplateID"  -> "withdrawalTemplate",
@@ -94,7 +94,7 @@ class EmailConnectorSpec extends HttpClientV2Helper {
       val mockEnvironment = mock[Environment]
 
       val realConfiguration = Configuration(
-        "microservice.services.email.host" -> "http://test",
+        "microservice.services.email.host" -> "test",
         "microservice.services.email.port" -> "8080",
         "email.defaultTemplateId"          -> "defaultTemplate",
         "email.withdrawalEmailTemplateID"  -> "withdrawalTemplate",
