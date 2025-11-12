@@ -208,7 +208,7 @@ class FhddsApplicationController @Inject() (
         .fold(logger.error(s"Could not find enrolment tracking data for bundleId $formBundleId"))(email =>
           sendEmail(email)
         )
-        .andThen { case _ => submissionTrackingService `deleteSubmissionTracking` formBundleId }
+        .andThen { case _ => submissionTrackingService.deleteSubmissionTracking(formBundleId) }
         .map(_ => Ok(""))
         .recover { case _ => Ok("") }
 

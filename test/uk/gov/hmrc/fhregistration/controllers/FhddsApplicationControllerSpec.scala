@@ -118,7 +118,7 @@ class FhddsApplicationControllerSpec extends PlaySpec with MockitoSugar with Sca
         .withBody(submissionRequest)
         .withHeaders(CONTENT_TYPE -> JSON)
 
-      when(mockActions.userAction) `thenReturn` new UserAction(mockAuthConnector, cc)
+      when(mockActions.userAction).thenReturn(new UserAction(mockAuthConnector, cc))
 
       when(mockAuthConnector.authorise(any(), any[Retrieval[Any]]())(using any(), any()))
         .thenReturn(Future.failed(new NoActiveSession("No active session") {}))
@@ -260,11 +260,11 @@ class FhddsApplicationControllerSpec extends PlaySpec with MockitoSugar with Sca
 
       val enrolments = Enrolments(Set.empty)
 
-      when(mockActions.userAction) `thenReturn` new UserAction(mockAuthConnector, cc)
+      when(mockActions.userAction).thenReturn(new UserAction(mockAuthConnector, cc))
 
       when(
         mockAuthConnector.authorise(any(), any[Retrieval[~[Option[String], Enrolments]]]())(using any(), any())
-      ) `thenReturn` Future.successful(new ~[Option[String], Enrolments](Some(userId), enrolments))
+      ).thenReturn(Future.successful(new ~[Option[String], Enrolments](Some(userId), enrolments)))
 
       when(mockSubmissionTrackingService.enrolmentProgress(any(), any()))
         .thenReturn(Future.successful(EnrolmentProgress.Pending))
@@ -284,7 +284,7 @@ class FhddsApplicationControllerSpec extends PlaySpec with MockitoSugar with Sca
         .withBody(Json.toJson(submissionRequest))
         .withHeaders(CONTENT_TYPE -> JSON)
 
-      when(mockActions.userAction) `thenReturn` new UserAction(mockAuthConnector, cc)
+      when(mockActions.userAction).thenReturn(new UserAction(mockAuthConnector, cc))
 
       when(mockAuthConnector.authorise(any(), any[Retrieval[~[Option[String], Enrolments]]]())(using any(), any()))
         .thenReturn(Future.successful(new ~[Option[String], Enrolments](None, Enrolments(Set.empty))))

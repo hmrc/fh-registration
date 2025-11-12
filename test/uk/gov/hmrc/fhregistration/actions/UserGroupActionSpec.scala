@@ -50,6 +50,8 @@ class UserGroupActionSpec extends ActionSpecBase {
   def setupAuthConnector(throwable: Throwable) =
     when(
       mockAuthConnector.authorise(any(), any[Retrieval[Option[String] ~ Enrolments]])(using any(), any())
-    ) `thenReturn` Future
-      .failed(throwable)
+    ).thenReturn(
+      Future
+        .failed(throwable)
+    )
 }

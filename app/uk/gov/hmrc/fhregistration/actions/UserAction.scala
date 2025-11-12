@@ -59,10 +59,10 @@ case class UserAction(authConnector: AuthConnector, cc: ControllerComponents)
   private def registrationNumber(enrolments: Enrolments): Option[String] = {
     val fhddsRegistrationNumbers = for {
       enrolment <- enrolments.enrolments
-      if enrolment.key `equalsIgnoreCase` serviceName
+      if enrolment.key.equalsIgnoreCase(serviceName)
 
       identifier <- enrolment.identifiers
-      if identifier.key `equalsIgnoreCase` identifierName
+      if identifier.key.equalsIgnoreCase(identifierName)
       if identifier.value.slice(2, 4) == "FH"
 
     } yield identifier.value
