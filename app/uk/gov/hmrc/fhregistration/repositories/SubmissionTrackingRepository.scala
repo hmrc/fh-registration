@@ -26,7 +26,6 @@ import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.play.json.{Codecs, PlayMongoRepository}
 import javax.inject.Singleton
 import scala.concurrent.{ExecutionContext, Future}
-import org.mongodb.scala.{ObservableFuture, SingleObservableFuture}
 
 @ImplementedBy(classOf[DefaultSubmissionTrackingRepository])
 trait SubmissionTrackingRepository {
@@ -40,7 +39,7 @@ trait SubmissionTrackingRepository {
   def deleteSubmissionTackingByFormBundleId(formBundleId: String): Future[Int]
   def deleteSubmissionTackingByRegistrationNumber(userId: String, registrationNumber: String): Future[Int]
 
-  def insertSubmissionTracking(submissionTracking: SubmissionTracking): Future[_]
+  def insertSubmissionTracking(submissionTracking: SubmissionTracking): Future[?]
 
   def updateEnrolmentProgress(formBundleId: String, progress: EnrolmentProgress): Future[Seq[SubmissionTracking]]
 }
@@ -105,7 +104,7 @@ class DefaultSubmissionTrackingRepository @Inject() (implicit mongo: MongoCompon
       .toFuture()
       .map(_.getDeletedCount.toInt)
 
-  override def insertSubmissionTracking(submissionTracking: SubmissionTracking): Future[_] =
+  override def insertSubmissionTracking(submissionTracking: SubmissionTracking): Future[?] =
     collection
       .findOneAndUpdate(
         filter = Filters.equal(UserIdField, submissionTracking.userId),

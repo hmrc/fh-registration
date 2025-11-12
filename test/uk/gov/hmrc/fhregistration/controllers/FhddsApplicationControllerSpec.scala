@@ -118,9 +118,9 @@ class FhddsApplicationControllerSpec extends PlaySpec with MockitoSugar with Sca
         .withBody(submissionRequest)
         .withHeaders(CONTENT_TYPE -> JSON)
 
-      when(mockActions.userAction) thenReturn new UserAction(mockAuthConnector, cc)
+      when(mockActions.userAction) `thenReturn` new UserAction(mockAuthConnector, cc)
 
-      when(mockAuthConnector.authorise(any(), any[Retrieval[Any]]())(any(), any()))
+      when(mockAuthConnector.authorise(any(), any[Retrieval[Any]]())(using any(), any()))
         .thenReturn(Future.failed(new NoActiveSession("No active session") {}))
 
       val desSubmissionResponse = DesSubmissionResponse(
@@ -131,9 +131,9 @@ class FhddsApplicationControllerSpec extends PlaySpec with MockitoSugar with Sca
       when(mockDesConnector.sendAmendment(any(), any())(any()))
         .thenReturn(Future.successful(desSubmissionResponse))
 
-      when(mockAuditConnector.sendEvent(any())(any(), any())).thenReturn(Future.successful(AuditResult.Success))
+      when(mockAuditConnector.sendEvent(any())(using any(), any())).thenReturn(Future.successful(AuditResult.Success))
 
-      when(mockEmailConnector.sendEmail(any(), any(), any())(any(), any(), any()))
+      when(mockEmailConnector.sendEmail(any(), any(), any())(using any(), any(), any()))
         .thenReturn(Future.successful((): Unit))
 
       val result = controller.amend(fhddsRegistrationNumber)(request)
@@ -176,17 +176,17 @@ class FhddsApplicationControllerSpec extends PlaySpec with MockitoSugar with Sca
         mockAuthConnector.authorise(
           any(),
           any[Retrieval[Option[String] ~ Option[String]]]()
-        )(any[HeaderCarrier](), any())
+        )(using any[HeaderCarrier](), any())
       )
         .thenReturn(Future.successful(mockRetrieval))
 
-      when(mockEmailConnector.sendEmail(any(), any(), any())(any(), any(), any()))
+      when(mockEmailConnector.sendEmail(any(), any(), any())(using any(), any(), any()))
         .thenReturn(Future.successful((): Unit))
 
       when(mockDesConnector.sendWithdrawal(any(), any())(any()))
         .thenReturn(Future.successful(desWithdrawalResponse))
 
-      when(mockAuditConnector.sendEvent(any())(any(), any())).thenReturn(Future.successful(AuditResult.Success))
+      when(mockAuditConnector.sendEvent(any())(using any(), any())).thenReturn(Future.successful(AuditResult.Success))
 
       val result = controller.withdrawal(fhddsRegistrationNumber)(request)
 
@@ -224,17 +224,17 @@ class FhddsApplicationControllerSpec extends PlaySpec with MockitoSugar with Sca
         mockAuthConnector.authorise(
           any(),
           any[Retrieval[Option[String] ~ Option[String]]]()
-        )(any[HeaderCarrier](), any())
+        )(using any[HeaderCarrier](), any())
       )
         .thenReturn(Future.successful(mockRetrieval))
 
-      when(mockEmailConnector.sendEmail(any(), any(), any())(any(), any(), any()))
+      when(mockEmailConnector.sendEmail(any(), any(), any())(using any(), any(), any()))
         .thenReturn(Future.successful((): Unit))
 
       when(mockDesConnector.sendDeregistration(any(), any())(any()))
         .thenReturn(Future.successful(desDeregistrationResponse))
 
-      when(mockAuditConnector.sendEvent(any())(any(), any())).thenReturn(Future.successful(AuditResult.Success))
+      when(mockAuditConnector.sendEvent(any())(using any(), any())).thenReturn(Future.successful(AuditResult.Success))
 
       val result = controller.deregister(fhddsRegistrationNumber)(request)
 
@@ -260,11 +260,11 @@ class FhddsApplicationControllerSpec extends PlaySpec with MockitoSugar with Sca
 
       val enrolments = Enrolments(Set.empty)
 
-      when(mockActions.userAction) thenReturn new UserAction(mockAuthConnector, cc)
+      when(mockActions.userAction) `thenReturn` new UserAction(mockAuthConnector, cc)
 
       when(
-        mockAuthConnector.authorise(any(), any[Retrieval[~[Option[String], Enrolments]]]())(any(), any())
-      ) thenReturn Future.successful(new ~[Option[String], Enrolments](Some(userId), enrolments))
+        mockAuthConnector.authorise(any(), any[Retrieval[~[Option[String], Enrolments]]]())(using any(), any())
+      ) `thenReturn` Future.successful(new ~[Option[String], Enrolments](Some(userId), enrolments))
 
       when(mockSubmissionTrackingService.enrolmentProgress(any(), any()))
         .thenReturn(Future.successful(EnrolmentProgress.Pending))
@@ -284,9 +284,9 @@ class FhddsApplicationControllerSpec extends PlaySpec with MockitoSugar with Sca
         .withBody(Json.toJson(submissionRequest))
         .withHeaders(CONTENT_TYPE -> JSON)
 
-      when(mockActions.userAction) thenReturn new UserAction(mockAuthConnector, cc)
+      when(mockActions.userAction) `thenReturn` new UserAction(mockAuthConnector, cc)
 
-      when(mockAuthConnector.authorise(any(), any[Retrieval[~[Option[String], Enrolments]]]())(any(), any()))
+      when(mockAuthConnector.authorise(any(), any[Retrieval[~[Option[String], Enrolments]]]())(using any(), any()))
         .thenReturn(Future.successful(new ~[Option[String], Enrolments](None, Enrolments(Set.empty))))
 
       val result = controller.amend(fhddsRegistrationNumber)(request)
@@ -310,7 +310,7 @@ class FhddsApplicationControllerSpec extends PlaySpec with MockitoSugar with Sca
     when(mockSubmissionTrackingService.deleteSubmissionTracking(formBundleId))
       .thenAnswer(_ => Future.successful(()))
 
-    when(mockEmailConnector.sendEmail(any(), any(), any())(any(), any(), any()))
+    when(mockEmailConnector.sendEmail(any(), any(), any())(using any(), any(), any()))
       .thenReturn(Future.successful((): Unit))
 
     val result = controller.subscriptionCallback(formBundleId)(request)
@@ -319,7 +319,7 @@ class FhddsApplicationControllerSpec extends PlaySpec with MockitoSugar with Sca
       eqTo(mockEmailConnector.defaultEmailTemplateID),
       eqTo(UserData("email@example.com")),
       eqTo(Map.empty[String, String])
-    )(any(), any(), any())
+    )(using any(), any(), any())
   }
 
   "handle subscription callback with FAILED state" in {

@@ -26,7 +26,7 @@ import scala.concurrent.ExecutionContext
 
 class MicroserviceAction @Inject() (implicit val ec: ExecutionContext) extends Results {
 
-  implicit def hc(implicit request: Request[_]): HeaderCarrier =
+  implicit def hc(implicit request: Request[?]): HeaderCarrier =
     HeaderCarrierConverter.fromRequest(request)
 
   def error(status: Status, message: String) = {

@@ -144,11 +144,11 @@ class DesConnectorSpec extends UnitSpec with MockitoSugar {
             .toString()
         )
 
-        when(mockHttpClient.get(any())(any()))
+        when(mockHttpClient.get(any())(using any()))
           .thenReturn(mockRequestBuilder)
         when(mockRequestBuilder.setHeader(any()))
           .thenReturn(mockRequestBuilder)
-        when(mockRequestBuilder.execute[HttpResponse](any(), any()))
+        when(mockRequestBuilder.execute[HttpResponse](using any(), any()))
           .thenReturn(Future.successful(mockHttpResponse))
 
         val realConfiguration = Configuration.from(
@@ -191,16 +191,16 @@ class DesConnectorSpec extends UnitSpec with MockitoSugar {
         )
         val mockRequestBuilder = mock[RequestBuilder]
 
-        when(mockHttpClient.post(any())(any()))
+        when(mockHttpClient.post(any())(using any()))
           .thenReturn(mockRequestBuilder)
 
         when(mockRequestBuilder.setHeader(any()))
           .thenReturn(mockRequestBuilder)
 
-        when(mockRequestBuilder.withBody[JsValue](any())(any(), any(), any()))
+        when(mockRequestBuilder.withBody[JsValue](any())(using any(), any(), any()))
           .thenReturn(mockRequestBuilder)
 
-        when(mockRequestBuilder.execute[HttpResponse](any(), any()))
+        when(mockRequestBuilder.execute[HttpResponse](using any(), any()))
           .thenReturn(Future.successful(httpResponse))
 
         val realConfiguration = Configuration.from(
@@ -240,16 +240,16 @@ class DesConnectorSpec extends UnitSpec with MockitoSugar {
         )
         val mockRequestBuilder = mock[RequestBuilder]
 
-        when(mockHttpClient.post(any())(any()))
+        when(mockHttpClient.post(any())(using any()))
           .thenReturn(mockRequestBuilder)
 
         when(mockRequestBuilder.setHeader(any()))
           .thenReturn(mockRequestBuilder)
 
-        when(mockRequestBuilder.withBody[JsValue](any())(any(), any(), any()))
+        when(mockRequestBuilder.withBody[JsValue](any())(using any(), any(), any()))
           .thenReturn(mockRequestBuilder)
 
-        when(mockRequestBuilder.execute[HttpResponse](any(), any()))
+        when(mockRequestBuilder.execute[HttpResponse](using any(), any()))
           .thenReturn(Future.successful(httpResponse))
 
         val realConfiguration = Configuration.from(
@@ -304,10 +304,10 @@ class DesConnectorSpec extends UnitSpec with MockitoSugar {
             override def baseUrl(serviceName: String): String = "http://localhost:8080"
           }
 
-        when(mockHttpClient.get(any())(any()))
+        when(mockHttpClient.get(any())(using any()))
           .thenReturn(mockRequestBuilder)
 
-        when(mockRequestBuilder.execute[HttpResponse](any(), any()))
+        when(mockRequestBuilder.execute[HttpResponse](using any(), any()))
           .thenReturn(Future.successful(mockHttpResponse))
 
         when(mockRequestBuilder.setHeader(any()))

@@ -85,7 +85,7 @@ class FhddsApplicationController @Inject() (
           request.emailAddress,
           response.registrationNumber
         ) andThen { case _ =>
-          subscribeToTaxEnrolment(safeId, desResponse.etmpFormBundleNumber).failed.foreach { case e =>
+          subscribeToTaxEnrolment(safeId, desResponse.etmpFormBundleNumber).failed.foreach { e =>
             submissionTrackingService
               .updateSubscriptionTracking(desResponse.etmpFormBundleNumber, EnrolmentProgress.Error)
           }
@@ -160,7 +160,7 @@ class FhddsApplicationController @Inject() (
     emailParameters: Map[String, String] = Map.empty
   )(implicit hc: HeaderCarrier, request: Request[AnyRef]) =
     emailConnector
-      .sendEmail(emailTemplateId = emailTemplateId, userData = UserData(email), emailParameters)(hc, request, ec)
+      .sendEmail(emailTemplateId = emailTemplateId, userData = UserData(email), emailParameters)(using hc, request, ec)
       .failed
       .foreach { case t =>
         logger.error(s"Failed sending email $emailTemplateId", t)
@@ -171,7 +171,7 @@ class FhddsApplicationController @Inject() (
     logger.info(s"Sending audit event for registrationNumber $registrationNumber")
 
     auditConnector
-      .sendEvent(event)(hc, ec)
+      .sendEvent(event)(using hc, ec)
       .map(auditResult => logger.info(s"Received audit result $auditResult for registrationNumber $registrationNumber"))
       .recover { case t: Throwable =>
         logger.error(s"Audit failed for registrationNumber $registrationNumber", t)
@@ -181,12 +181,12 @@ class FhddsApplicationController @Inject() (
 
   private def subscribeToTaxEnrolment(safeId: String, etmpFormBundleNumber: String)(implicit
     hc: HeaderCarrier
-  ): Future[_] = {
+  ): Future[?] = {
     logger.info(
       s"Sending subscription for safeId = $safeId for etmpFormBundelNumber = $etmpFormBundleNumber to tax enrolments"
     )
     taxEnrolmentConnector
-      .subscribe(safeId, etmpFormBundleNumber)(hc)
+      .subscribe(safeId, etmpFormBundleNumber)(using hc)
       .andThen {
         case Success(r) =>
           logger.info(
@@ -208,7 +208,7 @@ class FhddsApplicationController @Inject() (
         .fold(logger.error(s"Could not find enrolment tracking data for bundleId $formBundleId"))(email =>
           sendEmail(email)
         )
-        .andThen { case _ => submissionTrackingService deleteSubmissionTracking formBundleId }
+        .andThen { case _ => submissionTrackingService `deleteSubmissionTracking` formBundleId }
         .map(_ => Ok(""))
         .recover { case _ => Ok("") }
 

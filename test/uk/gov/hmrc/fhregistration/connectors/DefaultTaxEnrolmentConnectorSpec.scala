@@ -62,10 +62,10 @@ class DefaultTaxEnrolmentConnectorSpec extends PlaySpec with ScalaFutures {
       when(mockResponse.body).thenReturn("Success")
       when(mockEnvironment.mode).thenReturn(Mode.Test)
 
-      when(mockHttpClient.put(any[URL])(any[HeaderCarrier])).thenReturn(mockRequestBuilder)
-      when(mockRequestBuilder.withBody(any[JsObject])(any(), any(), any()))
+      when(mockHttpClient.put(any[URL])(using any[HeaderCarrier])).thenReturn(mockRequestBuilder)
+      when(mockRequestBuilder.withBody(any[JsObject])(using any(), any(), any()))
         .thenReturn(mockRequestBuilder)
-      when(mockRequestBuilder.execute[HttpResponse](any(), any()))
+      when(mockRequestBuilder.execute[HttpResponse](using any(), any()))
         .thenReturn(Future.successful(mockResponse))
 
       val connector = new DefaultTaxEnrolmentConnector(mockHttpClient, realConfiguration, realEnvironment)
@@ -73,9 +73,11 @@ class DefaultTaxEnrolmentConnectorSpec extends PlaySpec with ScalaFutures {
       connector.subscribe(safeId, etmpFormBundleNumber).map { result =>
         result mustBe mockResponse
         verify(mockHttpClient)
-          .put(eqTo(new URL(s"$serviceBaseUrl/subscriptions/$etmpFormBundleNumber/subscriber")))(any[HeaderCarrier])
-        verify(mockRequestBuilder).withBody(eqTo(requestBody))(any(), any(), any())
-        verify(mockRequestBuilder).execute[HttpResponse](any(), any())
+          .put(eqTo(new URL(s"$serviceBaseUrl/subscriptions/$etmpFormBundleNumber/subscriber")))(
+            using any[HeaderCarrier]
+          )
+        verify(mockRequestBuilder).withBody(eqTo(requestBody))(using any(), any(), any())
+        verify(mockRequestBuilder).execute[HttpResponse](using any(), any())
       }
     }
 
@@ -96,10 +98,10 @@ class DefaultTaxEnrolmentConnectorSpec extends PlaySpec with ScalaFutures {
 
       when(mockResponse.status).thenReturn(500)
 
-      when(mockHttpClient.put(any[URL])(any[HeaderCarrier])).thenReturn(mockRequestBuilder)
-      when(mockRequestBuilder.withBody(any[JsObject])(any(), any(), any()))
+      when(mockHttpClient.put(any[URL])(using any[HeaderCarrier])).thenReturn(mockRequestBuilder)
+      when(mockRequestBuilder.withBody(any[JsObject])(using any(), any(), any()))
         .thenReturn(mockRequestBuilder)
-      when(mockRequestBuilder.execute[HttpResponse](any(), any()))
+      when(mockRequestBuilder.execute[HttpResponse](using any(), any()))
         .thenReturn(Future.successful(mockResponse))
 
       val connector = new DefaultTaxEnrolmentConnector(mockHttpClient, realConfiguration, realEnvironment)
@@ -132,8 +134,8 @@ class DefaultTaxEnrolmentConnectorSpec extends PlaySpec with ScalaFutures {
       val mockHttpClient = mock(classOf[HttpClientV2])
       val mockRequestBuilder = mock(classOf[RequestBuilder])
 
-      when(mockHttpClient.delete(any[URL])(any[HeaderCarrier])).thenReturn(mockRequestBuilder)
-      when(mockRequestBuilder.execute[HttpResponse](any(), any()))
+      when(mockHttpClient.delete(any[URL])(using any[HeaderCarrier])).thenReturn(mockRequestBuilder)
+      when(mockRequestBuilder.execute[HttpResponse](using any(), any()))
         .thenReturn(Future.successful(mockResponse))
 
       val connector = new DefaultTaxEnrolmentConnector(mockHttpClient, realConfiguration, realEnvironment)
@@ -146,7 +148,7 @@ class DefaultTaxEnrolmentConnectorSpec extends PlaySpec with ScalaFutures {
               s"$serviceBaseUrl/groups/$groupId/enrolments/HMRC-OBTDS-ORG~ETMPREGISTRATIONNUMBER~$registrationNumber"
             )
           )
-        )(any[HeaderCarrier])
+        )(using any[HeaderCarrier])
       }
     }
 
@@ -175,8 +177,8 @@ class DefaultTaxEnrolmentConnectorSpec extends PlaySpec with ScalaFutures {
       val mockHttpClient = mock(classOf[HttpClientV2])
       val mockRequestBuilder = mock(classOf[RequestBuilder])
 
-      when(mockHttpClient.delete(any[URL])(any[HeaderCarrier])).thenReturn(mockRequestBuilder)
-      when(mockRequestBuilder.execute[HttpResponse](any(), any()))
+      when(mockHttpClient.delete(any[URL])(using any[HeaderCarrier])).thenReturn(mockRequestBuilder)
+      when(mockRequestBuilder.execute[HttpResponse](using any(), any()))
         .thenReturn(Future.successful(mockResponse))
 
       val connector = new DefaultTaxEnrolmentConnector(mockHttpClient, realConfiguration, realEnvironment)

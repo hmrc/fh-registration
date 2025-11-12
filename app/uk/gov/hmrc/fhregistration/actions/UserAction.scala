@@ -28,8 +28,8 @@ class UserRequest[A](val userId: String, val registrationNumber: Option[String],
     extends WrappedRequest(request) {}
 
 case class UserAction(authConnector: AuthConnector, cc: ControllerComponents)
-    extends MicroserviceAction()(cc.executionContext) with ActionRefiner[Request, UserRequest] with AuthorisedFunctions
-    with ActionBuilder[UserRequest, AnyContent] with Logging {
+    extends MicroserviceAction()(using cc.executionContext) with ActionRefiner[Request, UserRequest]
+    with AuthorisedFunctions with ActionBuilder[UserRequest, AnyContent] with Logging {
 
   override def parser: BodyParser[AnyContent] = cc.parsers.defaultBodyParser
   override protected val executionContext: ExecutionContext = cc.executionContext
@@ -59,10 +59,10 @@ case class UserAction(authConnector: AuthConnector, cc: ControllerComponents)
   private def registrationNumber(enrolments: Enrolments): Option[String] = {
     val fhddsRegistrationNumbers = for {
       enrolment <- enrolments.enrolments
-      if enrolment.key equalsIgnoreCase serviceName
+      if enrolment.key `equalsIgnoreCase` serviceName
 
       identifier <- enrolment.identifiers
-      if identifier.key equalsIgnoreCase identifierName
+      if identifier.key `equalsIgnoreCase` identifierName
       if identifier.value.slice(2, 4) == "FH"
 
     } yield identifier.value

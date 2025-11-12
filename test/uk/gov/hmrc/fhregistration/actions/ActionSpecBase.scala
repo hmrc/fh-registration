@@ -25,7 +25,7 @@ import play.api.mvc.{ActionFunction, ActionRefiner, Results}
 import play.api.test.Helpers.*
 import uk.gov.hmrc.fhregistration.util.UnitSpec
 
-import scala.concurrent.{Future, Promise}
+import scala.concurrent.Promise
 
 trait ActionSpecBase
     extends UnitSpec with ScalaFutures with MockitoSugar with BeforeAndAfterEach with Matchers with Results

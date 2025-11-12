@@ -54,10 +54,10 @@ trait SubmissionTrackingService {
     etmpFormBundleNumber: String,
     emailAddress: String,
     registrationNumber: String
-  ): Future[_]
-  def updateSubscriptionTracking(etmpFormBundleNumber: String, enrolmentProgress: EnrolmentProgress): Future[_]
+  ): Future[?]
+  def updateSubscriptionTracking(etmpFormBundleNumber: String, enrolmentProgress: EnrolmentProgress): Future[?]
   def getSubmissionTrackingEmail(formBundleId: String): OptionT[Future, String]
-  def deleteSubmissionTracking(formBundleId: String): Future[_]
+  def deleteSubmissionTracking(formBundleId: String): Future[?]
 }
 
 @Singleton
@@ -97,7 +97,7 @@ class DefaultSubmissionTrackingService @Inject() (repository: SubmissionTracking
     etmpFormBundleNumber: String,
     emailAddress: String,
     registrationNumber: String
-  ): Future[_] = {
+  ): Future[?] = {
     val submissionTracking = SubmissionTracking(
       userId,
       etmpFormBundleNumber,
@@ -123,7 +123,7 @@ class DefaultSubmissionTrackingService @Inject() (repository: SubmissionTracking
   override def updateSubscriptionTracking(
     etmpFormBundleNumber: String,
     enrolmentProgress: EnrolmentProgress
-  ): Future[_] = {
+  ): Future[?] = {
     val result = repository.updateEnrolmentProgress(etmpFormBundleNumber, enrolmentProgress)
     result
       .map(_ => logger.info(s"Submission tracking record saved for etmpFormBundleNumber $etmpFormBundleNumber"))
@@ -135,7 +135,7 @@ class DefaultSubmissionTrackingService @Inject() (repository: SubmissionTracking
   override def getSubmissionTrackingEmail(formBundleId: String): OptionT[Future, String] =
     OptionT(repository.findSubmissionTrackingByFormBundleId(formBundleId)).map(_.email)
 
-  override def deleteSubmissionTracking(formBundleId: String): Future[_] =
+  override def deleteSubmissionTracking(formBundleId: String): Future[?] =
     repository
       .deleteSubmissionTackingByFormBundleId(formBundleId)
       .andThen {

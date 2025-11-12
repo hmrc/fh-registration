@@ -18,7 +18,7 @@ package uk.gov.hmrc.fhregistration.models.businessregistration
 
 import org.scalatest.funsuite.AnyFunSuite
 import org.scalatest.matchers.should.Matchers
-import play.api.libs.json.{JsResultException, Json}
+import play.api.libs.json.Json
 
 class BusinessRegistrationDetailsSpec extends AnyFunSuite with Matchers {
 

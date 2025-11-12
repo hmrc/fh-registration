@@ -44,7 +44,7 @@ trait FhddsMocks extends ScalaFutures with MockitoSugar {
   val mockControllerComponents: ControllerComponents = mock[ControllerComponents]
   val mockActions: Actions = mock[Actions]
   val mockRepository: DefaultSubmissionTrackingRepository = mock[DefaultSubmissionTrackingRepository]
-  when(mockRepository.findAll()) thenReturn
+  when(mockRepository.findAll()) `thenReturn`
     Future.successful(List(new SubmissionTracking("1", "2", "3", 0, None, None)))
 
   var fhddsApplicationControllerWithMocks = new FhddsApplicationController(

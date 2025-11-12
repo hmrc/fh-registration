@@ -119,7 +119,7 @@ class DefaultAuditService @Inject() (
       auditSource = auditSource,
       auditType = auditType,
       tags = hc.toAuditTags(s"FHDDS - $registrationNumber", path),
-      detail = hc.toAuditDetails(additionalDetails: _*)
+      detail = hc.toAuditDetails(additionalDetails *)
     )
 
   }

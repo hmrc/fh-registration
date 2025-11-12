@@ -19,8 +19,6 @@ package uk.gov.hmrc.fhregistration.models.fhdds
 import org.scalatest.funsuite.AnyFunSuite
 import play.api.libs.json.{JsSuccess, Json}
 
-import scala.runtime.stdLibPatches.Predef.assert
-
 class UserDataSpec extends AnyFunSuite {
 
   test("UserData should serialize and deserialize correctly") {
