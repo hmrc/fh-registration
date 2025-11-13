@@ -82,7 +82,7 @@ class DefaultTaxEnrolmentConnector @Inject() (
 
   override def deleteGroupEnrolment(groupId: String, registrationNumber: String)(implicit
     hc: HeaderCarrier
-  ): Future[_] =
+  ): Future[?] =
     http
       .delete(url"${groupEnrolmentUrl(groupId, registrationNumber)}")
       .execute[HttpResponse]
@@ -102,6 +102,6 @@ class DefaultTaxEnrolmentConnector @Inject() (
 @ImplementedBy(classOf[DefaultTaxEnrolmentConnector])
 trait TaxEnrolmentConnector extends HttpErrorFunctions {
 
-  def subscribe(safeId: String, etmpFormBundleNumber: String)(implicit hc: HeaderCarrier): Future[_]
-  def deleteGroupEnrolment(groupId: String, registrationNumber: String)(implicit hc: HeaderCarrier): Future[_]
+  def subscribe(safeId: String, etmpFormBundleNumber: String)(implicit hc: HeaderCarrier): Future[?]
+  def deleteGroupEnrolment(groupId: String, registrationNumber: String)(implicit hc: HeaderCarrier): Future[?]
 }

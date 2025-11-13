@@ -55,11 +55,11 @@ class EmailConnectorSpec extends HttpClientV2Helper {
       )
       val realEnvironment = Environment.simple()
 
-      when(mockConfiguration.getOptional[String](eqTo("email.defaultTemplateId"))(any()))
+      when(mockConfiguration.getOptional[String](eqTo("email.defaultTemplateId"))(using any()))
         .thenReturn(Some("defaultTemplate"))
-      when(mockConfiguration.getOptional[String](eqTo("email.withdrawalEmailTemplateID"))(any()))
+      when(mockConfiguration.getOptional[String](eqTo("email.withdrawalEmailTemplateID"))(using any()))
         .thenReturn(Some("withdrawalTemplate"))
-      when(mockConfiguration.getOptional[String](eqTo("email.deregisterEmailTemplateID"))(any()))
+      when(mockConfiguration.getOptional[String](eqTo("email.deregisterEmailTemplateID"))(using any()))
         .thenReturn(Some("deregisterTemplate"))
 
       when(mockEnvironment.mode).thenReturn(Mode.Test)
@@ -77,8 +77,8 @@ class EmailConnectorSpec extends HttpClientV2Helper {
         .sendEmail(emailTemplateId, userData, emailParams)
         .map { result =>
           result shouldBe true
-          verify(requestBuilder).withBody(eqTo(Json.toJson(sendEmailRequest)))(any(), any(), any())
-          verify(requestBuilder).execute[HttpResponse](any[HttpReads[HttpResponse]], any[ExecutionContext])
+          verify(requestBuilder).withBody(eqTo(Json.toJson(sendEmailRequest)))(using any(), any(), any())
+          verify(requestBuilder).execute[HttpResponse](using any[HttpReads[HttpResponse]], any[ExecutionContext])
         }
         .map(_ => succeed)
     }
@@ -102,11 +102,11 @@ class EmailConnectorSpec extends HttpClientV2Helper {
       )
       val realEnvironment = Environment.simple()
 
-      when(mockConfiguration.getOptional[String](eqTo("email.defaultTemplateId"))(any()))
+      when(mockConfiguration.getOptional[String](eqTo("email.defaultTemplateId"))(using any()))
         .thenReturn(Some("defaultTemplate"))
-      when(mockConfiguration.getOptional[String](eqTo("email.withdrawalEmailTemplateID"))(any()))
+      when(mockConfiguration.getOptional[String](eqTo("email.withdrawalEmailTemplateID"))(using any()))
         .thenReturn(Some("withdrawalTemplate"))
-      when(mockConfiguration.getOptional[String](eqTo("email.deregisterEmailTemplateID"))(any()))
+      when(mockConfiguration.getOptional[String](eqTo("email.deregisterEmailTemplateID"))(using any()))
         .thenReturn(Some("deregisterTemplate"))
 
       when(mockEnvironment.mode).thenReturn(Mode.Test)

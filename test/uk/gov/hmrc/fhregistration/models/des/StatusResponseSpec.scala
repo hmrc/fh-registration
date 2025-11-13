@@ -22,8 +22,6 @@ import play.api.libs.json.{JsSuccess, Json}
 import uk.gov.hmrc.fhregistration.models.des.DesStatus.DesStatus
 import uk.gov.hmrc.fhregistration.models.des.StatusResponse
 
-import java.util.Date
-
 class StatusResponseSpec extends AnyWordSpec with Matchers {
 
   "StatusResponse" should {

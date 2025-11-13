@@ -5,7 +5,6 @@ import org.scalatestplus.mockito.MockitoSugar
 import play.api.test.WsTestClient
 import uk.gov.hmrc.fhdds.testsupport.preconditions.{AuditStub, DesStub}
 import uk.gov.hmrc.fhdds.testsupport.{TestConfiguration, TestHelpers}
-import uk.gov.hmrc.fhregistration.services.AuditService
 
 import scala.concurrent.Future
 

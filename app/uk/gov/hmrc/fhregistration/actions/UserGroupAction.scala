@@ -27,7 +27,7 @@ import scala.concurrent.{ExecutionContext, Future}
 class UserGroupRequest[A](val userId: String, val groupId: String, request: Request[A]) extends WrappedRequest(request)
 
 case class UserGroupAction(val authConnector: AuthConnector, cc: ControllerComponents)
-    extends MicroserviceAction()(cc.executionContext) with ActionRefiner[Request, UserGroupRequest]
+    extends MicroserviceAction()(using cc.executionContext) with ActionRefiner[Request, UserGroupRequest]
     with AuthorisedFunctions with ActionBuilder[UserGroupRequest, AnyContent] with Logging {
 
   override def parser: BodyParser[AnyContent] = cc.parsers.defaultBodyParser
