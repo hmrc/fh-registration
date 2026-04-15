@@ -19,9 +19,9 @@ package uk.gov.hmrc.fhregistration.controllers
 import cats.implicits._
 import play.api.Logging
 import play.api.libs.json.Json
-import play.api.mvc.{ControllerComponents, Request}
+import play.api.mvc.{ControllerComponents, Request, Result}
 import uk.gov.hmrc.fhregistration.actions.Actions
-import uk.gov.hmrc.fhregistration.connectors.{DesConnector, EmailConnector, TaxEnrolmentConnector}
+import uk.gov.hmrc.fhregistration.connectors.{DesConnector, DesSubmissionException, EmailConnector, TaxEnrolmentConnector}
 import uk.gov.hmrc.fhregistration.models.TaxEnrolmentsCallback
 import uk.gov.hmrc.fhregistration.models.des.DesStatus
 import uk.gov.hmrc.fhregistration.models.des.DesStatus.DesStatus
@@ -66,7 +66,7 @@ class FhddsApplicationController @Inject() (
   def subscribe(safeId: String, currentRegNumber: Option[String]) =
     userGroupAction.async(parse.json[SubmissionRequest]) { implicit r =>
       val request = r.body
-      for {
+      (for {
         desResponse <- desConnector.sendSubmission(safeId, request.submission)(hc)
         response = SubmissionResponse(desResponse.registrationNumberFHDDS, desResponse.processingDate)
       } yield {
@@ -94,7 +94,7 @@ class FhddsApplicationController @Inject() (
         auditSubmission(response.registrationNumber, event)
 
         Ok(Json toJson response)
-      }
+      }).recover(handleSubmissionError)
     }
 
   def enrolmentProgress = userAction.async { implicit request =>
@@ -105,7 +105,7 @@ class FhddsApplicationController @Inject() (
 
   def amend(fhddsRegistrationNumber: String) = Action.async(parse.json[SubmissionRequest]) { implicit r =>
     val request = r.body
-    for {
+    (for {
       desResponse <- desConnector.sendAmendment(fhddsRegistrationNumber, request.submission)(hc)
       response = SubmissionResponse(desResponse.registrationNumberFHDDS, desResponse.processingDate)
     } yield {
@@ -114,7 +114,7 @@ class FhddsApplicationController @Inject() (
       sendEmail(request.emailAddress)
 
       Ok(Json toJson response)
-    }
+    }).recover(handleSubmissionError)
   }
 
   def withdrawal(fhddsRegistrationNumber: String) = userGroupAction.async(parse.json[WithdrawalRequest]) { implicit r =>
@@ -196,6 +196,12 @@ class FhddsApplicationController @Inject() (
           logger
             .error(s"Tax enrolments for subscription $safeId and etmpFormBundleNumber $etmpFormBundleNumber failed", e)
       }
+  }
+
+  private def handleSubmissionError: PartialFunction[Throwable, Result] = {
+    case DesSubmissionException(statusCode, code, reason) =>
+      logger.warn(s"DES submission failed with status $statusCode and code $code: $reason")
+      Status(statusCode)(Json.obj("code" -> code, "reason" -> reason))
   }
 
   def subscriptionCallback(formBundleId: String) = Action.async(parse.json[TaxEnrolmentsCallback]) { implicit request =>
