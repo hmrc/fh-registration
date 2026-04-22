@@ -19,12 +19,15 @@ package uk.gov.hmrc.fhregistration.connectors
 import com.typesafe.config.Config
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
+import org.scalatest.RecoverMethods.recoverToExceptionIf
+import org.scalatest.OptionValues
 import org.scalatest.concurrent.ScalaFutures.convertScalaFuture
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpecLike
 import org.scalatestplus.mockito.MockitoSugar
 import play.api.libs.json.{JsValue, Json}
 import play.api.{Configuration, Environment}
 import uk.gov.hmrc.fhregistration.models.des.{DesStatus, StatusResponse}
-import uk.gov.hmrc.fhregistration.util.UnitSpec
 import uk.gov.hmrc.http.client.{HttpClientV2, RequestBuilder}
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, UpstreamErrorResponse}
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
@@ -32,7 +35,7 @@ import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class DesConnectorSpec extends UnitSpec with MockitoSugar {
+class DesConnectorSpec extends AnyWordSpecLike with Matchers with OptionValues with MockitoSugar {
   implicit val hc: HeaderCarrier = HeaderCarrier()
 
   class DefaultDesConnectorMock(
@@ -223,6 +226,54 @@ class DesConnectorSpec extends UnitSpec with MockitoSugar {
         result.registrationNumberFHDDS shouldBe "123"
         result.etmpFormBundleNumber shouldBe "bundle456"
       }
+
+      "surface business errors instead of parsing them as successful submissions" in {
+        val submission = Json.obj("key" -> "value")
+        val httpResponse = HttpResponse(
+          403,
+          Json
+            .obj(
+              "code"   -> "ACTIVE_SUBSCRIPTION",
+              "reason" -> "Business Partner already has an active FHDDS Subscription."
+            )
+            .toString()
+        )
+        val mockRequestBuilder = mock[RequestBuilder]
+
+        when(mockHttpClient.post(any())(using any()))
+          .thenReturn(mockRequestBuilder)
+
+        when(mockRequestBuilder.setHeader(any()))
+          .thenReturn(mockRequestBuilder)
+
+        when(mockRequestBuilder.withBody[JsValue](any())(using any(), any(), any()))
+          .thenReturn(mockRequestBuilder)
+
+        when(mockRequestBuilder.execute[HttpResponse](using any(), any()))
+          .thenReturn(Future.successful(httpResponse))
+
+        val realConfiguration = Configuration.from(
+          Map(
+            "microservice.services.des-service.host"                -> "localhost",
+            "microservice.services.des-service.port"                -> "8080",
+            "microservice.services.des-service.authorization-token" -> "test-token",
+            "microservice.services.des-service.environment"         -> "test-environment"
+          )
+        )
+        val realEnvironment = Environment.simple()
+
+        val desConnectorMock =
+          new DefaultDesConnector(mockHttpClient, realConfiguration, realEnvironment, mock[ServicesConfig]) {
+            override def baseUrl(serviceName: String): String = "http://localhost:8080"
+          }
+
+        recoverToExceptionIf[DesSubmissionException] {
+          desConnectorMock.sendSubmission("safe123", submission)(HeaderCarrier())
+        }.map { ex =>
+          ex.statusCode shouldBe 403
+          ex.code shouldBe "ACTIVE_SUBSCRIPTION"
+        }
+      }
     }
 
     "perform sendAmendment" should {
@@ -271,6 +322,54 @@ class DesConnectorSpec extends UnitSpec with MockitoSugar {
 
         result.registrationNumberFHDDS shouldBe "123"
         result.etmpFormBundleNumber shouldBe "bundle456"
+      }
+
+      "surface amend business errors instead of parsing them as successful submissions" in {
+        val submission = Json.obj("key" -> "value")
+        val httpResponse = HttpResponse(
+          403,
+          Json
+            .obj(
+              "code"   -> "ACTIVE_SUBSCRIPTION",
+              "reason" -> "Business Partner already has an active FHDDS Subscription."
+            )
+            .toString()
+        )
+        val mockRequestBuilder = mock[RequestBuilder]
+
+        when(mockHttpClient.post(any())(using any()))
+          .thenReturn(mockRequestBuilder)
+
+        when(mockRequestBuilder.setHeader(any()))
+          .thenReturn(mockRequestBuilder)
+
+        when(mockRequestBuilder.withBody[JsValue](any())(using any(), any(), any()))
+          .thenReturn(mockRequestBuilder)
+
+        when(mockRequestBuilder.execute[HttpResponse](using any(), any()))
+          .thenReturn(Future.successful(httpResponse))
+
+        val realConfiguration = Configuration.from(
+          Map(
+            "microservice.services.des-service.host"                -> "localhost",
+            "microservice.services.des-service.port"                -> "8080",
+            "microservice.services.des-service.authorization-token" -> "test-token",
+            "microservice.services.des-service.environment"         -> "test-environment"
+          )
+        )
+        val realEnvironment = Environment.simple()
+
+        val desConnectorMock =
+          new DefaultDesConnector(mockHttpClient, realConfiguration, realEnvironment, mock[ServicesConfig]) {
+            override def baseUrl(serviceName: String): String = "http://localhost:8080"
+          }
+
+        recoverToExceptionIf[DesSubmissionException] {
+          desConnectorMock.sendAmendment("safe123", submission)(HeaderCarrier())
+        }.map { ex =>
+          ex.statusCode shouldBe 403
+          ex.code shouldBe "ACTIVE_SUBSCRIPTION"
+        }
       }
     }
 

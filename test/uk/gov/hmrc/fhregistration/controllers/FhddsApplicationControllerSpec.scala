@@ -23,8 +23,6 @@ import org.mockito.Mockito._
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
-import play.api.Application
-import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.{JsObject, Json}
 import play.api.mvc._
 import play.api.test.Helpers._
@@ -32,7 +30,7 @@ import play.api.test.{FakeRequest, Helpers}
 import uk.gov.hmrc.auth.core._
 import uk.gov.hmrc.auth.core.retrieve.{Retrieval, ~}
 import uk.gov.hmrc.fhregistration.actions.{Actions, UserAction, UserGroupAction}
-import uk.gov.hmrc.fhregistration.connectors.{DesConnector, EmailConnector, TaxEnrolmentConnector}
+import uk.gov.hmrc.fhregistration.connectors.{DesConnector, DesSubmissionException, EmailConnector, TaxEnrolmentConnector}
 import uk.gov.hmrc.fhregistration.models.TaxEnrolmentsCallback
 import uk.gov.hmrc.fhregistration.models.des._
 import uk.gov.hmrc.fhregistration.models.fhdds._
@@ -56,12 +54,9 @@ class FhddsApplicationControllerSpec extends PlaySpec with MockitoSugar with Sca
   private val mockAuditConnector = mock[AuditConnector]
   private val mockRepo = mock[DefaultSubmissionTrackingRepository]
   private val mockActions = mock[Actions]
-  private val cc: ControllerComponents = Helpers.stubControllerComponents()
+  private val mcc: MessagesControllerComponents = Helpers.stubMessagesControllerComponents()
+  private val cc: ControllerComponents = mcc
   private val mockAuthConnector = mock[AuthConnector]
-
-  val application: Application = new GuiceApplicationBuilder()
-    .build()
-  val mcc: MessagesControllerComponents = application.injector.instanceOf[MessagesControllerComponents]
 
   implicit val materializer: Materializer = mock[Materializer]
   implicit val hc: HeaderCarrier = HeaderCarrier()
@@ -142,6 +137,59 @@ class FhddsApplicationControllerSpec extends PlaySpec with MockitoSugar with Sca
       contentAsJson(result) mustBe Json.toJson(
         SubmissionResponse(desSubmissionResponse.registrationNumberFHDDS, desSubmissionResponse.processingDate)
       )
+    }
+
+    "return the DES business error body for subscribe when submission fails" in {
+      val submissionRequest = SubmissionRequest(
+        emailAddress = "email@example.com",
+        submission = Json.obj("key" -> "value")
+      )
+      val request = FakeRequest(POST, routes.FhddsApplicationController.subscribe("safe123", None).url)
+        .withBody(submissionRequest)
+        .withHeaders(CONTENT_TYPE -> JSON)
+
+      val mockInternalId = "mockUserId"
+      val mockGroupId = "mockGroupId"
+      val mockRetrieval: Option[String] ~ Option[String] = new ~(Some(mockInternalId), Some(mockGroupId))
+
+      when(mockActions.userGroupAction).thenReturn(new UserGroupAction(mockAuthConnector, mcc))
+      when(
+        mockAuthConnector.authorise(
+          any(),
+          any[Retrieval[Option[String] ~ Option[String]]]()
+        )(using any[HeaderCarrier](), any())
+      ).thenReturn(Future.successful(mockRetrieval))
+
+      when(mockDesConnector.sendSubmission(any(), any())(any()))
+        .thenReturn(Future.failed(DesSubmissionException(403, "ACTIVE_SUBSCRIPTION", "already active")))
+
+      val result = controller.subscribe("safe123", None)(request)
+
+      status(result) mustBe FORBIDDEN
+      contentAsJson(result) mustBe Json.obj("code" -> "ACTIVE_SUBSCRIPTION", "reason" -> "already active")
+    }
+
+    "return the DES business error body for amend when submission fails" in {
+      val fhddsRegistrationNumber = "reg123"
+      val submissionRequest = SubmissionRequest(
+        emailAddress = "email@example.com",
+        submission = Json.obj("key" -> "value")
+      )
+      val request = FakeRequest(PUT, routes.FhddsApplicationController.amend(fhddsRegistrationNumber).url)
+        .withBody(submissionRequest)
+        .withHeaders(CONTENT_TYPE -> JSON)
+
+      when(mockActions.userAction).thenReturn(new UserAction(mockAuthConnector, cc))
+      when(mockAuthConnector.authorise(any(), any[Retrieval[Any]]())(using any(), any()))
+        .thenReturn(Future.failed(new NoActiveSession("No active session") {}))
+
+      when(mockDesConnector.sendAmendment(any(), any())(any()))
+        .thenReturn(Future.failed(DesSubmissionException(403, "ACTIVE_SUBSCRIPTION", "already active")))
+
+      val result = controller.amend(fhddsRegistrationNumber)(request)
+
+      status(result) mustBe FORBIDDEN
+      contentAsJson(result) mustBe Json.obj("code" -> "ACTIVE_SUBSCRIPTION", "reason" -> "already active")
     }
 
     "handle withdrawals in withdrawal" in {

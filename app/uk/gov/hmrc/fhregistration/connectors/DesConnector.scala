@@ -17,9 +17,9 @@
 package uk.gov.hmrc.fhregistration.connectors
 
 import com.google.inject.ImplementedBy
-import play.api.libs.json.JsValue
+import play.api.libs.json.{JsValue, Reads}
 import play.api.{Configuration, Environment, Logging}
-import uk.gov.hmrc.fhregistration.models.des.{DesDeregistrationResponse, DesSubmissionResponse, DesWithdrawalResponse, StatusResponse}
+import uk.gov.hmrc.fhregistration.models.des.{DesDeregistrationResponse, DesErrorResponse, DesSubmissionResponse, DesWithdrawalResponse, StatusResponse}
 import uk.gov.hmrc.http._
 import uk.gov.hmrc.http.HttpReads.Implicits.readRaw
 import uk.gov.hmrc.http.client.HttpClientV2
@@ -28,6 +28,9 @@ import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 import play.api.libs.ws.JsonBodyWritables.writeableOf_JsValue
+import scala.util.Try
+
+final case class DesSubmissionException(statusCode: Int, code: String, reason: String) extends RuntimeException(reason)
 
 @ImplementedBy(classOf[DefaultDesConnector])
 trait DesConnector extends HttpErrorFunctions {
@@ -87,6 +90,25 @@ class DefaultDesConnector @Inject() (
         response
     }
 
+  private def desErrorResponse(response: HttpResponse): DesErrorResponse =
+    Try(response.json.as[DesErrorResponse]).getOrElse(DesErrorResponse("UNKNOWN_DES_ERROR", response.body))
+
+  private[connectors] def customDesSubmissionRead[A: Reads](response: HttpResponse): A =
+    response.status match {
+      case status if is2xx(status) =>
+        response.json.as[A]
+      case 429 =>
+        logger.error("[RATE LIMITED] Received 429 from DES - converting to 503")
+        throw UpstreamErrorResponse("429 received from DES - converted to 503", 429, 503)
+      case status if is4xx(status) =>
+        val error = desErrorResponse(response)
+        logger.warn(s"Received error ${response.status} from DES with code ${error.code} and reason ${error.reason}")
+        throw DesSubmissionException(status, error.code, error.reason)
+      case status =>
+        logger.error(s"Received error $status from DES with message - ${response.body}")
+        throw UpstreamErrorResponse(s"$status received from DES", status, 502)
+    }
+
   def getStatus(fhddsRegistrationNumber: String)(hc: HeaderCarrier): Future[StatusResponse] = {
     implicit val headerCarrier: HeaderCarrier = headerCarrierBuilder(hc)
     val url = s"$desServiceStatusUri/fulfilment-diligence/subscription/$fhddsRegistrationNumber/status"
@@ -109,8 +131,7 @@ class DefaultDesConnector @Inject() (
       .setHeader(desEnvironmentHeader)
       .withBody[JsValue](submission)
       .execute[HttpResponse]
-      .map(customDESRead)
-      .map(_.json.as[DesSubmissionResponse])
+      .map(customDesSubmissionRead[DesSubmissionResponse])
   }
 
   def sendAmendment(fhddsRegistrationNumber: String, submission: JsValue)(
@@ -125,8 +146,7 @@ class DefaultDesConnector @Inject() (
       .setHeader(desEnvironmentHeader)
       .withBody[JsValue](submission)
       .execute[HttpResponse]
-      .map(customDESRead)
-      .map(_.json.as[DesSubmissionResponse])
+      .map(customDesSubmissionRead[DesSubmissionResponse])
   }
 
   def sendWithdrawal(fhddsRegistrationNumber: String, submission: JsValue)(
