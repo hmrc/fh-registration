@@ -169,11 +169,12 @@ class HipConnectorSpec extends AnyWordSpecLike with Matchers with OptionValues w
 
       val responseBody =
         """{
-          |  "error": {
-          |    "code": "400",
-          |    "message": "Invalid request",
-          |    "logID": "123456789"
-          |  }
+          |  "failures": [
+          |    {
+          |      "type": "bad request",
+          |      "reason": "fhdds number is invalid."
+          |    }
+          |  ]
           |}""".stripMargin
 
       val httpResponse = HttpResponse(400, responseBody)
@@ -404,6 +405,39 @@ class HipConnectorSpec extends AnyWordSpecLike with Matchers with OptionValues w
         "X-Receipt-Date",
         "X-Transmitting-System"
       )
+    }
+
+    "return BadRequest from HIP and log error" in {
+      val mockRequestBuilder = mock[RequestBuilder]
+
+      val responseBody =
+        """{
+          |  "failures": [
+          |    {
+          |      "type": "VALIDATION_ERROR",
+          |      "reason": "The business registration number is invalid."
+          |    }
+          |  ]
+          |}""".stripMargin
+
+      val httpResponse = HttpResponse(400, responseBody)
+
+      when(mockHttpClient.get(any())(using any())).thenReturn(mockRequestBuilder)
+      when(mockRequestBuilder.setHeader(any())).thenReturn(mockRequestBuilder)
+      when(mockRequestBuilder.execute[HttpResponse](using any(), any())).thenReturn(Future.successful(httpResponse))
+
+      val connector = new DefaultHipConnectorMock(mockHttpClient, configuration)
+
+      withCaptureOfLoggingFrom(connector.underlyingLogger) { logs =>
+        val result = connector.subscriptionDisplay(fhddsRegistrationNumber)(hc).futureValue
+
+        result.status shouldBe 400
+        result.body shouldBe responseBody
+        logs.map(_.getLevel) shouldBe List(Level.ERROR)
+        logs.map(_.getFormattedMessage) shouldBe List(
+          s"Received error 400 from HIP with message - $responseBody"
+        )
+      }
     }
 
   }
