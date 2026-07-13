@@ -21,11 +21,12 @@ import play.api.libs.json.{JsValue, Reads}
 import play.api.libs.ws.writeableOf_JsValue
 import play.api.{Configuration, Logging}
 import sttp.model.HeaderNames
-import uk.gov.hmrc.fhregistration.models.hip.{HipDeregistrationResponse, HipErrorResponse, HipSubmissionResponse, HipWithdrawalResponse}
+import uk.gov.hmrc.fhregistration.models.hip.{HipDeregistrationResponse, HipErrorResponse, HipSubmissionException, HipSubmissionResponse, HipWithdrawalResponse}
 import uk.gov.hmrc.http.HttpReads.Implicits.readRaw
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.{HeaderCarrier, HttpErrorFunctions, HttpResponse, StringContextOps, UpstreamErrorResponse}
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
+
 import java.nio.charset.StandardCharsets
 import java.time.Instant
 import java.time.format.DateTimeFormatter
@@ -35,7 +36,7 @@ import java.util.UUID.randomUUID
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Try
 
-final case class HipSubmissionException(statusCode: Int, code: String, reason: String) extends RuntimeException(reason)
+
 
 @ImplementedBy(classOf[DefaultHipConnector])
 trait HipConnector extends HttpErrorFunctions {
@@ -103,7 +104,7 @@ class DefaultHipConnector @Inject() (http: HttpClientV2, configuration: Configur
     s"$hipServiceBasePath/deregistration/$fhddsRegistrationNumber"
   }
 
-  private[connectors] def logIfError(response: HttpResponse): HttpResponse =
+  private[connectors] def logIfError(response: HttpResponse): HttpResponse = {
     response.status match {
       case 400 | 401 | 403 | 404 | 422 | 500 | 503 =>
         logger.error(s"Received error ${response.status} from HIP with message - ${response.body}")
@@ -111,6 +112,17 @@ class DefaultHipConnector @Inject() (http: HttpClientV2, configuration: Configur
       case _ =>
         response
     }
+  }
+
+    private[connectors] def logAndThrowExceptionIfError(response: HttpResponse): HttpResponse =
+      response.status match {
+        case 400 | 401 | 403 | 404 | 422 | 500 | 503 =>
+          logger.error(s"Received error ${response.status} from HIP with message - ${response.body}")
+          throw UpstreamErrorResponse(s"${response.status} received from HIP", response.status)
+        case _ =>
+          response
+      }
+
 
   private def hipErrorResponse(response: HttpResponse): HipErrorResponse =
     Try(response.json.as[HipErrorResponse]).getOrElse(HipErrorResponse("UNKNOWN_HIP_ERROR", response.body))
@@ -147,7 +159,7 @@ class DefaultHipConnector @Inject() (http: HttpClientV2, configuration: Configur
       .setHeader(("correlationid", correlationId) +: hipHeaders *)
       .withBody[JsValue](submission)
       .execute[HttpResponse]
-      .map(logIfError)
+      .map(logAndThrowExceptionIfError)
       .map(_.json.as[HipWithdrawalResponse])
   }
 

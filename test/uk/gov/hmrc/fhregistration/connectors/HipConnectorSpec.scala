@@ -30,7 +30,7 @@ import play.api.libs.json.{JsValue, Json}
 import sttp.model.HeaderNames
 import uk.gov.hmrc.fhregistration.util.LogCapturing
 import uk.gov.hmrc.http.client.{HttpClientV2, RequestBuilder}
-import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
+import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, UpstreamErrorResponse}
 
 import java.text.SimpleDateFormat
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -407,35 +407,36 @@ class HipConnectorSpec extends AnyWordSpecLike with Matchers with OptionValues w
       )
     }
 
-    "return BadRequest from HIP and log error" in {
+    "return UnAuthorized from HIP and log error" in {
       val mockRequestBuilder = mock[RequestBuilder]
+      val payload = """{
+                      |  "withdrawalDate": "2015-08-23",
+                      |  "withdrawalReason": "Other",
+                      |  "withdrawalReasonOther": "Other Reason"
+                      |}""".stripMargin
 
-      val responseBody =
-        """{
-          |  "failures": [
-          |    {
-          |      "type": "VALIDATION_ERROR",
-          |      "reason": "The business registration number is invalid."
-          |    }
-          |  ]
-          |}""".stripMargin
+      val responseBody = ""
 
-      val httpResponse = HttpResponse(400, responseBody)
 
-      when(mockHttpClient.get(any())(using any())).thenReturn(mockRequestBuilder)
+      val httpResponse = HttpResponse(401, responseBody)
+
+      when(mockHttpClient.put(any())(using any())).thenReturn(mockRequestBuilder)
       when(mockRequestBuilder.setHeader(any())).thenReturn(mockRequestBuilder)
+      when(mockRequestBuilder.withBody[JsValue](any())(using any(), any(), any())).thenReturn(mockRequestBuilder)
       when(mockRequestBuilder.execute[HttpResponse](using any(), any())).thenReturn(Future.successful(httpResponse))
-
       val connector = new DefaultHipConnectorMock(mockHttpClient, configuration)
 
       withCaptureOfLoggingFrom(connector.underlyingLogger) { logs =>
-        val result = connector.subscriptionDisplay(fhddsRegistrationNumber)(hc).futureValue
+        val result = connector.subscriptionWithdrawal(fhddsRegistrationNumber, Json.parse(payload))(hc)
 
-        result.status shouldBe 400
-        result.body shouldBe responseBody
-        logs.map(_.getLevel) shouldBe List(Level.ERROR)
+        val exception = result.failed.futureValue
+        exception shouldBe a[UpstreamErrorResponse]
+        exception.asInstanceOf[UpstreamErrorResponse].statusCode shouldBe 401
+
+        logs.map(_.getLevel) shouldBe List(Level.INFO, Level.ERROR)
         logs.map(_.getFormattedMessage) shouldBe List(
-          s"Received error 400 from HIP with message - $responseBody"
+          s"Sending fhdds withdrawal data to HIP for regNumber $fhddsRegistrationNumber",
+          s"Received error 401 from HIP with message - $responseBody"
         )
       }
     }
