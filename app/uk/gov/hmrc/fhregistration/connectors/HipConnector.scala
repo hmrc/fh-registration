@@ -21,12 +21,11 @@ import play.api.libs.json.{JsValue, Reads}
 import play.api.libs.ws.writeableOf_JsValue
 import play.api.{Configuration, Logging}
 import sttp.model.HeaderNames
-import uk.gov.hmrc.fhregistration.models.hip.{HipDeregistrationResponse, HipErrorResponse, HipSubmissionException, HipSubmissionResponse, HipWithdrawalResponse}
+import uk.gov.hmrc.fhregistration.models.hip.{HipDeregistrationResponse, HipErrorResponse, HipSubmissionException, HipSubmissionResponse, HipWithdrawalResponse, SubscriptionStatusResponse}
 import uk.gov.hmrc.http.HttpReads.Implicits.readRaw
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.{HeaderCarrier, HttpErrorFunctions, HttpResponse, StringContextOps, UpstreamErrorResponse}
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
-
 import java.nio.charset.StandardCharsets
 import java.time.Instant
 import java.time.format.DateTimeFormatter
@@ -36,10 +35,11 @@ import java.util.UUID.randomUUID
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Try
 
-
-
 @ImplementedBy(classOf[DefaultHipConnector])
 trait HipConnector extends HttpErrorFunctions {
+
+  def getStatus(fhddsRegistrationNumber: String)(hc: HeaderCarrier): Future[SubscriptionStatusResponse]
+
   def subscriptionDisplay(fhddsRegistrationNumber: String)(hc: HeaderCarrier): Future[HttpResponse]
 
   def subscriptionWithdrawal(fhddsRegistrationNumber: String, submission: JsValue)(
@@ -54,8 +54,6 @@ trait HipConnector extends HttpErrorFunctions {
     hc: HeaderCarrier
   ): Future[HipDeregistrationResponse]
 
-
-
 }
 
 class DefaultHipConnector @Inject() (http: HttpClientV2, configuration: Configuration)(implicit
@@ -63,7 +61,7 @@ class DefaultHipConnector @Inject() (http: HttpClientV2, configuration: Configur
 ) extends ServicesConfig(configuration) with HipConnector with Logging {
 
   private val hipServer = baseUrl("hip")
-  private[connectors] val hipServiceBasePath = s"$hipServer/etmp/RESTAdapter/fulfilment-diligence/subscription"
+  private[connectors] val hipServiceBasePath = s"$hipServer/etmp/RESTAdapter"
 
   private def headerCarrierBuilder(hc: HeaderCarrier) = hc.copy(authorization = None)
 
@@ -90,21 +88,21 @@ class DefaultHipConnector @Inject() (http: HttpClientV2, configuration: Configur
     randomUUID.toString
 
   def subscriptionDisplayUrl(fhddsRegistrationNumber: String) =
-    s"$hipServiceBasePath/$fhddsRegistrationNumber"
+    s"$hipServiceBasePath/fulfilment-diligence/subscription/$fhddsRegistrationNumber"
 
-  def subscriptionWithdrawalUrl(fhddsRegistrationNumber: String) = {
-    s"$hipServiceBasePath/withdrawal/$fhddsRegistrationNumber"
-  }
+  def subscriptionWithdrawalUrl(fhddsRegistrationNumber: String) =
+    s"$hipServiceBasePath/fulfilment-diligence/subscription/withdrawal/$fhddsRegistrationNumber"
 
-  def createOrUpdateFhddsUrl(id:String, idType: String) = {
-    s"$hipServiceBasePath/id/$id/id-type/$idType"
-  }
+  def createOrUpdateFhddsUrl(id: String, idType: String) =
+    s"$hipServiceBasePath/fulfilment-diligence/subscription/id/$id/id-type/$idType"
 
-  def subscriptionDeregistrationUrl(fhddsRegistrationNumber: String) = {
-    s"$hipServiceBasePath/deregistration/$fhddsRegistrationNumber"
-  }
+  def subscriptionDeregistrationUrl(fhddsRegistrationNumber: String) =
+    s"$hipServiceBasePath/fulfilment-diligence/subscription/deregistration/$fhddsRegistrationNumber"
 
-  private[connectors] def logIfError(response: HttpResponse): HttpResponse = {
+  def getStatusUrl(fhddsRegistrationNumber: String, idType: String, regime: String) =
+    s"$hipServiceBasePath/subscription-status?idNumber=$fhddsRegistrationNumber&idType=$idType&regime=$regime"
+
+  private[connectors] def logIfError(response: HttpResponse): HttpResponse =
     response.status match {
       case 400 | 401 | 403 | 404 | 422 | 500 | 503 =>
         logger.error(s"Received error ${response.status} from HIP with message - ${response.body}")
@@ -112,17 +110,15 @@ class DefaultHipConnector @Inject() (http: HttpClientV2, configuration: Configur
       case _ =>
         response
     }
-  }
 
-    private[connectors] def logAndThrowExceptionIfError(response: HttpResponse): HttpResponse =
-      response.status match {
-        case 400 | 401 | 403 | 404 | 422 | 500 | 503 =>
-          logger.error(s"Received error ${response.status} from HIP with message - ${response.body}")
-          throw UpstreamErrorResponse(s"${response.status} received from HIP", response.status)
-        case _ =>
-          response
-      }
-
+  private[connectors] def logAndThrowExceptionIfError(response: HttpResponse): HttpResponse =
+    response.status match {
+      case 400 | 401 | 403 | 404 | 422 | 500 | 503 =>
+        logger.error(s"Received error ${response.status} from HIP with message - ${response.body}")
+        throw UpstreamErrorResponse(s"${response.status} received from HIP", response.status)
+      case _ =>
+        response
+    }
 
   private def hipErrorResponse(response: HttpResponse): HipErrorResponse =
     Try(response.json.as[HipErrorResponse]).getOrElse(HipErrorResponse("UNKNOWN_HIP_ERROR", response.body))
@@ -170,7 +166,7 @@ class DefaultHipConnector @Inject() (http: HttpClientV2, configuration: Configur
     implicit val headerCarrier: HeaderCarrier = headerCarrierBuilder(hc)
     val idType = "fhdds"
     http
-      .post(url"${createOrUpdateFhddsUrl(id,idType)}")
+      .post(url"${createOrUpdateFhddsUrl(id, idType)}")
       .setHeader(("correlationid", correlationId) +: hipHeaders *)
       .withBody[JsValue](submission)
       .execute[HttpResponse]
@@ -189,5 +185,17 @@ class DefaultHipConnector @Inject() (http: HttpClientV2, configuration: Configur
       .execute[HttpResponse]
       .map(logIfError)
       .map(_.json.as[HipDeregistrationResponse])
+  }
+
+  override def getStatus(fhddsRegistrationNumber: String)(hc: HeaderCarrier): Future[SubscriptionStatusResponse] = {
+    implicit val headerCarrier: HeaderCarrier = headerCarrierBuilder(hc)
+    val idType = "fhddsRegistrationNumber"
+    val regime = "FHDDS"
+    http
+      .get(url"${getStatusUrl(fhddsRegistrationNumber, idType, regime)}")
+      .setHeader(("correlationid", correlationId) +: hipHeaders *)
+      .execute[HttpResponse]
+      .map(logAndThrowExceptionIfError)
+      .map(_.json.as[SubscriptionStatusResponse])
   }
 }

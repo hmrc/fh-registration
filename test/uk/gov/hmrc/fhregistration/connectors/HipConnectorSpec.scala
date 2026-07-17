@@ -18,7 +18,7 @@ package uk.gov.hmrc.fhregistration.connectors
 
 import ch.qos.logback.classic.{Level, Logger as LogbackLogger}
 import org.mockito.ArgumentCaptor
-import org.mockito.ArgumentMatchers.{any, contains}
+import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.{verify, when}
 import org.scalatest.OptionValues
 import org.scalatest.concurrent.ScalaFutures.convertScalaFuture
@@ -28,10 +28,10 @@ import org.scalatestplus.mockito.MockitoSugar
 import play.api.Configuration
 import play.api.libs.json.{JsValue, Json}
 import sttp.model.HeaderNames
+import uk.gov.hmrc.fhregistration.models.hip.{HipStatus, SubscriptionStatusResponse}
 import uk.gov.hmrc.fhregistration.util.LogCapturing
 import uk.gov.hmrc.http.client.{HttpClientV2, RequestBuilder}
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, UpstreamErrorResponse}
-
 import java.text.SimpleDateFormat
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -65,7 +65,7 @@ class HipConnectorSpec extends AnyWordSpecLike with Matchers with OptionValues w
     val hipConnectorMock = new DefaultHipConnectorMock(mock[HttpClientV2], configuration)
 
     "have correct server address and base path" in {
-      hipConnectorMock.hipServiceBasePath shouldBe "http://localhost:1120/etmp/RESTAdapter/fulfilment-diligence/subscription"
+      hipConnectorMock.hipServiceBasePath shouldBe "http://localhost:1120/etmp/RESTAdapter"
     }
 
   }
@@ -100,12 +100,303 @@ class HipConnectorSpec extends AnyWordSpecLike with Matchers with OptionValues w
 
   }
 
+  "getStatus" should {
+    "return SubscriptionStatusResponse" in {
+      val responseBody = """{
+                       |  "success": {
+                       |    "subscriptionStatus": "Successful",
+                       |    "idType": "EORI",
+                       |    "idValue": "GB123456789000"
+                       |  }
+                       |}""".stripMargin
+      val httpResponse = HttpResponse(200, responseBody)
+      val mockRequestBuilder = mock[RequestBuilder]
+      when(mockHttpClient.get(any())(using any())).thenReturn(mockRequestBuilder)
+      when(mockRequestBuilder.setHeader(any())).thenReturn(mockRequestBuilder)
+      when(mockRequestBuilder.execute[HttpResponse](using any(), any())).thenReturn(Future.successful(httpResponse))
+
+      val connector = new DefaultHipConnectorMock(mockHttpClient, configuration)
+      val result = connector.getStatus(fhddsRegistrationNumber)(hc).futureValue
+
+      result shouldBe SubscriptionStatusResponse(
+        HipStatus.Successful,
+        Some("EORI"),
+        Some("GB123456789000")
+      )
+    }
+
+    "throw exception for 400 from HIP and log" in {
+      val responseBody = """{
+                           |  "origin": "HIP",
+                           |  "response": [
+                           |    {
+                           |      "type": "Type of Failure",
+                           |      "reason": "Reason for Failure"
+                           |    }
+                           |  ]
+                           |}
+                           |""".stripMargin
+      val httpResponse = HttpResponse(400, responseBody)
+      val mockRequestBuilder = mock[RequestBuilder]
+      when(mockHttpClient.get(any())(using any())).thenReturn(mockRequestBuilder)
+      when(mockRequestBuilder.setHeader(any())).thenReturn(mockRequestBuilder)
+      when(mockRequestBuilder.execute[HttpResponse](using any(), any())).thenReturn(Future.successful(httpResponse))
+
+      val connector = new DefaultHipConnectorMock(mockHttpClient, configuration)
+
+      withCaptureOfLoggingFrom(connector.underlyingLogger) { logs =>
+        val result = connector.getStatus(fhddsRegistrationNumber)(hc)
+
+        val exception = result.failed.futureValue
+        exception shouldBe a[UpstreamErrorResponse]
+        exception.asInstanceOf[UpstreamErrorResponse].statusCode shouldBe 400
+
+        logs.map(_.getLevel) shouldBe List(Level.ERROR)
+        logs.map(_.getFormattedMessage) shouldBe List(
+          s"Received error 400 from HIP with message - $responseBody"
+        )
+      }
+    }
+
+    "throw exception for 400 from HOD and log" in {
+      val responseBody =
+        """{
+          |  "origin": "HoD",
+          |  "response": {
+          |    "error": {
+          |      "code": "400",
+          |      "message": "string",
+          |      "logID": "D82EBAB67AC6D7565C0682CA91BDC577"
+          |    }
+          |  }
+          |}
+          |""".stripMargin
+      val httpResponse = HttpResponse(400, responseBody)
+      val mockRequestBuilder = mock[RequestBuilder]
+      when(mockHttpClient.get(any())(using any())).thenReturn(mockRequestBuilder)
+      when(mockRequestBuilder.setHeader(any())).thenReturn(mockRequestBuilder)
+      when(mockRequestBuilder.execute[HttpResponse](using any(), any())).thenReturn(Future.successful(httpResponse))
+
+      val connector = new DefaultHipConnectorMock(mockHttpClient, configuration)
+
+      withCaptureOfLoggingFrom(connector.underlyingLogger) { logs =>
+        val result = connector.getStatus(fhddsRegistrationNumber)(hc)
+
+        val exception = result.failed.futureValue
+        exception shouldBe a[UpstreamErrorResponse]
+        exception.asInstanceOf[UpstreamErrorResponse].statusCode shouldBe 400
+
+        logs.map(_.getLevel) shouldBe List(Level.ERROR)
+        logs.map(_.getFormattedMessage) shouldBe List(
+          s"Received error 400 from HIP with message - $responseBody"
+        )
+      }
+    }
+
+    "throw exception for 422 and log" in {
+      val responseBody = """{
+                           |  "errors": {
+                           |    "processingDate": "2026-03-09T12:34:46Z",
+                           |    "code": "003",
+                           |    "text": "Mandatory Parameter Invalid"
+                           |  }
+                           |}""".stripMargin
+      val httpResponse = HttpResponse(422, responseBody)
+      val mockRequestBuilder = mock[RequestBuilder]
+      when(mockHttpClient.get(any())(using any())).thenReturn(mockRequestBuilder)
+      when(mockRequestBuilder.setHeader(any())).thenReturn(mockRequestBuilder)
+      when(mockRequestBuilder.execute[HttpResponse](using any(), any())).thenReturn(Future.successful(httpResponse))
+
+      val connector = new DefaultHipConnectorMock(mockHttpClient, configuration)
+      withCaptureOfLoggingFrom(connector.underlyingLogger) { logs =>
+        val result = connector.getStatus(fhddsRegistrationNumber)(hc)
+
+        val exception = result.failed.futureValue
+        exception shouldBe a[UpstreamErrorResponse]
+        exception.asInstanceOf[UpstreamErrorResponse].statusCode shouldBe 422
+
+        logs.map(_.getLevel) shouldBe List(Level.ERROR)
+        logs.map(_.getFormattedMessage) shouldBe List(
+          s"Received error 422 from HIP with message - $responseBody"
+        )
+      }
+    }
+
+    "throw exception for Unauthorized and log" in {
+      val mockRequestBuilder = mock[RequestBuilder]
+
+      val responseBody = "".stripMargin
+      val httpResponse = HttpResponse(401, responseBody)
+
+      when(mockHttpClient.get(any())(using any())).thenReturn(mockRequestBuilder)
+      when(mockRequestBuilder.setHeader(any())).thenReturn(mockRequestBuilder)
+      when(mockRequestBuilder.execute[HttpResponse](using any(), any())).thenReturn(Future.successful(httpResponse))
+
+      val connector = new DefaultHipConnectorMock(mockHttpClient, configuration)
+      withCaptureOfLoggingFrom(connector.underlyingLogger) { logs =>
+        val result = connector.getStatus(fhddsRegistrationNumber)(hc)
+
+        val exception = result.failed.futureValue
+        exception shouldBe a[UpstreamErrorResponse]
+        exception.asInstanceOf[UpstreamErrorResponse].statusCode shouldBe 401
+
+        logs.map(_.getLevel) shouldBe List(Level.ERROR)
+        logs.map(_.getFormattedMessage) shouldBe List(
+          s"Received error 401 from HIP with message - $responseBody"
+        )
+      }
+    }
+
+    "throw exception for 500 Internal Server Error and log" in {
+      val responseBody = """{
+                           |  "origin": "HoD",
+                           |  "response": {
+                           |    "error": {
+                           |      "code": "500",
+                           |      "message": "string",
+                           |      "logID": "D82EBAB67AC6D7565C0682CA91BDC577"
+                           |    }
+                           |  }
+                           |}""".stripMargin
+      val httpResponse = HttpResponse(500, responseBody)
+      val mockRequestBuilder = mock[RequestBuilder]
+
+      when(mockHttpClient.get(any())(using any())).thenReturn(mockRequestBuilder)
+      when(mockRequestBuilder.setHeader(any())).thenReturn(mockRequestBuilder)
+      when(mockRequestBuilder.execute[HttpResponse](using any(), any())).thenReturn(Future.successful(httpResponse))
+
+      val connector = new DefaultHipConnectorMock(mockHttpClient, configuration)
+
+      withCaptureOfLoggingFrom(connector.underlyingLogger) { logs =>
+        val result = connector.getStatus(fhddsRegistrationNumber)(hc)
+
+        val exception = result.failed.futureValue
+        exception shouldBe a[UpstreamErrorResponse]
+        exception.asInstanceOf[UpstreamErrorResponse].statusCode shouldBe 500
+
+        logs.map(_.getLevel) shouldBe List(Level.ERROR)
+        logs.map(_.getFormattedMessage) shouldBe List(
+          s"Received error 500 from HIP with message - $responseBody"
+        )
+      }
+    }
+
+    "throw exception for 503 Internal Server Error and log" in {
+      val responseBody =
+        """{
+          |  "origin": "HIP",
+          |  "response": {
+          |    "failures": [
+          |      {
+          |        "type": "string",
+          |        "reason": "string"
+          |      }
+          |    ]
+          |  }
+          |}""".stripMargin
+      val httpResponse = HttpResponse(503, responseBody)
+      val mockRequestBuilder = mock[RequestBuilder]
+
+      when(mockHttpClient.get(any())(using any())).thenReturn(mockRequestBuilder)
+      when(mockRequestBuilder.setHeader(any())).thenReturn(mockRequestBuilder)
+      when(mockRequestBuilder.execute[HttpResponse](using any(), any())).thenReturn(Future.successful(httpResponse))
+
+      val connector = new DefaultHipConnectorMock(mockHttpClient, configuration)
+
+      withCaptureOfLoggingFrom(connector.underlyingLogger) { logs =>
+        val result = connector.getStatus(fhddsRegistrationNumber)(hc)
+
+        val exception = result.failed.futureValue
+        exception shouldBe a[UpstreamErrorResponse]
+        exception.asInstanceOf[UpstreamErrorResponse].statusCode shouldBe 503
+
+        logs.map(_.getLevel) shouldBe List(Level.ERROR)
+        logs.map(_.getFormattedMessage) shouldBe List(
+          s"Received error 503 from HIP with message - $responseBody"
+        )
+      }
+    }
+
+    "throw exception for Forbidden and log" in {
+      val responseBody = ""
+      val httpResponse = HttpResponse(403, responseBody)
+      val mockRequestBuilder = mock[RequestBuilder]
+
+      when(mockHttpClient.get(any())(using any())).thenReturn(mockRequestBuilder)
+      when(mockRequestBuilder.setHeader(any())).thenReturn(mockRequestBuilder)
+      when(mockRequestBuilder.execute[HttpResponse](using any(), any())).thenReturn(Future.successful(httpResponse))
+
+      val connector = new DefaultHipConnectorMock(mockHttpClient, configuration)
+
+      withCaptureOfLoggingFrom(connector.underlyingLogger) { logs =>
+        val result = connector.getStatus(fhddsRegistrationNumber)(hc)
+
+        val exception = result.failed.futureValue
+        exception shouldBe a[UpstreamErrorResponse]
+        exception.asInstanceOf[UpstreamErrorResponse].statusCode shouldBe 403
+
+        logs.map(_.getLevel) shouldBe List(Level.ERROR)
+        logs.map(_.getFormattedMessage) shouldBe List(
+          s"Received error 403 from HIP with message - $responseBody"
+        )
+      }
+    }
+
+    "throw exception for NotFound and log" in {
+      val responseBody = ""
+      val httpResponse = HttpResponse(404, responseBody)
+      val mockRequestBuilder = mock[RequestBuilder]
+
+      when(mockHttpClient.get(any())(using any())).thenReturn(mockRequestBuilder)
+      when(mockRequestBuilder.setHeader(any())).thenReturn(mockRequestBuilder)
+      when(mockRequestBuilder.execute[HttpResponse](using any(), any())).thenReturn(Future.successful(httpResponse))
+
+      val connector = new DefaultHipConnectorMock(mockHttpClient, configuration)
+
+      withCaptureOfLoggingFrom(connector.underlyingLogger) { logs =>
+        val result = connector.getStatus(fhddsRegistrationNumber)(hc)
+
+        val exception = result.failed.futureValue
+        exception shouldBe a[UpstreamErrorResponse]
+        exception.asInstanceOf[UpstreamErrorResponse].statusCode shouldBe 404
+
+        logs.map(_.getLevel) shouldBe List(Level.ERROR)
+        logs.map(_.getFormattedMessage) shouldBe List(
+          s"Received error 404 from HIP with message - $responseBody"
+        )
+      }
+    }
+
+    "return SubscriptionStatusResponse when idType and idValue are absent" in {
+      val responseBody = """{
+                       |  "success": {
+                       |    "subscriptionStatus": "Successful"
+                       |  }
+                       |}""".stripMargin
+      val httpResponse = HttpResponse(200, responseBody)
+      val mockRequestBuilder = mock[RequestBuilder]
+      when(mockHttpClient.get(any())(using any())).thenReturn(mockRequestBuilder)
+      when(mockRequestBuilder.setHeader(any())).thenReturn(mockRequestBuilder)
+      when(mockRequestBuilder.execute[HttpResponse](using any(), any())).thenReturn(Future.successful(httpResponse))
+
+      val connector = new DefaultHipConnectorMock(mockHttpClient, configuration)
+      val result = connector.getStatus(fhddsRegistrationNumber)(hc).futureValue
+
+      result shouldBe SubscriptionStatusResponse(
+        HipStatus.Successful,
+        None,
+        None
+      )
+    }
+  }
+
+
   "subscriptionDisplay" should {
 
-    "return the HIP response" in {
+    "return the HIP response and send correct headers" in {
+      val responseBody = Source.fromResource("json/valid/subscription/fhdds-display-response.json").mkString
+      val httpResponse = HttpResponse(200, responseBody)
       val mockRequestBuilder = mock[RequestBuilder]
-      val jsonBody = Source.fromResource("json/valid/subscription/fhdds-display-response.json").mkString
-      val httpResponse = HttpResponse(200, jsonBody)
 
       when(mockHttpClient.get(any())(using any())).thenReturn(mockRequestBuilder)
       when(mockRequestBuilder.setHeader(any())).thenReturn(mockRequestBuilder)
@@ -115,7 +406,7 @@ class HipConnectorSpec extends AnyWordSpecLike with Matchers with OptionValues w
       val result = connector.subscriptionDisplay(fhddsRegistrationNumber)(hc).futureValue
 
       result.status shouldBe 200
-      result.body shouldBe jsonBody
+      result.body shouldBe responseBody
 
       val headersCaptor: ArgumentCaptor[Seq[(String, String)]] =
         ArgumentCaptor.forClass(classOf[Seq[(String, String)]])
@@ -131,8 +422,6 @@ class HipConnectorSpec extends AnyWordSpecLike with Matchers with OptionValues w
     }
 
     "return BadRequest from HOD(SystemError) and log error" in {
-      val mockRequestBuilder = mock[RequestBuilder]
-
       val responseBody = """{
                            |  "origin": "HoD",
                            |  "response": {
@@ -145,7 +434,7 @@ class HipConnectorSpec extends AnyWordSpecLike with Matchers with OptionValues w
                            |}""".stripMargin
 
       val httpResponse = HttpResponse(400, responseBody)
-
+      val mockRequestBuilder = mock[RequestBuilder]
       when(mockHttpClient.get(any())(using any())).thenReturn(mockRequestBuilder)
       when(mockRequestBuilder.setHeader(any())).thenReturn(mockRequestBuilder)
       when(mockRequestBuilder.execute[HttpResponse](using any(), any())).thenReturn(Future.successful(httpResponse))
@@ -165,8 +454,6 @@ class HipConnectorSpec extends AnyWordSpecLike with Matchers with OptionValues w
     }
 
     "return BadRequest from HIP and log error" in {
-      val mockRequestBuilder = mock[RequestBuilder]
-
       val responseBody =
         """{
           |  "failures": [
@@ -178,7 +465,7 @@ class HipConnectorSpec extends AnyWordSpecLike with Matchers with OptionValues w
           |}""".stripMargin
 
       val httpResponse = HttpResponse(400, responseBody)
-
+      val mockRequestBuilder = mock[RequestBuilder]
       when(mockHttpClient.get(any())(using any())).thenReturn(mockRequestBuilder)
       when(mockRequestBuilder.setHeader(any())).thenReturn(mockRequestBuilder)
       when(mockRequestBuilder.execute[HttpResponse](using any(), any())).thenReturn(Future.successful(httpResponse))
@@ -198,11 +485,9 @@ class HipConnectorSpec extends AnyWordSpecLike with Matchers with OptionValues w
     }
 
     "return Unauthorized and log accordingly" in {
-      val mockRequestBuilder = mock[RequestBuilder]
-
       val responseBody = ""
-
       val httpResponse = HttpResponse(401, responseBody)
+      val mockRequestBuilder = mock[RequestBuilder]
 
       when(mockHttpClient.get(any())(using any())).thenReturn(mockRequestBuilder)
       when(mockRequestBuilder.setHeader(any())).thenReturn(mockRequestBuilder)
@@ -223,12 +508,9 @@ class HipConnectorSpec extends AnyWordSpecLike with Matchers with OptionValues w
     }
 
     "return Forbidden and log accordingly" in {
-      val mockRequestBuilder = mock[RequestBuilder]
-
       val responseBody = ""
-
       val httpResponse = HttpResponse(403, responseBody)
-
+      val mockRequestBuilder = mock[RequestBuilder]
       when(mockHttpClient.get(any())(using any())).thenReturn(mockRequestBuilder)
       when(mockRequestBuilder.setHeader(any())).thenReturn(mockRequestBuilder)
       when(mockRequestBuilder.execute[HttpResponse](using any(), any())).thenReturn(Future.successful(httpResponse))
@@ -248,11 +530,9 @@ class HipConnectorSpec extends AnyWordSpecLike with Matchers with OptionValues w
     }
 
     "return NotFound and log accordingly" in {
-      val mockRequestBuilder = mock[RequestBuilder]
-
       val responseBody = ""
-
       val httpResponse = HttpResponse(404, responseBody)
+      val mockRequestBuilder = mock[RequestBuilder]
 
       when(mockHttpClient.get(any())(using any())).thenReturn(mockRequestBuilder)
       when(mockRequestBuilder.setHeader(any())).thenReturn(mockRequestBuilder)
@@ -273,9 +553,9 @@ class HipConnectorSpec extends AnyWordSpecLike with Matchers with OptionValues w
     }
 
     "return 422 and log accordingly" in {
-      val mockRequestBuilder = mock[RequestBuilder]
       val responseBody = """[{"code":"002", "text":"ID not found"}]"""
       val httpResponse = HttpResponse(422, responseBody)
+      val mockRequestBuilder = mock[RequestBuilder]
 
       when(mockHttpClient.get(any())(using any())).thenReturn(mockRequestBuilder)
       when(mockRequestBuilder.setHeader(any())).thenReturn(mockRequestBuilder)
@@ -296,8 +576,6 @@ class HipConnectorSpec extends AnyWordSpecLike with Matchers with OptionValues w
     }
 
     "return 500 from HIP and log error" in {
-      val mockRequestBuilder = mock[RequestBuilder]
-
       val responseBody =
         """{
           |  "error": {
@@ -306,8 +584,9 @@ class HipConnectorSpec extends AnyWordSpecLike with Matchers with OptionValues w
           |    "logID": "123456789"
           |  }
           |}""".stripMargin
-
       val httpResponse = HttpResponse(500, responseBody)
+
+      val mockRequestBuilder = mock[RequestBuilder]
 
       when(mockHttpClient.get(any())(using any())).thenReturn(mockRequestBuilder)
       when(mockRequestBuilder.setHeader(any())).thenReturn(mockRequestBuilder)
@@ -328,8 +607,6 @@ class HipConnectorSpec extends AnyWordSpecLike with Matchers with OptionValues w
     }
 
     "return 503 from HIP and log error" in {
-      val mockRequestBuilder = mock[RequestBuilder]
-
       val responseBody =
         """{
           |  "origin": "HIP",
@@ -344,6 +621,7 @@ class HipConnectorSpec extends AnyWordSpecLike with Matchers with OptionValues w
           |}""".stripMargin
 
       val httpResponse = HttpResponse(503, responseBody)
+      val mockRequestBuilder = mock[RequestBuilder]
 
       when(mockHttpClient.get(any())(using any())).thenReturn(mockRequestBuilder)
       when(mockRequestBuilder.setHeader(any())).thenReturn(mockRequestBuilder)
@@ -408,16 +686,13 @@ class HipConnectorSpec extends AnyWordSpecLike with Matchers with OptionValues w
     }
 
     "return UnAuthorized from HIP and log error" in {
-      val mockRequestBuilder = mock[RequestBuilder]
       val payload = """{
                       |  "withdrawalDate": "2015-08-23",
                       |  "withdrawalReason": "Other",
                       |  "withdrawalReasonOther": "Other Reason"
                       |}""".stripMargin
-
       val responseBody = ""
-
-
+      val mockRequestBuilder = mock[RequestBuilder]
       val httpResponse = HttpResponse(401, responseBody)
 
       when(mockHttpClient.put(any())(using any())).thenReturn(mockRequestBuilder)
@@ -510,7 +785,7 @@ class HipConnectorSpec extends AnyWordSpecLike with Matchers with OptionValues w
 
   "subscriptionDeregistration" should{
 
-    "return the HIP response" in {
+    "return the HIP response and pass correct headers" in {
       val mockRequestBuilder = mock[RequestBuilder]
       val payload =
         """{
