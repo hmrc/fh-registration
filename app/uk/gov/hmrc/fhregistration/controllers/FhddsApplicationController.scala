@@ -21,7 +21,7 @@ import play.api.Logging
 import play.api.libs.json.Json
 import play.api.mvc.{ControllerComponents, Request, Result}
 import uk.gov.hmrc.fhregistration.actions.Actions
-import uk.gov.hmrc.fhregistration.connectors.{DesConnector, DesSubmissionException, EmailConnector, TaxEnrolmentConnector}
+import uk.gov.hmrc.fhregistration.connectors.*
 import uk.gov.hmrc.fhregistration.models.TaxEnrolmentsCallback
 import uk.gov.hmrc.fhregistration.models.des.DesStatus
 import uk.gov.hmrc.fhregistration.models.des.DesStatus.DesStatus
@@ -40,7 +40,7 @@ import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success}
 
 class FhddsApplicationController @Inject() (
-  val desConnector: DesConnector,
+  val routingConnector: RoutingConnector,
   val taxEnrolmentConnector: TaxEnrolmentConnector,
   val emailConnector: EmailConnector,
   val submissionTrackingService: SubmissionTrackingService,
@@ -67,7 +67,7 @@ class FhddsApplicationController @Inject() (
     userGroupAction.async(parse.json[SubmissionRequest]) { implicit r =>
       val request = r.body
       (for {
-        desResponse <- desConnector.sendSubmission(safeId, request.submission)(hc)
+        desResponse <- routingConnector.sendSubmission(safeId, request.submission)(using hc)
         response = SubmissionResponse(desResponse.registrationNumberFHDDS, desResponse.processingDate)
       } yield {
         logger.info(s"Received registration number ${desResponse.registrationNumberFHDDS} for safeId $safeId")
@@ -106,7 +106,7 @@ class FhddsApplicationController @Inject() (
   def amend(fhddsRegistrationNumber: String) = Action.async(parse.json[SubmissionRequest]) { implicit r =>
     val request = r.body
     (for {
-      desResponse <- desConnector.sendAmendment(fhddsRegistrationNumber, request.submission)(hc)
+      desResponse <- routingConnector.sendAmendment(fhddsRegistrationNumber, request.submission)(using hc)
       response = SubmissionResponse(desResponse.registrationNumberFHDDS, desResponse.processingDate)
     } yield {
       val event = auditService.buildSubmissionAmendAuditEvent(request, response.registrationNumber)
@@ -120,7 +120,7 @@ class FhddsApplicationController @Inject() (
   def withdrawal(fhddsRegistrationNumber: String) = userGroupAction.async(parse.json[WithdrawalRequest]) { implicit r =>
     val request = r.body
     for {
-      desResponse <- desConnector.sendWithdrawal(fhddsRegistrationNumber, request.withdrawal)(hc)
+      desResponse <- routingConnector.sendWithdrawal(fhddsRegistrationNumber, request.withdrawal)(using hc)
       processingDate = desResponse.processingDate
     } yield {
       val event = auditService.buildSubmissionWithdrawalAuditEvent(request, fhddsRegistrationNumber)
@@ -139,7 +139,7 @@ class FhddsApplicationController @Inject() (
     implicit r =>
       val request = r.body
       for {
-        desResponse <- desConnector.sendDeregistration(fhddsRegistrationNumber, request.deregistration)(hc)
+        desResponse <- routingConnector.sendDeregistration(fhddsRegistrationNumber, request.deregistration)(using hc)
         processingDate = desResponse.processingDate
       } yield {
         val event = auditService.buildSubmissionDeregisterAuditEvent(request, fhddsRegistrationNumber)
@@ -202,6 +202,9 @@ class FhddsApplicationController @Inject() (
     case DesSubmissionException(statusCode, code, reason) =>
       logger.warn(s"DES submission failed with status $statusCode and code $code: $reason")
       Status(statusCode)(Json.obj("code" -> code, "reason" -> reason))
+    case HipSubmissionException(statusCode, code, reason) =>
+      logger.warn(s"HIP submission failed with status $statusCode and code $code: $reason")
+      Status(statusCode)(Json.obj("code" -> code, "reason" -> reason))
   }
 
   def subscriptionCallback(formBundleId: String) = Action.async(parse.json[TaxEnrolmentsCallback]) { implicit request =>
@@ -232,8 +235,8 @@ class FhddsApplicationController @Inject() (
   }
 
   def checkStatus(fhddsRegistrationNumber: String) = Action.async { implicit request =>
-    desConnector
-      .getStatus(fhddsRegistrationNumber)(hc)
+    routingConnector
+      .getStatus(fhddsRegistrationNumber)(using hc)
       .map(_.subscriptionStatus)
       .map(mdtpSubscriptionStatus)
       .map { status =>
@@ -242,7 +245,7 @@ class FhddsApplicationController @Inject() (
   }
 
   def get(fhddsRegistrationNumber: String) = Action.async { implicit request =>
-    desConnector.display(fhddsRegistrationNumber)(hc) map { resp =>
+    routingConnector.display(fhddsRegistrationNumber)(using hc) map { resp =>
       val dfsResponseStatus = resp.status
       logger.info(s"Got back subscription data for $fhddsRegistrationNumber with status $dfsResponseStatus")
       dfsResponseStatus match {

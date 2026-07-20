@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.fhregistration.connectors
 
-import ch.qos.logback.classic.{Level, Logger as LogbackLogger}
+import ch.qos.logback.classic.{Level, Logger => LogbackLogger}
 import org.mockito.ArgumentCaptor
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.{verify, when}
@@ -51,7 +51,6 @@ class HipConnectorSpec extends AnyWordSpecLike with Matchers with OptionValues w
 
   val mockHttpClient = mock[HttpClientV2]
 
-
   class DefaultHipConnectorMock(
     val httpClient: HttpClientV2,
     val config: Configuration
@@ -73,13 +72,12 @@ class HipConnectorSpec extends AnyWordSpecLike with Matchers with OptionValues w
   "subscription" should {
     val connector = new DefaultHipConnectorMock(mockHttpClient, configuration)
 
-
     "have correct SubscriptionDisplay path" in {
       val result = connector.subscriptionDisplayUrl(fhddsRegistrationNumber)
       result shouldBe s"http://localhost:1120/etmp/RESTAdapter/fulfilment-diligence/subscription/$fhddsRegistrationNumber"
     }
 
-    "have correct SubscriptionWithdrawal path" in{
+    "have correct SubscriptionWithdrawal path" in {
       val result = connector.subscriptionWithdrawalUrl(fhddsRegistrationNumber)
       result shouldBe s"http://localhost:1120/etmp/RESTAdapter/fulfilment-diligence/subscription/withdrawal/$fhddsRegistrationNumber"
     }
@@ -96,7 +94,6 @@ class HipConnectorSpec extends AnyWordSpecLike with Matchers with OptionValues w
       val result = connector.subscriptionDeregistrationUrl(fhddsRegistrationNumber)
       result shouldBe s"http://localhost:1120/etmp/RESTAdapter/fulfilment-diligence/subscription/deregistration/$fhddsRegistrationNumber"
     }
-
 
   }
 
@@ -641,7 +638,6 @@ class HipConnectorSpec extends AnyWordSpecLike with Matchers with OptionValues w
       }
     }
 
-
   }
 
   "subscriptionWithdrawal" should {
@@ -670,7 +666,6 @@ class HipConnectorSpec extends AnyWordSpecLike with Matchers with OptionValues w
       val result = connector.subscriptionWithdrawal(fhddsRegistrationNumber, Json.parse(payload))(hc).futureValue
 
       result.processingDate shouldBe new SimpleDateFormat("yyyy-MM-dd").parse("2001-12-17")
-
 
       val headersCaptor: ArgumentCaptor[Seq[(String, String)]] =
         ArgumentCaptor.forClass(classOf[Seq[(String, String)]])
@@ -732,9 +727,7 @@ class HipConnectorSpec extends AnyWordSpecLike with Matchers with OptionValues w
           |}""".stripMargin
       val httpResponse = HttpResponse(200, jsonBody)
 
-
       val submissionRequest = Source.fromResource("json/valid/subscription/fhdds-create.json").mkString
-
 
       when(mockHttpClient.post(any())(using any())).thenReturn(mockRequestBuilder)
       when(mockRequestBuilder.setHeader(any())).thenReturn(mockRequestBuilder)
@@ -762,9 +755,7 @@ class HipConnectorSpec extends AnyWordSpecLike with Matchers with OptionValues w
           |}""".stripMargin
       val httpResponse = HttpResponse(200, jsonBody)
 
-
       val submissionRequest = Source.fromResource("json/valid/subscription/fhdds-update.json").mkString
-
 
       when(mockHttpClient.post(any())(using any())).thenReturn(mockRequestBuilder)
       when(mockRequestBuilder.setHeader(any())).thenReturn(mockRequestBuilder)
@@ -774,8 +765,6 @@ class HipConnectorSpec extends AnyWordSpecLike with Matchers with OptionValues w
       val connector = new DefaultHipConnectorMock(mockHttpClient, configuration)
       val result = connector.createOrUpdateFhdds("XA0001234567890", Json.parse(submissionRequest))(hc).futureValue
 
-
-
       result.processingDate shouldBe new SimpleDateFormat("yyyy-MM-dd").parse("2001-12-17")
       result.etmpFormBundleNumber shouldBe "012345678901"
       result.registrationNumberFHDDS shouldBe "XDFH00000123456"
@@ -783,7 +772,7 @@ class HipConnectorSpec extends AnyWordSpecLike with Matchers with OptionValues w
     }
   }
 
-  "subscriptionDeregistration" should{
+  "subscriptionDeregistration" should {
 
     "return the HIP response and pass correct headers" in {
       val mockRequestBuilder = mock[RequestBuilder]
@@ -812,7 +801,6 @@ class HipConnectorSpec extends AnyWordSpecLike with Matchers with OptionValues w
 
       result.processingDate shouldBe new SimpleDateFormat("yyyy-MM-dd").parse("2001-12-17")
 
-
       val headersCaptor: ArgumentCaptor[Seq[(String, String)]] =
         ArgumentCaptor.forClass(classOf[Seq[(String, String)]])
       verify(mockRequestBuilder).setHeader(headersCaptor.capture() *)
@@ -828,7 +816,5 @@ class HipConnectorSpec extends AnyWordSpecLike with Matchers with OptionValues w
     }
 
   }
-
-
 
 }

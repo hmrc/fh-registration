@@ -21,7 +21,8 @@ import play.api.libs.json.{JsValue, Reads}
 import play.api.libs.ws.writeableOf_JsValue
 import play.api.{Configuration, Logging}
 import sttp.model.HeaderNames
-import uk.gov.hmrc.fhregistration.models.hip.{HipDeregistrationResponse, HipErrorResponse, HipSubmissionException, HipSubmissionResponse, HipWithdrawalResponse, SubscriptionStatusResponse}
+import uk.gov.hmrc.fhregistration.models.des.*
+import uk.gov.hmrc.fhregistration.models.hip.*
 import uk.gov.hmrc.http.HttpReads.Implicits.readRaw
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.{HeaderCarrier, HttpErrorFunctions, HttpResponse, StringContextOps, UpstreamErrorResponse}
@@ -35,24 +36,23 @@ import java.util.UUID.randomUUID
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Try
 
+final case class HipSubmissionException(statusCode: Int, code: String, reason: String) extends RuntimeException(reason)
+
 @ImplementedBy(classOf[DefaultHipConnector])
 trait HipConnector extends HttpErrorFunctions {
-
-  def getStatus(fhddsRegistrationNumber: String)(hc: HeaderCarrier): Future[SubscriptionStatusResponse]
-
   def subscriptionDisplay(fhddsRegistrationNumber: String)(hc: HeaderCarrier): Future[HttpResponse]
 
   def subscriptionWithdrawal(fhddsRegistrationNumber: String, submission: JsValue)(
     hc: HeaderCarrier
-  ): Future[HipWithdrawalResponse]
+  ): Future[DesWithdrawalResponse]
 
   def createOrUpdateFhdds(fhddsRegistrationNumber: String, submission: JsValue)(
     hc: HeaderCarrier
-  ): Future[HipSubmissionResponse]
+  ): Future[DesSubmissionResponse]
 
   def subscriptionDeregistration(fhddsRegistrationNumber: String, submission: JsValue)(
     hc: HeaderCarrier
-  ): Future[HipDeregistrationResponse]
+  ): Future[DesDeregistrationResponse]
 
 }
 
@@ -61,7 +61,7 @@ class DefaultHipConnector @Inject() (http: HttpClientV2, configuration: Configur
 ) extends ServicesConfig(configuration) with HipConnector with Logging {
 
   private val hipServer = baseUrl("hip")
-  private[connectors] val hipServiceBasePath = s"$hipServer/etmp/RESTAdapter"
+  private[connectors] val hipServiceBasePath = s"$hipServer/etmp/RESTAdapter/fulfilment-diligence/subscription"
 
   private def headerCarrierBuilder(hc: HeaderCarrier) = hc.copy(authorization = None)
 
@@ -88,38 +88,24 @@ class DefaultHipConnector @Inject() (http: HttpClientV2, configuration: Configur
     randomUUID.toString
 
   def subscriptionDisplayUrl(fhddsRegistrationNumber: String) =
-    s"$hipServiceBasePath/fulfilment-diligence/subscription/$fhddsRegistrationNumber"
+    s"$hipServiceBasePath/$fhddsRegistrationNumber"
 
   def subscriptionWithdrawalUrl(fhddsRegistrationNumber: String) =
-    s"$hipServiceBasePath/fulfilment-diligence/subscription/withdrawal/$fhddsRegistrationNumber"
+    s"$hipServiceBasePath/withdrawal/$fhddsRegistrationNumber"
 
   def createOrUpdateFhddsUrl(id: String, idType: String) =
-    s"$hipServiceBasePath/fulfilment-diligence/subscription/id/$id/id-type/$idType"
+    s"$hipServiceBasePath/id/$id/id-type/$idType"
 
   def subscriptionDeregistrationUrl(fhddsRegistrationNumber: String) =
-    s"$hipServiceBasePath/fulfilment-diligence/subscription/deregistration/$fhddsRegistrationNumber"
-
-  def getStatusUrl(fhddsRegistrationNumber: String, idType: String, regime: String) =
-    s"$hipServiceBasePath/subscription-status?idNumber=$fhddsRegistrationNumber&idType=$idType&regime=$regime"
+    s"$hipServiceBasePath/deregistration/$fhddsRegistrationNumber"
 
   private[connectors] def logIfError(response: HttpResponse): HttpResponse =
     response.status match {
-      case 200 | 201 =>
-        response
-      case _ =>
+      case 400 | 401 | 403 | 404 | 422 | 500 | 503 =>
         logger.error(s"Received error ${response.status} from HIP with message - ${response.body}")
         response
-
-    }
-
-  private[connectors] def logAndThrowExceptionIfError(response: HttpResponse): HttpResponse =
-    response.status match {
-      case 200 | 201 =>
-        response
       case _ =>
-        logger.error(s"Received error ${response.status} from HIP with message - ${response.body}")
-        throw UpstreamErrorResponse(s"${response.status} received from HIP", response.status)
-
+        response
     }
 
   private def hipErrorResponse(response: HttpResponse): HipErrorResponse =
@@ -149,7 +135,7 @@ class DefaultHipConnector @Inject() (http: HttpClientV2, configuration: Configur
 
   override def subscriptionWithdrawal(fhddsRegistrationNumber: String, submission: JsValue)(
     hc: HeaderCarrier
-  ): Future[HipWithdrawalResponse] = {
+  ): Future[DesWithdrawalResponse] = {
     logger.info(s"Sending fhdds withdrawal data to HIP for regNumber $fhddsRegistrationNumber")
     implicit val headerCarrier: HeaderCarrier = headerCarrierBuilder(hc)
     http
@@ -157,13 +143,14 @@ class DefaultHipConnector @Inject() (http: HttpClientV2, configuration: Configur
       .setHeader(("correlationid", correlationId) +: hipHeaders *)
       .withBody[JsValue](submission)
       .execute[HttpResponse]
-      .map(logAndThrowExceptionIfError)
+      .map(logIfError)
       .map(_.json.as[HipWithdrawalResponse])
+      .map(hr => DesWithdrawalResponse(hr.processingDate))
   }
 
   override def createOrUpdateFhdds(id: String, submission: JsValue)(
     hc: HeaderCarrier
-  ): Future[HipSubmissionResponse] = {
+  ): Future[DesSubmissionResponse] = {
     logger.info(s"Sending fhdds registration data to HIP for safeId $id")
     implicit val headerCarrier: HeaderCarrier = headerCarrierBuilder(hc)
     val idType = "fhdds"
@@ -173,11 +160,12 @@ class DefaultHipConnector @Inject() (http: HttpClientV2, configuration: Configur
       .withBody[JsValue](submission)
       .execute[HttpResponse]
       .map(customHipSubmissionOrAmendmentRead[HipSubmissionResponse])
+      .map(hr => DesSubmissionResponse(hr.processingDate, hr.etmpFormBundleNumber, hr.registrationNumberFHDDS))
   }
 
   override def subscriptionDeregistration(fhddsRegistrationNumber: String, submission: JsValue)(implicit
     hc: HeaderCarrier
-  ): Future[HipDeregistrationResponse] = {
+  ): Future[DesDeregistrationResponse] = {
     logger.info(s"Sending fhdds deregistration data to HIP for regNumber $fhddsRegistrationNumber")
     implicit val headerCarrier: HeaderCarrier = headerCarrierBuilder(hc)
     http
@@ -187,17 +175,6 @@ class DefaultHipConnector @Inject() (http: HttpClientV2, configuration: Configur
       .execute[HttpResponse]
       .map(logIfError)
       .map(_.json.as[HipDeregistrationResponse])
-  }
-
-  override def getStatus(fhddsRegistrationNumber: String)(hc: HeaderCarrier): Future[SubscriptionStatusResponse] = {
-    implicit val headerCarrier: HeaderCarrier = headerCarrierBuilder(hc)
-    val idType = "fhddsRegistrationNumber"
-    val regime = "FHDDS"
-    http
-      .get(url"${getStatusUrl(fhddsRegistrationNumber, idType, regime)}")
-      .setHeader(("correlationid", correlationId) +: hipHeaders *)
-      .execute[HttpResponse]
-      .map(logAndThrowExceptionIfError)
-      .map(_.json.as[SubscriptionStatusResponse])
+      .map(hr => DesDeregistrationResponse(hr.processingDate))
   }
 }

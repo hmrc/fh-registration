@@ -34,6 +34,7 @@ import scala.concurrent.Future
 trait FhddsMocks extends ScalaFutures with MockitoSugar {
 
   val mockDesConnector: DesConnector = mock[DesConnector]
+  val mockRoutingConnector: RoutingConnector = mock[RoutingConnector]
   val mockTaxEnrolmentConnector: TaxEnrolmentConnector = mock[TaxEnrolmentConnector]
   val mockEmailConnectorConnector: EmailConnector = mock[EmailConnector]
   val mockAuditService: AuditService = mock[AuditService]
@@ -48,7 +49,7 @@ trait FhddsMocks extends ScalaFutures with MockitoSugar {
     .thenReturn(Future.successful(List(new SubmissionTracking("1", "2", "3", 0, None, None))))
 
   var fhddsApplicationControllerWithMocks = new FhddsApplicationController(
-    mockDesConnector,
+    mockRoutingConnector,
     mockTaxEnrolmentConnector,
     mockEmailConnectorConnector,
     mockSubmissionTrackingService,
