@@ -104,20 +104,22 @@ class DefaultHipConnector @Inject() (http: HttpClientV2, configuration: Configur
 
   private[connectors] def logIfError(response: HttpResponse): HttpResponse =
     response.status match {
-      case 400 | 401 | 403 | 404 | 422 | 500 | 503 =>
-        logger.error(s"Received error ${response.status} from HIP with message - ${response.body}")
+      case 200 | 201 =>
         response
       case _ =>
+        logger.error(s"Received error ${response.status} from HIP with message - ${response.body}")
         response
+
     }
 
   private[connectors] def logAndThrowExceptionIfError(response: HttpResponse): HttpResponse =
     response.status match {
-      case 400 | 401 | 403 | 404 | 422 | 500 | 503 =>
+      case 200 | 201 =>
+        response
+      case _ =>
         logger.error(s"Received error ${response.status} from HIP with message - ${response.body}")
         throw UpstreamErrorResponse(s"${response.status} received from HIP", response.status)
-      case _ =>
-        response
+
     }
 
   private def hipErrorResponse(response: HttpResponse): HipErrorResponse =
