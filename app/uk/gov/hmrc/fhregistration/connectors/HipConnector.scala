@@ -40,6 +40,9 @@ final case class HipSubmissionException(statusCode: Int, code: String, reason: S
 
 @ImplementedBy(classOf[DefaultHipConnector])
 trait HipConnector extends HttpErrorFunctions {
+
+  def getStatus(fhddsRegistrationNumber: String)(hc: HeaderCarrier): Future[SubscriptionStatusResponse]
+
   def subscriptionDisplay(fhddsRegistrationNumber: String)(hc: HeaderCarrier): Future[HttpResponse]
 
   def subscriptionWithdrawal(fhddsRegistrationNumber: String, submission: JsValue)(
@@ -61,7 +64,7 @@ class DefaultHipConnector @Inject() (http: HttpClientV2, configuration: Configur
 ) extends ServicesConfig(configuration) with HipConnector with Logging {
 
   private val hipServer = baseUrl("hip")
-  private[connectors] val hipServiceBasePath = s"$hipServer/etmp/RESTAdapter/fulfilment-diligence/subscription"
+  private[connectors] val hipServiceBasePath = s"$hipServer/etmp/RESTAdapter"
 
   private def headerCarrierBuilder(hc: HeaderCarrier) = hc.copy(authorization = None)
 
@@ -88,24 +91,38 @@ class DefaultHipConnector @Inject() (http: HttpClientV2, configuration: Configur
     randomUUID.toString
 
   def subscriptionDisplayUrl(fhddsRegistrationNumber: String) =
-    s"$hipServiceBasePath/$fhddsRegistrationNumber"
+    s"$hipServiceBasePath/fulfilment-diligence/subscription/$fhddsRegistrationNumber"
 
   def subscriptionWithdrawalUrl(fhddsRegistrationNumber: String) =
-    s"$hipServiceBasePath/withdrawal/$fhddsRegistrationNumber"
+    s"$hipServiceBasePath/fulfilment-diligence/subscription/withdrawal/$fhddsRegistrationNumber"
 
   def createOrUpdateFhddsUrl(id: String, idType: String) =
-    s"$hipServiceBasePath/id/$id/id-type/$idType"
+    s"$hipServiceBasePath/fulfilment-diligence/subscription/id/$id/id-type/$idType"
 
   def subscriptionDeregistrationUrl(fhddsRegistrationNumber: String) =
-    s"$hipServiceBasePath/deregistration/$fhddsRegistrationNumber"
+    s"$hipServiceBasePath/fulfilment-diligence/subscription/deregistration/$fhddsRegistrationNumber"
+
+  def getStatusUrl(fhddsRegistrationNumber: String, idType: String, regime: String) =
+    s"$hipServiceBasePath/subscription-status?idNumber=$fhddsRegistrationNumber&idType=$idType&regime=$regime"
 
   private[connectors] def logIfError(response: HttpResponse): HttpResponse =
     response.status match {
-      case 400 | 401 | 403 | 404 | 422 | 500 | 503 =>
-        logger.error(s"Received error ${response.status} from HIP with message - ${response.body}")
+      case 200 | 201 =>
         response
       case _ =>
+        logger.error(s"Received error ${response.status} from HIP with message - ${response.body}")
         response
+
+    }
+
+  private[connectors] def logAndThrowExceptionIfError(response: HttpResponse): HttpResponse =
+    response.status match {
+      case 200 | 201 =>
+        response
+      case _ =>
+        logger.error(s"Received error ${response.status} from HIP with message - ${response.body}")
+        throw UpstreamErrorResponse(s"${response.status} received from HIP", response.status)
+
     }
 
   private def hipErrorResponse(response: HttpResponse): HipErrorResponse =
@@ -143,7 +160,7 @@ class DefaultHipConnector @Inject() (http: HttpClientV2, configuration: Configur
       .setHeader(("correlationid", correlationId) +: hipHeaders *)
       .withBody[JsValue](submission)
       .execute[HttpResponse]
-      .map(logIfError)
+      .map(logAndThrowExceptionIfError)
       .map(_.json.as[HipWithdrawalResponse])
       .map(hr => DesWithdrawalResponse(hr.processingDate))
   }
@@ -176,5 +193,17 @@ class DefaultHipConnector @Inject() (http: HttpClientV2, configuration: Configur
       .map(logIfError)
       .map(_.json.as[HipDeregistrationResponse])
       .map(hr => DesDeregistrationResponse(hr.processingDate))
+  }
+
+  override def getStatus(fhddsRegistrationNumber: String)(hc: HeaderCarrier): Future[SubscriptionStatusResponse] = {
+    implicit val headerCarrier: HeaderCarrier = headerCarrierBuilder(hc)
+    val idType = "fhddsRegistrationNumber"
+    val regime = "FHDDS"
+    http
+      .get(url"${getStatusUrl(fhddsRegistrationNumber, idType, regime)}")
+      .setHeader(("correlationid", correlationId) +: hipHeaders *)
+      .execute[HttpResponse]
+      .map(logAndThrowExceptionIfError)
+      .map(_.json.as[SubscriptionStatusResponse])
   }
 }

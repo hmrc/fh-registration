@@ -18,7 +18,7 @@ package uk.gov.hmrc.fhregistration.connectors
 
 import ch.qos.logback.classic.{Level, Logger => LogbackLogger}
 import org.mockito.ArgumentCaptor
-import org.mockito.ArgumentMatchers.any
+import org.mockito.ArgumentMatchers.{any, contains}
 import org.mockito.Mockito.{verify, when}
 import org.scalatest.OptionValues
 import org.scalatest.concurrent.ScalaFutures.convertScalaFuture
@@ -100,12 +100,12 @@ class HipConnectorSpec extends AnyWordSpecLike with Matchers with OptionValues w
   "getStatus" should {
     "return SubscriptionStatusResponse" in {
       val responseBody = """{
-                       |  "success": {
-                       |    "subscriptionStatus": "Successful",
-                       |    "idType": "EORI",
-                       |    "idValue": "GB123456789000"
-                       |  }
-                       |}""".stripMargin
+                           |  "success": {
+                           |    "subscriptionStatus": "Successful",
+                           |    "idType": "EORI",
+                           |    "idValue": "GB123456789000"
+                           |  }
+                           |}""".stripMargin
       val httpResponse = HttpResponse(200, responseBody)
       val mockRequestBuilder = mock[RequestBuilder]
       when(mockHttpClient.get(any())(using any())).thenReturn(mockRequestBuilder)
@@ -366,10 +366,10 @@ class HipConnectorSpec extends AnyWordSpecLike with Matchers with OptionValues w
 
     "return SubscriptionStatusResponse when idType and idValue are absent" in {
       val responseBody = """{
-                       |  "success": {
-                       |    "subscriptionStatus": "Successful"
-                       |  }
-                       |}""".stripMargin
+                           |  "success": {
+                           |    "subscriptionStatus": "Successful"
+                           |  }
+                           |}""".stripMargin
       val httpResponse = HttpResponse(200, responseBody)
       val mockRequestBuilder = mock[RequestBuilder]
       when(mockHttpClient.get(any())(using any())).thenReturn(mockRequestBuilder)
@@ -386,7 +386,6 @@ class HipConnectorSpec extends AnyWordSpecLike with Matchers with OptionValues w
       )
     }
   }
-
 
   "subscriptionDisplay" should {
 
