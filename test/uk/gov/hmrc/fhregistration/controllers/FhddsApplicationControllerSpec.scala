@@ -161,7 +161,7 @@ class FhddsApplicationControllerSpec extends PlaySpec with MockitoSugar with Sca
 
         val mockInternalId = "mockUserId"
         val mockGroupId = "mockGroupId"
-        val mockRetrieval: Option[String] ~ Option[String] = new~(Some(mockInternalId), Some(mockGroupId))
+        val mockRetrieval: Option[String] ~ Option[String] = new ~(Some(mockInternalId), Some(mockGroupId))
 
         when(mockActions.userGroupAction).thenReturn(new UserGroupAction(mockAuthConnector, mcc))
         when(
@@ -219,14 +219,14 @@ class FhddsApplicationControllerSpec extends PlaySpec with MockitoSugar with Sca
 
         val request = FakeRequest()
           .withHeaders(
-            "X-User-Id" -> userId,
+            "X-User-Id"  -> userId,
             "X-Group-Id" -> groupId
           )
           .withBody(withdrawalRequest)
 
         val mockInternalId = "mockUserId"
         val mockGroupId = "mockGroupId"
-        val mockRetrieval: Option[String] ~ Option[String] = new~(Some(mockInternalId), Some(mockGroupId))
+        val mockRetrieval: Option[String] ~ Option[String] = new ~(Some(mockInternalId), Some(mockGroupId))
 
         when(mockActions.userGroupAction).thenReturn(new UserGroupAction(mockAuthConnector, mcc))
         when(mockActions.userAction).thenReturn(new UserAction(mockAuthConnector, mcc))
@@ -265,7 +265,7 @@ class FhddsApplicationControllerSpec extends PlaySpec with MockitoSugar with Sca
 
         val request = FakeRequest()
           .withHeaders(
-            "X-User-Id" -> userId,
+            "X-User-Id"  -> userId,
             "X-Group-Id" -> groupId
           )
           .withBody(deregistrationRequest)
@@ -274,7 +274,7 @@ class FhddsApplicationControllerSpec extends PlaySpec with MockitoSugar with Sca
 
         val mockInternalId = "mockUserId"
         val mockGroupId = "mockGroupId"
-        val mockRetrieval: Option[String] ~ Option[String] = new~(Some(mockInternalId), Some(mockGroupId))
+        val mockRetrieval: Option[String] ~ Option[String] = new ~(Some(mockInternalId), Some(mockGroupId))
 
         when(mockActions.userGroupAction).thenReturn(new UserGroupAction(mockAuthConnector, mcc))
         when(mockActions.userAction).thenReturn(new UserAction(mockAuthConnector, mcc))
@@ -305,7 +305,8 @@ class FhddsApplicationControllerSpec extends PlaySpec with MockitoSugar with Sca
         val fhddsRegistrationNumber = "reg123"
 
         if (useHip) {
-          val statusResponse = SubscriptionStatusResponse(HipStatus.Successful, Some("idTypeValue"), Some("idValueValue"))
+          val statusResponse =
+            SubscriptionStatusResponse(HipStatus.Successful, Some("idTypeValue"), Some("idValueValue"))
           when(mockHipConnector.getStatus(any())(any())).thenReturn(Future.successful(statusResponse))
         } else {
           val statusResponse = StatusResponse(DesStatus.Successful, Some("idTypeValue"), Some("idValueValue"))
@@ -403,7 +404,7 @@ class FhddsApplicationControllerSpec extends PlaySpec with MockitoSugar with Sca
       when(mockActions.userAction).thenReturn(new UserAction(mockAuthConnector, cc))
 
       when(mockAuthConnector.authorise(any(), any[Retrieval[~[Option[String], Enrolments]]]())(using any(), any()))
-        .thenReturn(Future.successful(new~[Option[String], Enrolments](None, Enrolments(Set.empty))))
+        .thenReturn(Future.successful(new ~[Option[String], Enrolments](None, Enrolments(Set.empty))))
 
       val result = controller.amend(fhddsRegistrationNumber)(request)
 
@@ -420,7 +421,7 @@ class FhddsApplicationControllerSpec extends PlaySpec with MockitoSugar with Sca
 
       when(
         mockAuthConnector.authorise(any(), any[Retrieval[~[Option[String], Enrolments]]]())(using any(), any())
-      ).thenReturn(Future.successful(new~[Option[String], Enrolments](Some(userId), enrolments)))
+      ).thenReturn(Future.successful(new ~[Option[String], Enrolments](Some(userId), enrolments)))
 
       when(mockSubmissionTrackingService.enrolmentProgress(any(), any()))
         .thenReturn(Future.successful(EnrolmentProgress.Pending))

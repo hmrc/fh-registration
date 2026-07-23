@@ -21,7 +21,7 @@ import play.api.Logging
 import play.api.libs.json.Json
 import play.api.mvc.{ControllerComponents, Request, Result}
 import uk.gov.hmrc.fhregistration.actions.Actions
-import uk.gov.hmrc.fhregistration.connectors.{DesConnector, DesSubmissionException, EmailConnector, HipConnector, EtmpRouting, TaxEnrolmentConnector}
+import uk.gov.hmrc.fhregistration.connectors.{DesConnector, DesSubmissionException, EmailConnector, EtmpRouting, HipConnector, TaxEnrolmentConnector}
 import uk.gov.hmrc.fhregistration.models.TaxEnrolmentsCallback
 import uk.gov.hmrc.fhregistration.models.des.{DesDeregistrationResponse, DesStatus, DesSubmissionResponse, DesWithdrawalResponse, StatusResponse}
 import uk.gov.hmrc.fhregistration.models.des.DesStatus.DesStatus
@@ -270,7 +270,7 @@ class FhddsApplicationController @Inject() (
         .map(sr => StatusResponse(HipStatus.toDesStatus(sr.subscriptionStatus), sr.idType, sr.idValue)),
       desConnector.getStatus(fhddsRegistrationNumber)(hc)
     )
-      w1
+    w1
       .map(_.subscriptionStatus)
       .map(mdtpSubscriptionStatus)
       .map { status =>
