@@ -19,7 +19,7 @@ package uk.gov.hmrc.fhregistration.testsupport.mocks
 import java.time.Clock
 import org.scalatest.concurrent.ScalaFutures
 import uk.gov.hmrc.fhregistration.actions.Actions
-import uk.gov.hmrc.fhregistration.connectors._
+import uk.gov.hmrc.fhregistration.connectors.*
 import uk.gov.hmrc.fhregistration.controllers.FhddsApplicationController
 import uk.gov.hmrc.fhregistration.repositories.{DefaultSubmissionTrackingRepository, SubmissionTracking, SubmissionTrackingRepository}
 import uk.gov.hmrc.fhregistration.services.{AuditService, DefaultSubmissionTrackingService}
@@ -27,6 +27,7 @@ import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import org.mockito.Mockito.when
 import org.scalatestplus.mockito.MockitoSugar
 import play.api.mvc.ControllerComponents
+import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -34,6 +35,8 @@ import scala.concurrent.Future
 trait FhddsMocks extends ScalaFutures with MockitoSugar {
 
   val mockDesConnector: DesConnector = mock[DesConnector]
+  val mockHipConnector: HipConnector = mock[HipConnector]
+  val mockServicesConfig: ServicesConfig = mock[ServicesConfig]
   val mockTaxEnrolmentConnector: TaxEnrolmentConnector = mock[TaxEnrolmentConnector]
   val mockEmailConnectorConnector: EmailConnector = mock[EmailConnector]
   val mockAuditService: AuditService = mock[AuditService]
@@ -49,6 +52,8 @@ trait FhddsMocks extends ScalaFutures with MockitoSugar {
 
   var fhddsApplicationControllerWithMocks = new FhddsApplicationController(
     mockDesConnector,
+    mockHipConnector,
+    mockServicesConfig,
     mockTaxEnrolmentConnector,
     mockEmailConnectorConnector,
     mockSubmissionTrackingService,

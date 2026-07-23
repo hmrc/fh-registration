@@ -21,8 +21,10 @@ import org.mockito.ArgumentCaptor
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.{verify, when}
 import org.scalatest.OptionValues
+import org.scalatest.concurrent.PatienceConfiguration
 import org.scalatest.concurrent.ScalaFutures.convertScalaFuture
 import org.scalatest.matchers.should.Matchers
+import org.scalatest.time.{Millis, Seconds, Span}
 import org.scalatest.wordspec.AnyWordSpecLike
 import org.scalatestplus.mockito.MockitoSugar
 import play.api.Configuration
@@ -39,6 +41,7 @@ import scala.io.Source
 
 class HipConnectorSpec extends AnyWordSpecLike with Matchers with OptionValues with MockitoSugar with LogCapturing {
   implicit val hc: HeaderCarrier = HeaderCarrier()
+  val timeout = PatienceConfiguration.Timeout(Span(0.5, Seconds))
 
   private val configuration = Configuration.from(
     Map(
@@ -50,7 +53,6 @@ class HipConnectorSpec extends AnyWordSpecLike with Matchers with OptionValues w
   )
 
   val mockHttpClient = mock[HttpClientV2]
-
 
   class DefaultHipConnectorMock(
     val httpClient: HttpClientV2,
@@ -73,13 +75,12 @@ class HipConnectorSpec extends AnyWordSpecLike with Matchers with OptionValues w
   "subscription" should {
     val connector = new DefaultHipConnectorMock(mockHttpClient, configuration)
 
-
     "have correct SubscriptionDisplay path" in {
       val result = connector.subscriptionDisplayUrl(fhddsRegistrationNumber)
       result shouldBe s"http://localhost:1120/etmp/RESTAdapter/fulfilment-diligence/subscription/$fhddsRegistrationNumber"
     }
 
-    "have correct SubscriptionWithdrawal path" in{
+    "have correct SubscriptionWithdrawal path" in {
       val result = connector.subscriptionWithdrawalUrl(fhddsRegistrationNumber)
       result shouldBe s"http://localhost:1120/etmp/RESTAdapter/fulfilment-diligence/subscription/withdrawal/$fhddsRegistrationNumber"
     }
@@ -97,18 +98,17 @@ class HipConnectorSpec extends AnyWordSpecLike with Matchers with OptionValues w
       result shouldBe s"http://localhost:1120/etmp/RESTAdapter/fulfilment-diligence/subscription/deregistration/$fhddsRegistrationNumber"
     }
 
-
   }
 
   "getStatus" should {
     "return SubscriptionStatusResponse" in {
       val responseBody = """{
-                       |  "success": {
-                       |    "subscriptionStatus": "Successful",
-                       |    "idType": "EORI",
-                       |    "idValue": "GB123456789000"
-                       |  }
-                       |}""".stripMargin
+                           |  "success": {
+                           |    "subscriptionStatus": "Successful",
+                           |    "idType": "EORI",
+                           |    "idValue": "GB123456789000"
+                           |  }
+                           |}""".stripMargin
       val httpResponse = HttpResponse(200, responseBody)
       val mockRequestBuilder = mock[RequestBuilder]
       when(mockHttpClient.get(any())(using any())).thenReturn(mockRequestBuilder)
@@ -116,7 +116,7 @@ class HipConnectorSpec extends AnyWordSpecLike with Matchers with OptionValues w
       when(mockRequestBuilder.execute[HttpResponse](using any(), any())).thenReturn(Future.successful(httpResponse))
 
       val connector = new DefaultHipConnectorMock(mockHttpClient, configuration)
-      val result = connector.getStatus(fhddsRegistrationNumber)(hc).futureValue
+      val result = connector.getStatus(fhddsRegistrationNumber)(hc).futureValue(timeout)
 
       result shouldBe SubscriptionStatusResponse(
         HipStatus.Successful,
@@ -369,10 +369,10 @@ class HipConnectorSpec extends AnyWordSpecLike with Matchers with OptionValues w
 
     "return SubscriptionStatusResponse when idType and idValue are absent" in {
       val responseBody = """{
-                       |  "success": {
-                       |    "subscriptionStatus": "Successful"
-                       |  }
-                       |}""".stripMargin
+                           |  "success": {
+                           |    "subscriptionStatus": "Successful"
+                           |  }
+                           |}""".stripMargin
       val httpResponse = HttpResponse(200, responseBody)
       val mockRequestBuilder = mock[RequestBuilder]
       when(mockHttpClient.get(any())(using any())).thenReturn(mockRequestBuilder)
@@ -380,7 +380,7 @@ class HipConnectorSpec extends AnyWordSpecLike with Matchers with OptionValues w
       when(mockRequestBuilder.execute[HttpResponse](using any(), any())).thenReturn(Future.successful(httpResponse))
 
       val connector = new DefaultHipConnectorMock(mockHttpClient, configuration)
-      val result = connector.getStatus(fhddsRegistrationNumber)(hc).futureValue
+      val result = connector.getStatus(fhddsRegistrationNumber)(hc).futureValue(timeout)
 
       result shouldBe SubscriptionStatusResponse(
         HipStatus.Successful,
@@ -389,7 +389,6 @@ class HipConnectorSpec extends AnyWordSpecLike with Matchers with OptionValues w
       )
     }
   }
-
 
   "subscriptionDisplay" should {
 
@@ -410,7 +409,7 @@ class HipConnectorSpec extends AnyWordSpecLike with Matchers with OptionValues w
 
       val headersCaptor: ArgumentCaptor[Seq[(String, String)]] =
         ArgumentCaptor.forClass(classOf[Seq[(String, String)]])
-      verify(mockRequestBuilder).setHeader(headersCaptor.capture() *)
+      verify(mockRequestBuilder).setHeader(headersCaptor.capture()*)
       val headers = headersCaptor.getValue.toMap
       headers.keySet shouldBe Set(
         "correlationid",
@@ -641,7 +640,6 @@ class HipConnectorSpec extends AnyWordSpecLike with Matchers with OptionValues w
       }
     }
 
-
   }
 
   "subscriptionWithdrawal" should {
@@ -671,10 +669,9 @@ class HipConnectorSpec extends AnyWordSpecLike with Matchers with OptionValues w
 
       result.processingDate shouldBe new SimpleDateFormat("yyyy-MM-dd").parse("2001-12-17")
 
-
       val headersCaptor: ArgumentCaptor[Seq[(String, String)]] =
         ArgumentCaptor.forClass(classOf[Seq[(String, String)]])
-      verify(mockRequestBuilder).setHeader(headersCaptor.capture() *)
+      verify(mockRequestBuilder).setHeader(headersCaptor.capture()*)
       val headers = headersCaptor.getValue.toMap
       headers.keySet shouldBe Set(
         "correlationid",
@@ -732,9 +729,7 @@ class HipConnectorSpec extends AnyWordSpecLike with Matchers with OptionValues w
           |}""".stripMargin
       val httpResponse = HttpResponse(200, jsonBody)
 
-
       val submissionRequest = Source.fromResource("json/valid/subscription/fhdds-create.json").mkString
-
 
       when(mockHttpClient.post(any())(using any())).thenReturn(mockRequestBuilder)
       when(mockRequestBuilder.setHeader(any())).thenReturn(mockRequestBuilder)
@@ -762,9 +757,7 @@ class HipConnectorSpec extends AnyWordSpecLike with Matchers with OptionValues w
           |}""".stripMargin
       val httpResponse = HttpResponse(200, jsonBody)
 
-
       val submissionRequest = Source.fromResource("json/valid/subscription/fhdds-update.json").mkString
-
 
       when(mockHttpClient.post(any())(using any())).thenReturn(mockRequestBuilder)
       when(mockRequestBuilder.setHeader(any())).thenReturn(mockRequestBuilder)
@@ -774,8 +767,6 @@ class HipConnectorSpec extends AnyWordSpecLike with Matchers with OptionValues w
       val connector = new DefaultHipConnectorMock(mockHttpClient, configuration)
       val result = connector.createOrUpdateFhdds("XA0001234567890", Json.parse(submissionRequest))(hc).futureValue
 
-
-
       result.processingDate shouldBe new SimpleDateFormat("yyyy-MM-dd").parse("2001-12-17")
       result.etmpFormBundleNumber shouldBe "012345678901"
       result.registrationNumberFHDDS shouldBe "XDFH00000123456"
@@ -783,7 +774,7 @@ class HipConnectorSpec extends AnyWordSpecLike with Matchers with OptionValues w
     }
   }
 
-  "subscriptionDeregistration" should{
+  "subscriptionDeregistration" should {
 
     "return the HIP response and pass correct headers" in {
       val mockRequestBuilder = mock[RequestBuilder]
@@ -808,14 +799,14 @@ class HipConnectorSpec extends AnyWordSpecLike with Matchers with OptionValues w
       when(mockRequestBuilder.execute[HttpResponse](using any(), any())).thenReturn(Future.successful(httpResponse))
 
       val connector = new DefaultHipConnectorMock(mockHttpClient, configuration)
-      val result = connector.subscriptionDeregistration(fhddsRegistrationNumber, Json.parse(payload))(hc).futureValue
+      val result =
+        connector.subscriptionDeregistration(fhddsRegistrationNumber, Json.parse(payload))(using hc).futureValue
 
       result.processingDate shouldBe new SimpleDateFormat("yyyy-MM-dd").parse("2001-12-17")
 
-
       val headersCaptor: ArgumentCaptor[Seq[(String, String)]] =
         ArgumentCaptor.forClass(classOf[Seq[(String, String)]])
-      verify(mockRequestBuilder).setHeader(headersCaptor.capture() *)
+      verify(mockRequestBuilder).setHeader(headersCaptor.capture()*)
       val headers = headersCaptor.getValue.toMap
       headers.keySet shouldBe Set(
         "correlationid",
@@ -828,7 +819,5 @@ class HipConnectorSpec extends AnyWordSpecLike with Matchers with OptionValues w
     }
 
   }
-
-
 
 }

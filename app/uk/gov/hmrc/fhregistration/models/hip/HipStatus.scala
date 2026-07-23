@@ -17,6 +17,7 @@
 package uk.gov.hmrc.fhregistration.models.hip
 
 import play.api.libs.json.*
+import uk.gov.hmrc.fhregistration.models.des.DesStatus
 
 object HipStatus extends Enumeration {
   type HipStatus = Value
@@ -48,4 +49,10 @@ object HipStatus extends Enumeration {
 
     def writes(status: HipStatus.Value): JsValue = JsString(status.toString)
   }
+
+  def toDesStatus(hipStatus: HipStatus): DesStatus.Value =
+    DesStatus.values.find(_.toString == hipStatus.toString) match {
+      case Some(status) => status
+      case None         => throw RuntimeException("Invalid HipStatus value")
+    }
 }

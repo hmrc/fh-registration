@@ -21,7 +21,8 @@ import play.api.libs.json.{JsValue, Reads}
 import play.api.libs.ws.writeableOf_JsValue
 import play.api.{Configuration, Logging}
 import sttp.model.HeaderNames
-import uk.gov.hmrc.fhregistration.models.hip.{HipDeregistrationResponse, HipErrorResponse, HipSubmissionException, HipSubmissionResponse, HipWithdrawalResponse, SubscriptionStatusResponse}
+import uk.gov.hmrc.fhregistration.models.des.*
+import uk.gov.hmrc.fhregistration.models.hip.*
 import uk.gov.hmrc.http.HttpReads.Implicits.readRaw
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.{HeaderCarrier, HttpErrorFunctions, HttpResponse, StringContextOps, UpstreamErrorResponse}
@@ -34,6 +35,8 @@ import java.util.Base64
 import java.util.UUID.randomUUID
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Try
+
+final case class HipSubmissionException(statusCode: Int, code: String, reason: String) extends RuntimeException(reason)
 
 @ImplementedBy(classOf[DefaultHipConnector])
 trait HipConnector extends HttpErrorFunctions {
@@ -142,7 +145,7 @@ class DefaultHipConnector @Inject() (http: HttpClientV2, configuration: Configur
     implicit val headerCarrier: HeaderCarrier = headerCarrierBuilder(hc)
     http
       .get(url"${subscriptionDisplayUrl(fhddsRegistrationNumber)}")
-      .setHeader(("correlationid", correlationId) +: hipHeaders *)
+      .setHeader(("correlationid", correlationId) +: hipHeaders*)
       .execute[HttpResponse]
       .map(logIfError)
   }
@@ -154,7 +157,7 @@ class DefaultHipConnector @Inject() (http: HttpClientV2, configuration: Configur
     implicit val headerCarrier: HeaderCarrier = headerCarrierBuilder(hc)
     http
       .put(url"${subscriptionWithdrawalUrl(fhddsRegistrationNumber)}")
-      .setHeader(("correlationid", correlationId) +: hipHeaders *)
+      .setHeader(("correlationid", correlationId) +: hipHeaders*)
       .withBody[JsValue](submission)
       .execute[HttpResponse]
       .map(logAndThrowExceptionIfError)
@@ -169,7 +172,7 @@ class DefaultHipConnector @Inject() (http: HttpClientV2, configuration: Configur
     val idType = "fhdds"
     http
       .post(url"${createOrUpdateFhddsUrl(id, idType)}")
-      .setHeader(("correlationid", correlationId) +: hipHeaders *)
+      .setHeader(("correlationid", correlationId) +: hipHeaders*)
       .withBody[JsValue](submission)
       .execute[HttpResponse]
       .map(customHipSubmissionOrAmendmentRead[HipSubmissionResponse])
@@ -182,7 +185,7 @@ class DefaultHipConnector @Inject() (http: HttpClientV2, configuration: Configur
     implicit val headerCarrier: HeaderCarrier = headerCarrierBuilder(hc)
     http
       .post(url"${subscriptionDeregistrationUrl(fhddsRegistrationNumber)}")
-      .setHeader(("correlationid", correlationId) +: hipHeaders *)
+      .setHeader(("correlationid", correlationId) +: hipHeaders*)
       .withBody[JsValue](submission)
       .execute[HttpResponse]
       .map(logIfError)
@@ -195,7 +198,7 @@ class DefaultHipConnector @Inject() (http: HttpClientV2, configuration: Configur
     val regime = "FHDDS"
     http
       .get(url"${getStatusUrl(fhddsRegistrationNumber, idType, regime)}")
-      .setHeader(("correlationid", correlationId) +: hipHeaders *)
+      .setHeader(("correlationid", correlationId) +: hipHeaders*)
       .execute[HttpResponse]
       .map(logAndThrowExceptionIfError)
       .map(_.json.as[SubscriptionStatusResponse])

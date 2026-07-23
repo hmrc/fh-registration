@@ -18,6 +18,7 @@ package uk.gov.hmrc.fhregistration.models.hip
 
 import play.api.libs.functional.syntax._
 import play.api.libs.json.{Reads, __}
+import uk.gov.hmrc.fhregistration.models.des.DesStatus.DesStatus
 import uk.gov.hmrc.fhregistration.models.hip.HipStatus.HipStatus
 
 case class SubscriptionStatusResponse(
