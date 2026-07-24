@@ -120,11 +120,11 @@ class FhddsApplicationController @Inject() (
     val request = r.body
     (for {
       etmpResponse <- withDownstream(
-                       hipConnector
-                         .createOrUpdateFhdds(fhddsRegistrationNumber, request.submission)(hc)
-                         .map(_.toDesSubmissionResponse),
-                       desConnector.sendAmendment(fhddsRegistrationNumber, request.submission)(hc)
-                     )
+                        hipConnector
+                          .createOrUpdateFhdds(fhddsRegistrationNumber, request.submission)(hc)
+                          .map(_.toDesSubmissionResponse),
+                        desConnector.sendAmendment(fhddsRegistrationNumber, request.submission)(hc)
+                      )
       response = SubmissionResponse(etmpResponse.registrationNumberFHDDS, etmpResponse.processingDate)
     } yield {
       val event = auditService.buildSubmissionAmendAuditEvent(request, response.registrationNumber)
@@ -139,11 +139,11 @@ class FhddsApplicationController @Inject() (
     val request = r.body
     for {
       etmpResponse <- withDownstream(
-                       hipConnector
-                         .subscriptionWithdrawal(fhddsRegistrationNumber, request.withdrawal)(hc)
-                         .map(_.toDesWithdrawalResponse),
-                       desConnector.sendWithdrawal(fhddsRegistrationNumber, request.withdrawal)(hc)
-                     )
+                        hipConnector
+                          .subscriptionWithdrawal(fhddsRegistrationNumber, request.withdrawal)(hc)
+                          .map(_.toDesWithdrawalResponse),
+                        desConnector.sendWithdrawal(fhddsRegistrationNumber, request.withdrawal)(hc)
+                      )
       processingDate = etmpResponse.processingDate
     } yield {
       val event = auditService.buildSubmissionWithdrawalAuditEvent(request, fhddsRegistrationNumber)
@@ -163,11 +163,11 @@ class FhddsApplicationController @Inject() (
       val request = r.body
       for {
         etmpResponse <- withDownstream(
-                         hipConnector
-                           .subscriptionDeregistration(fhddsRegistrationNumber, request.deregistration)(hc)
-                           .map(_.toDesDeregistrationResponse),
-                         desConnector.sendDeregistration(fhddsRegistrationNumber, request.deregistration)(hc)
-                       )
+                          hipConnector
+                            .subscriptionDeregistration(fhddsRegistrationNumber, request.deregistration)(hc)
+                            .map(_.toDesDeregistrationResponse),
+                          desConnector.sendDeregistration(fhddsRegistrationNumber, request.deregistration)(hc)
+                        )
         processingDate = etmpResponse.processingDate
       } yield {
         val event = auditService.buildSubmissionDeregisterAuditEvent(request, fhddsRegistrationNumber)

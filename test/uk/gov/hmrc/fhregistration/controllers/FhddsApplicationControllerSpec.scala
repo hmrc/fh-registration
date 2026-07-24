@@ -31,7 +31,7 @@ import play.api.test.{FakeRequest, Helpers}
 import uk.gov.hmrc.auth.core.*
 import uk.gov.hmrc.auth.core.retrieve.{Retrieval, ~}
 import uk.gov.hmrc.fhregistration.actions.{Actions, UserAction, UserGroupAction}
-import uk.gov.hmrc.fhregistration.connectors.{DesConnector, DesSubmissionException, EmailConnector, HipConnector, TaxEnrolmentConnector}
+import uk.gov.hmrc.fhregistration.connectors.{DesConnector, DesSubmissionException, EmailConnector, HipConnector, HipSubmissionException, TaxEnrolmentConnector}
 import uk.gov.hmrc.fhregistration.models.TaxEnrolmentsCallback
 import uk.gov.hmrc.fhregistration.models.des.*
 import uk.gov.hmrc.fhregistration.models.fhdds.*
@@ -67,8 +67,10 @@ class FhddsApplicationControllerSpec
   implicit val materializer: Materializer = mock[Materializer]
   implicit val hc: HeaderCarrier = HeaderCarrier()
 
-  override def beforeEach(): Unit =
+  override def beforeEach(): Unit = {
     reset(mockServicesConfig)
+    reset(mockEmailConnector)
+  }
 
   private val controller =
     new FhddsApplicationController(
@@ -501,7 +503,6 @@ class FhddsApplicationControllerSpec
       when(mockSubmissionTrackingService.deleteSubmissionTracking(formBundleId))
         .thenAnswer(_ => Future.successful(()))
 
-//      reset(mockEmailConnector) // - Edem
       when(mockEmailConnector.sendEmail(any(), any(), any())(using any(), any(), any()))
         .thenReturn(Future.successful((): Unit))
 
