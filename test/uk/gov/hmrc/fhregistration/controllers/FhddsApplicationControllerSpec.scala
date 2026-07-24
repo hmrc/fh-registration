@@ -69,7 +69,6 @@ class FhddsApplicationControllerSpec
 
   override def beforeEach(): Unit = {
     reset(mockServicesConfig)
-    reset(mockEmailConnector)
   }
 
   private val controller =
@@ -508,7 +507,7 @@ class FhddsApplicationControllerSpec
 
       val result = controller.subscriptionCallback(formBundleId)(request)
 
-      verify(mockEmailConnector).sendEmail(
+      verify(mockEmailConnector, times(2)).sendEmail(
         eqTo(mockEmailConnector.defaultEmailTemplateID),
         eqTo(UserData("email@example.com")),
         eqTo(Map.empty[String, String])
