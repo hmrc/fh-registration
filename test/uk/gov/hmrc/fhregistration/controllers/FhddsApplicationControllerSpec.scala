@@ -23,6 +23,7 @@ import org.mockito.Mockito.*
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
+import org.scalatest.BeforeAndAfterEach
 import play.api.libs.json.{JsObject, Json}
 import play.api.mvc.*
 import play.api.test.Helpers.*
@@ -46,7 +47,8 @@ import java.util.Date
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class FhddsApplicationControllerSpec extends PlaySpec with MockitoSugar with ScalaFutures with Results {
+class FhddsApplicationControllerSpec
+    extends PlaySpec with MockitoSugar with ScalaFutures with BeforeAndAfterEach with Results {
 
   private val mockDesConnector = mock[DesConnector]
   private val mockHipConnector: HipConnector = mock[HipConnector]
@@ -65,7 +67,10 @@ class FhddsApplicationControllerSpec extends PlaySpec with MockitoSugar with Sca
   implicit val materializer: Materializer = mock[Materializer]
   implicit val hc: HeaderCarrier = HeaderCarrier()
 
-  private def controller =
+  override def beforeEach(): Unit =
+    reset(mockServicesConfig)
+
+  private val controller =
     new FhddsApplicationController(
       mockDesConnector,
       mockHipConnector,
@@ -110,10 +115,7 @@ class FhddsApplicationControllerSpec extends PlaySpec with MockitoSugar with Sca
       contentAsJson(result) mustBe Json.toJson(mockSubmissionTracking)
     }
 
-    Seq(("HIP", true), ("DES", false)).foreach { case (etmp, useHip) =>
-      reset(mockServicesConfig)
-//      when(mockServicesConfig.getBoolean("features.hip")).thenReturn(useHip)
-
+    Seq(("HIP", true), ("DES", false)).foreach { case (etmp, hipFlag) =>
       s"handle amendments in $etmp amend" in {
         val fhddsRegistrationNumber = "reg123"
         val submissionRequest = SubmissionRequest(
@@ -129,24 +131,30 @@ class FhddsApplicationControllerSpec extends PlaySpec with MockitoSugar with Sca
         when(mockAuthConnector.authorise(any(), any[Retrieval[Any]]())(using any(), any()))
           .thenReturn(Future.failed(new NoActiveSession("No active session") {}))
 
-        val desSubmissionResponse = DesSubmissionResponse(
+        val hipSubmissionResponse = HipSubmissionResponse(
           registrationNumberFHDDS = "reg123",
           processingDate = dateFromString("2023-12-01"),
           etmpFormBundleNumber = "formBundle123"
         )
-        when(mockDesConnector.sendAmendment(any(), any())(any()))
-          .thenReturn(Future.successful(desSubmissionResponse))
+
+        if (hipFlag)
+          when(mockHipConnector.createOrUpdateFhdds(any(), any())(any()))
+            .thenReturn(Future.successful(hipSubmissionResponse))
+        else
+          when(mockDesConnector.sendAmendment(any(), any())(any()))
+            .thenReturn(Future.successful(hipSubmissionResponse.toDesSubmissionResponse))
 
         when(mockAuditConnector.sendEvent(any())(using any(), any())).thenReturn(Future.successful(AuditResult.Success))
 
         when(mockEmailConnector.sendEmail(any(), any(), any())(using any(), any(), any()))
           .thenReturn(Future.successful((): Unit))
 
+        when(mockServicesConfig.getBoolean("features.hip")).thenReturn(hipFlag)
         val result = controller.amend(fhddsRegistrationNumber)(request)
 
         status(result) mustBe OK
         contentAsJson(result) mustBe Json.toJson(
-          SubmissionResponse(desSubmissionResponse.registrationNumberFHDDS, desSubmissionResponse.processingDate)
+          SubmissionResponse(hipSubmissionResponse.registrationNumberFHDDS, hipSubmissionResponse.processingDate)
         )
       }
 
@@ -171,9 +179,14 @@ class FhddsApplicationControllerSpec extends PlaySpec with MockitoSugar with Sca
           )(using any[HeaderCarrier](), any())
         ).thenReturn(Future.successful(mockRetrieval))
 
-        when(mockDesConnector.sendSubmission(any(), any())(any()))
-          .thenReturn(Future.failed(DesSubmissionException(403, "ACTIVE_SUBSCRIPTION", "already active")))
+        if (hipFlag)
+          when(mockHipConnector.createOrUpdateFhdds(any(), any())(any()))
+            .thenReturn(Future.failed(HipSubmissionException(403, "ACTIVE_SUBSCRIPTION", "already active")))
+        else
+          when(mockDesConnector.sendSubmission(any(), any())(any()))
+            .thenReturn(Future.failed(DesSubmissionException(403, "ACTIVE_SUBSCRIPTION", "already active")))
 
+        when(mockServicesConfig.getBoolean("features.hip")).thenReturn(hipFlag)
         val result = controller.subscribe("safe123", None)(request)
 
         status(result) mustBe FORBIDDEN
@@ -194,9 +207,14 @@ class FhddsApplicationControllerSpec extends PlaySpec with MockitoSugar with Sca
         when(mockAuthConnector.authorise(any(), any[Retrieval[Any]]())(using any(), any()))
           .thenReturn(Future.failed(new NoActiveSession("No active session") {}))
 
-        when(mockDesConnector.sendAmendment(any(), any())(any()))
-          .thenReturn(Future.failed(DesSubmissionException(403, "ACTIVE_SUBSCRIPTION", "already active")))
+        if (hipFlag)
+          when(mockHipConnector.createOrUpdateFhdds(any(), any())(any()))
+            .thenReturn(Future.failed(HipSubmissionException(403, "ACTIVE_SUBSCRIPTION", "already active")))
+        else
+          when(mockDesConnector.sendAmendment(any(), any())(any()))
+            .thenReturn(Future.failed(DesSubmissionException(403, "ACTIVE_SUBSCRIPTION", "already active")))
 
+        when(mockServicesConfig.getBoolean("features.hip")).thenReturn(hipFlag)
         val result = controller.amend(fhddsRegistrationNumber)(request)
 
         status(result) mustBe FORBIDDEN
@@ -213,7 +231,7 @@ class FhddsApplicationControllerSpec extends PlaySpec with MockitoSugar with Sca
           withdrawal = Json.obj("reason" -> "reason for withdrawal")
         )
 
-        val desWithdrawalResponse = DesWithdrawalResponse(
+        val hipWithdrawalResponse = HipWithdrawalResponse(
           processingDate = dateFromString("2023-12-01")
         )
 
@@ -242,15 +260,20 @@ class FhddsApplicationControllerSpec extends PlaySpec with MockitoSugar with Sca
         when(mockEmailConnector.sendEmail(any(), any(), any())(using any(), any(), any()))
           .thenReturn(Future.successful((): Unit))
 
-        when(mockDesConnector.sendWithdrawal(any(), any())(any()))
-          .thenReturn(Future.successful(desWithdrawalResponse))
+        if (hipFlag)
+          when(mockHipConnector.subscriptionWithdrawal(any(), any())(any()))
+            .thenReturn(Future.successful(hipWithdrawalResponse))
+        else
+          when(mockDesConnector.sendWithdrawal(any(), any())(any()))
+            .thenReturn(Future.successful(hipWithdrawalResponse.toDesWithdrawalResponse))
 
         when(mockAuditConnector.sendEvent(any())(using any(), any())).thenReturn(Future.successful(AuditResult.Success))
 
+        when(mockServicesConfig.getBoolean("features.hip")).thenReturn(hipFlag)
         val result = controller.withdrawal(fhddsRegistrationNumber)(request)
 
         status(result) mustBe OK
-        contentAsJson(result) mustBe Json.toJson(desWithdrawalResponse.processingDate)
+        contentAsJson(result) mustBe Json.toJson(hipWithdrawalResponse.processingDate)
       }
 
       s"handle deregistration in $etmp deregister" in {
@@ -270,7 +293,7 @@ class FhddsApplicationControllerSpec extends PlaySpec with MockitoSugar with Sca
           )
           .withBody(deregistrationRequest)
 
-        val desDeregistrationResponse = DesDeregistrationResponse(dateFromString("2023-12-01"))
+        val hipDeregistrationResponse = HipDeregistrationResponse(dateFromString("2023-12-01"))
 
         val mockInternalId = "mockUserId"
         val mockGroupId = "mockGroupId"
@@ -290,43 +313,54 @@ class FhddsApplicationControllerSpec extends PlaySpec with MockitoSugar with Sca
         when(mockEmailConnector.sendEmail(any(), any(), any())(using any(), any(), any()))
           .thenReturn(Future.successful((): Unit))
 
-        when(mockDesConnector.sendDeregistration(any(), any())(any()))
-          .thenReturn(Future.successful(desDeregistrationResponse))
+        if (hipFlag)
+          when(mockHipConnector.subscriptionDeregistration(any(), any())(any()))
+            .thenReturn(Future.successful(hipDeregistrationResponse))
+        else
+          when(mockDesConnector.sendDeregistration(any(), any())(any()))
+            .thenReturn(Future.successful(hipDeregistrationResponse.toDesDeregistrationResponse))
 
         when(mockAuditConnector.sendEvent(any())(using any(), any())).thenReturn(Future.successful(AuditResult.Success))
 
+        when(mockServicesConfig.getBoolean("features.hip")).thenReturn(hipFlag)
         val result = controller.deregister(fhddsRegistrationNumber)(request)
 
         status(result) mustBe OK
-        contentAsJson(result) mustBe Json.toJson(desDeregistrationResponse.processingDate)
+        contentAsJson(result) mustBe Json.toJson(hipDeregistrationResponse.processingDate)
       }
 
       s"return subscription status in $etmp checkStatus" in {
         val fhddsRegistrationNumber = "reg123"
+        val hipStatusResponse =
+          SubscriptionStatusResponse(HipStatus.Successful, Some("idTypeValue"), Some("idValueValue"))
 
-        if (useHip) {
-          val statusResponse =
-            SubscriptionStatusResponse(HipStatus.Successful, Some("idTypeValue"), Some("idValueValue"))
-          when(mockHipConnector.getStatus(any())(any())).thenReturn(Future.successful(statusResponse))
-        } else {
-          val statusResponse = StatusResponse(DesStatus.Successful, Some("idTypeValue"), Some("idValueValue"))
-          when(mockDesConnector.getStatus(any())(any())).thenReturn(Future.successful(statusResponse))
-        }
+        if (hipFlag)
+          when(mockHipConnector.getStatus(any())(any())).thenReturn(Future.successful(hipStatusResponse))
+        else
+          when(mockDesConnector.getStatus(any())(any()))
+            .thenReturn(Future.successful(hipStatusResponse.toDesStatusResponse))
 
+        when(mockServicesConfig.getBoolean("features.hip")).thenReturn(hipFlag)
         val result = controller.checkStatus(fhddsRegistrationNumber)(FakeRequest())
+
         status(result) mustBe OK
         contentAsJson(result) mustBe Json.toJson(FhddsStatus.Approved)
       }
 
       s"return $etmp subscription data for a valid FHDDS registration number" in {
         val fhddsRegistrationNumber = "XMFH00000123456"
-        val desResponse = mock[HttpResponse]
-        when(desResponse.status).thenReturn(200)
-        when(desResponse.json).thenReturn(Json.obj("key" -> "value"))
+        val httpResponse = mock[HttpResponse]
+        when(httpResponse.status).thenReturn(200)
+        when(httpResponse.json).thenReturn(Json.obj("key" -> "value"))
 
-        when(mockDesConnector.display(eqTo(fhddsRegistrationNumber))(any()))
-          .thenReturn(Future.successful(desResponse))
+        if (hipFlag)
+          when(mockHipConnector.subscriptionDisplay(eqTo(fhddsRegistrationNumber))(any()))
+            .thenReturn(Future.successful(httpResponse))
+        else
+          when(mockDesConnector.display(eqTo(fhddsRegistrationNumber))(any()))
+            .thenReturn(Future.successful(httpResponse))
 
+        when(mockServicesConfig.getBoolean("features.hip")).thenReturn(hipFlag)
         val result = controller.get(fhddsRegistrationNumber)(FakeRequest())
 
         status(result) mustBe OK
@@ -335,12 +369,17 @@ class FhddsApplicationControllerSpec extends PlaySpec with MockitoSugar with Sca
 
       s"handle bad request from $etmp connector" in {
         val fhddsRegistrationNumber = "XMFH00000123456"
-        val desResponse = mock[HttpResponse]
-        when(desResponse.status).thenReturn(400)
+        val httpResponse = mock[HttpResponse]
+        when(httpResponse.status).thenReturn(400)
 
-        when(mockDesConnector.display(eqTo(fhddsRegistrationNumber))(any()))
-          .thenReturn(Future.successful(desResponse))
+        if (hipFlag)
+          when(mockHipConnector.subscriptionDisplay(eqTo(fhddsRegistrationNumber))(any()))
+            .thenReturn(Future.successful(httpResponse))
+        else
+          when(mockDesConnector.display(eqTo(fhddsRegistrationNumber))(any()))
+            .thenReturn(Future.successful(httpResponse))
 
+        when(mockServicesConfig.getBoolean("features.hip")).thenReturn(hipFlag)
         val result = controller.get(fhddsRegistrationNumber)(FakeRequest())
 
         status(result) mustBe BAD_REQUEST
@@ -349,12 +388,17 @@ class FhddsApplicationControllerSpec extends PlaySpec with MockitoSugar with Sca
 
       s"handle not found from $etmp connector" in {
         val fhddsRegistrationNumber = "XMFH00000123456"
-        val desResponse = mock[HttpResponse]
-        when(desResponse.status).thenReturn(404)
+        val httpResponse = mock[HttpResponse]
+        when(httpResponse.status).thenReturn(404)
 
-        when(mockDesConnector.display(eqTo(fhddsRegistrationNumber))(any()))
-          .thenReturn(Future.successful(desResponse))
+        if (hipFlag)
+          when(mockHipConnector.subscriptionDisplay(eqTo(fhddsRegistrationNumber))(any()))
+            .thenReturn(Future.successful(httpResponse))
+        else
+          when(mockDesConnector.display(eqTo(fhddsRegistrationNumber))(any()))
+            .thenReturn(Future.successful(httpResponse))
 
+        when(mockServicesConfig.getBoolean("features.hip")).thenReturn(hipFlag)
         val result = controller.get(fhddsRegistrationNumber)(FakeRequest())
 
         status(result) mustBe NOT_FOUND
@@ -363,12 +407,17 @@ class FhddsApplicationControllerSpec extends PlaySpec with MockitoSugar with Sca
 
       s"handle forbidden response from $etmp connector" in {
         val fhddsRegistrationNumber = "XMFH00000123456"
-        val desResponse = mock[HttpResponse]
-        when(desResponse.status).thenReturn(403)
+        val httpResponse = mock[HttpResponse]
+        when(httpResponse.status).thenReturn(403)
 
-        when(mockDesConnector.display(eqTo(fhddsRegistrationNumber))(any()))
-          .thenReturn(Future.successful(desResponse))
+        if (hipFlag)
+          when(mockHipConnector.subscriptionDisplay(eqTo(fhddsRegistrationNumber))(any()))
+            .thenReturn(Future.successful(httpResponse))
+        else
+          when(mockDesConnector.display(eqTo(fhddsRegistrationNumber))(any()))
+            .thenReturn(Future.successful(httpResponse))
 
+        when(mockServicesConfig.getBoolean("features.hip")).thenReturn(hipFlag)
         val result = controller.get(fhddsRegistrationNumber)(FakeRequest())
 
         status(result) mustBe FORBIDDEN
@@ -377,13 +426,18 @@ class FhddsApplicationControllerSpec extends PlaySpec with MockitoSugar with Sca
 
       s"handle unexpected error from $etmp connector" in {
         val fhddsRegistrationNumber = "XMFH00000123456"
-        val desResponse = mock[HttpResponse]
-        when(desResponse.status).thenReturn(500)
-        when(desResponse.body).thenReturn("Internal server error")
+        val httpResponse = mock[HttpResponse]
+        when(httpResponse.status).thenReturn(500)
+        when(httpResponse.body).thenReturn("Internal server error")
 
-        when(mockDesConnector.display(eqTo(fhddsRegistrationNumber))(any()))
-          .thenReturn(Future.successful(desResponse))
+        if (hipFlag)
+          when(mockHipConnector.subscriptionDisplay(eqTo(fhddsRegistrationNumber))(any()))
+            .thenReturn(Future.successful(httpResponse))
+        else
+          when(mockDesConnector.display(eqTo(fhddsRegistrationNumber))(any()))
+            .thenReturn(Future.successful(httpResponse))
 
+        when(mockServicesConfig.getBoolean("features.hip")).thenReturn(hipFlag)
         val result = controller.get(fhddsRegistrationNumber)(FakeRequest())
 
         status(result) mustBe BAD_GATEWAY
@@ -438,7 +492,8 @@ class FhddsApplicationControllerSpec extends PlaySpec with MockitoSugar with Sca
         state = "SUCCEEDED",
         errorResponse = None
       )
-      val request = FakeRequest().withBody(Json.toJson(callback))
+      val request =
+        FakeRequest().withJsonBody(Json.toJson(callback))
 
       when(mockSubmissionTrackingService.getSubmissionTrackingEmail(formBundleId))
         .thenReturn(OptionT(Future.successful(Some("email@example.com"): Option[String])))
@@ -446,7 +501,7 @@ class FhddsApplicationControllerSpec extends PlaySpec with MockitoSugar with Sca
       when(mockSubmissionTrackingService.deleteSubmissionTracking(formBundleId))
         .thenAnswer(_ => Future.successful(()))
 
-//      reset(mockEmailConnector) - Edem
+//      reset(mockEmailConnector) // - Edem
       when(mockEmailConnector.sendEmail(any(), any(), any())(using any(), any(), any()))
         .thenReturn(Future.successful((): Unit))
 

@@ -19,8 +19,11 @@ package uk.gov.hmrc.fhregistration.models.hip
 import play.api.libs.json.{Json, OFormat, Reads}
 import play.api.libs.json._
 import java.util.Date
+import uk.gov.hmrc.fhregistration.models.des.DesWithdrawalResponse
 
-case class HipWithdrawalResponse(processingDate: Date)
+case class HipWithdrawalResponse(processingDate: Date) {
+  def toDesWithdrawalResponse = DesWithdrawalResponse(processingDate)
+}
 
 object HipWithdrawalResponse {
   implicit val reads: Reads[HipWithdrawalResponse] =

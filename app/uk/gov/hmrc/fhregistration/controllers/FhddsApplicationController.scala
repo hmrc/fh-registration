@@ -21,7 +21,7 @@ import play.api.Logging
 import play.api.libs.json.Json
 import play.api.mvc.{ControllerComponents, Request, Result}
 import uk.gov.hmrc.fhregistration.actions.Actions
-import uk.gov.hmrc.fhregistration.connectors.{DesConnector, DesSubmissionException, EmailConnector, EtmpRouting, HipConnector, TaxEnrolmentConnector}
+import uk.gov.hmrc.fhregistration.connectors.*
 import uk.gov.hmrc.fhregistration.models.TaxEnrolmentsCallback
 import uk.gov.hmrc.fhregistration.models.des.{DesDeregistrationResponse, DesStatus, DesSubmissionResponse, DesWithdrawalResponse, StatusResponse}
 import uk.gov.hmrc.fhregistration.models.des.DesStatus.DesStatus
@@ -54,9 +54,13 @@ class FhddsApplicationController @Inject() (
   val actions: Actions,
   val repo: DefaultSubmissionTrackingRepository
 )(implicit val ec: ExecutionContext)
-    extends BackendController(cc) with EtmpRouting(configuration) with Logging {
+    extends BackendController(cc) with Logging {
 
   import actions._
+
+  def useHip: Boolean = configuration.getBoolean("features.hip")
+
+  def withDownstream[A](hip: => Future[A], des: => Future[A]): Future[A] = if (useHip) hip else des
 
   def findAllSubmissions = Action.async { _ =>
     repo.findAll().map(submissionTrackingList => Ok(Json.toJson(submissionTrackingList)))
@@ -71,21 +75,15 @@ class FhddsApplicationController @Inject() (
     userGroupAction.async(parse.json[SubmissionRequest]) { implicit r =>
       val request = r.body
       (for {
-        desResponse <- withDownstream(
-                         hipConnector
-                           .createOrUpdateFhdds(safeId, request.submission)(hc)
-                           .map(hr =>
-                             DesSubmissionResponse(
-                               hr.processingDate,
-                               hr.etmpFormBundleNumber,
-                               hr.registrationNumberFHDDS
-                             )
-                           ),
-                         desConnector.sendSubmission(safeId, request.submission)(hc)
-                       )
-        response = SubmissionResponse(desResponse.registrationNumberFHDDS, desResponse.processingDate)
+        etmpResponse <- withDownstream(
+                          hipConnector
+                            .createOrUpdateFhdds(safeId, request.submission)(hc)
+                            .map(_.toDesSubmissionResponse),
+                          desConnector.sendSubmission(safeId, request.submission)(hc)
+                        )
+        response = SubmissionResponse(etmpResponse.registrationNumberFHDDS, etmpResponse.processingDate)
       } yield {
-        logger.info(s"Received registration number ${desResponse.registrationNumberFHDDS} for safeId $safeId")
+        logger.info(s"Received registration number ${etmpResponse.registrationNumberFHDDS} for safeId $safeId")
 
         currentRegNumber foreach { regNumber =>
           taxEnrolmentConnector.deleteGroupEnrolment(r.groupId, regNumber)
@@ -96,13 +94,13 @@ class FhddsApplicationController @Inject() (
         submissionTrackingService.saveSubscriptionTracking(
           safeId,
           r.userId,
-          desResponse.etmpFormBundleNumber,
+          etmpResponse.etmpFormBundleNumber,
           request.emailAddress,
           response.registrationNumber
         ) andThen { case _ =>
-          subscribeToTaxEnrolment(safeId, desResponse.etmpFormBundleNumber).failed.foreach { e =>
+          subscribeToTaxEnrolment(safeId, etmpResponse.etmpFormBundleNumber).failed.foreach { e =>
             submissionTrackingService
-              .updateSubscriptionTracking(desResponse.etmpFormBundleNumber, EnrolmentProgress.Error)
+              .updateSubscriptionTracking(etmpResponse.etmpFormBundleNumber, EnrolmentProgress.Error)
           }
         }
 
@@ -121,15 +119,13 @@ class FhddsApplicationController @Inject() (
   def amend(fhddsRegistrationNumber: String) = Action.async(parse.json[SubmissionRequest]) { implicit r =>
     val request = r.body
     (for {
-      desResponse <- withDownstream(
+      etmpResponse <- withDownstream(
                        hipConnector
                          .createOrUpdateFhdds(fhddsRegistrationNumber, request.submission)(hc)
-                         .map(hr =>
-                           DesSubmissionResponse(hr.processingDate, hr.etmpFormBundleNumber, hr.registrationNumberFHDDS)
-                         ),
+                         .map(_.toDesSubmissionResponse),
                        desConnector.sendAmendment(fhddsRegistrationNumber, request.submission)(hc)
                      )
-      response = SubmissionResponse(desResponse.registrationNumberFHDDS, desResponse.processingDate)
+      response = SubmissionResponse(etmpResponse.registrationNumberFHDDS, etmpResponse.processingDate)
     } yield {
       val event = auditService.buildSubmissionAmendAuditEvent(request, response.registrationNumber)
       auditSubmission(response.registrationNumber, event)
@@ -142,13 +138,13 @@ class FhddsApplicationController @Inject() (
   def withdrawal(fhddsRegistrationNumber: String) = userGroupAction.async(parse.json[WithdrawalRequest]) { implicit r =>
     val request = r.body
     for {
-      desResponse <- withDownstream(
+      etmpResponse <- withDownstream(
                        hipConnector
                          .subscriptionWithdrawal(fhddsRegistrationNumber, request.withdrawal)(hc)
-                         .map(hr => DesWithdrawalResponse(hr.processingDate)),
+                         .map(_.toDesWithdrawalResponse),
                        desConnector.sendWithdrawal(fhddsRegistrationNumber, request.withdrawal)(hc)
                      )
-      processingDate = desResponse.processingDate
+      processingDate = etmpResponse.processingDate
     } yield {
       val event = auditService.buildSubmissionWithdrawalAuditEvent(request, fhddsRegistrationNumber)
       auditSubmission(fhddsRegistrationNumber, event)
@@ -166,13 +162,13 @@ class FhddsApplicationController @Inject() (
     implicit r =>
       val request = r.body
       for {
-        desResponse <- withDownstream(
+        etmpResponse <- withDownstream(
                          hipConnector
                            .subscriptionDeregistration(fhddsRegistrationNumber, request.deregistration)(hc)
-                           .map(hr => DesDeregistrationResponse(hr.processingDate)),
+                           .map(_.toDesDeregistrationResponse),
                          desConnector.sendDeregistration(fhddsRegistrationNumber, request.deregistration)(hc)
                        )
-        processingDate = desResponse.processingDate
+        processingDate = etmpResponse.processingDate
       } yield {
         val event = auditService.buildSubmissionDeregisterAuditEvent(request, fhddsRegistrationNumber)
         auditSubmission(fhddsRegistrationNumber, event)
@@ -234,6 +230,10 @@ class FhddsApplicationController @Inject() (
     case DesSubmissionException(statusCode, code, reason) =>
       logger.warn(s"DES submission failed with status $statusCode and code $code: $reason")
       Status(statusCode)(Json.obj("code" -> code, "reason" -> reason))
+
+    case HipSubmissionException(statusCode, code, reason) =>
+      logger.warn(s"HIP submission failed with status $statusCode and code $code: $reason")
+      Status(statusCode)(Json.obj("code" -> code, "reason" -> reason))
   }
 
   def subscriptionCallback(formBundleId: String) = Action.async(parse.json[TaxEnrolmentsCallback]) { implicit request =>
@@ -264,13 +264,12 @@ class FhddsApplicationController @Inject() (
   }
 
   def checkStatus(fhddsRegistrationNumber: String) = Action.async { implicit request =>
-    val w1 = withDownstream(
+    withDownstream(
       hipConnector
         .getStatus(fhddsRegistrationNumber)(hc)
-        .map(sr => StatusResponse(HipStatus.toDesStatus(sr.subscriptionStatus), sr.idType, sr.idValue)),
+        .map(_.toDesStatusResponse),
       desConnector.getStatus(fhddsRegistrationNumber)(hc)
     )
-    w1
       .map(_.subscriptionStatus)
       .map(mdtpSubscriptionStatus)
       .map { status =>
