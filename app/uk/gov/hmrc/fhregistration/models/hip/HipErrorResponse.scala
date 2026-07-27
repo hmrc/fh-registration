@@ -33,7 +33,7 @@ object HipErrorResponse {
     ((__ \ "code").read[String] and (__ \ "message").read[String])(HipErrorResponse.apply)
 
   private val failuresReads: Reads[HipErrorResponse] =
-    (__ \ "failures").read[Seq[HipFailure]].map { failures =>
+    (__ \ "response").read[Seq[HipFailure]].map { failures =>
       HipErrorResponse(
         code = failures.map(_.`type`).mkString(","),
         reason = failures.map(_.reason).mkString("; ")

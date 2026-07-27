@@ -772,6 +772,133 @@ class HipConnectorSpec extends AnyWordSpecLike with Matchers with OptionValues w
       result.registrationNumberFHDDS shouldBe "XDFH00000123456"
 
     }
+
+    "throws HipSubmissionException  if HTTP response is 401" in {
+      val mockRequestBuilder = mock[RequestBuilder]
+      val httpResponse = HttpResponse(401, "")
+
+      val submissionRequest = Source.fromResource("json/valid/subscription/fhdds-create.json").mkString
+
+      when(mockHttpClient.post(any())(using any())).thenReturn(mockRequestBuilder)
+      when(mockRequestBuilder.setHeader(any())).thenReturn(mockRequestBuilder)
+      when(mockRequestBuilder.withBody[JsValue](any())(using any(), any(), any())).thenReturn(mockRequestBuilder)
+      when(mockRequestBuilder.execute[HttpResponse](using any(), any())).thenReturn(Future.successful(httpResponse))
+
+      val connector = new DefaultHipConnectorMock(mockHttpClient, configuration)
+
+      val result = connector.createOrUpdateFhdds("XA0001234567890", Json.parse(submissionRequest))(hc)
+
+      val exception = result.failed.futureValue
+      exception shouldBe a[HipSubmissionException]
+      val hipSubmissionException = exception.asInstanceOf[HipSubmissionException]
+      hipSubmissionException.statusCode shouldBe 401
+      hipSubmissionException.code shouldBe "UNKNOWN_HIP_ERROR"
+    }
+
+    "throws HipSubmissionException with code and reason joined from multiple HIP failures if HTTP response is 400" in {
+      val mockRequestBuilder = mock[RequestBuilder]
+      val httpResponse = HttpResponse(
+        400,
+        """{
+          |  "origin": "HIP",
+          |  "response": [
+          |    {
+          |      "type": "Type of Failure",
+          |      "reason": "Reason for Failure"
+          |    },
+          |    {
+          |      "type": "Type of Failure 2",
+          |      "reason": "Reason for Failure 2"
+          |    }
+          |  ]
+          |}""".stripMargin
+      )
+
+      val submissionRequest = Source.fromResource("json/valid/subscription/fhdds-create.json").mkString
+
+      when(mockHttpClient.post(any())(using any())).thenReturn(mockRequestBuilder)
+      when(mockRequestBuilder.setHeader(any())).thenReturn(mockRequestBuilder)
+      when(mockRequestBuilder.withBody[JsValue](any())(using any(), any(), any())).thenReturn(mockRequestBuilder)
+      when(mockRequestBuilder.execute[HttpResponse](using any(), any())).thenReturn(Future.successful(httpResponse))
+
+      val connector = new DefaultHipConnectorMock(mockHttpClient, configuration)
+
+      val result = connector.createOrUpdateFhdds("XA0001234567890", Json.parse(submissionRequest))(hc)
+
+      val exception = result.failed.futureValue
+      exception shouldBe a[HipSubmissionException]
+      val hipSubmissionException = exception.asInstanceOf[HipSubmissionException]
+      hipSubmissionException.statusCode shouldBe 400
+      hipSubmissionException.code shouldBe "Type of Failure,Type of Failure 2"
+      hipSubmissionException.reason shouldBe "Reason for Failure; Reason for Failure 2"
+    }
+
+    "throws UpstreamErrorResponse  if HTTP response is 503" in {
+      val mockRequestBuilder = mock[RequestBuilder]
+      val httpResponse = HttpResponse(
+        503,
+        """{
+          |  "origin": "HIP",
+          |  "response": {
+          |    "failures": [
+          |      {
+          |        "type": "503",
+          |        "reason": "Un expected"
+          |      }
+          |    ]
+          |  }
+          |}""".stripMargin
+      )
+
+      val submissionRequest = Source.fromResource("json/valid/subscription/fhdds-create.json").mkString
+
+      when(mockHttpClient.post(any())(using any())).thenReturn(mockRequestBuilder)
+      when(mockRequestBuilder.setHeader(any())).thenReturn(mockRequestBuilder)
+      when(mockRequestBuilder.withBody[JsValue](any())(using any(), any(), any())).thenReturn(mockRequestBuilder)
+      when(mockRequestBuilder.execute[HttpResponse](using any(), any())).thenReturn(Future.successful(httpResponse))
+
+      val connector = new DefaultHipConnectorMock(mockHttpClient, configuration)
+
+      val result = connector.createOrUpdateFhdds("XA0001234567890", Json.parse(submissionRequest))(hc)
+
+      val exception = result.failed.futureValue
+      val upstreamErrorResponse = exception.asInstanceOf[UpstreamErrorResponse]
+      upstreamErrorResponse.statusCode shouldBe 503
+
+    }
+
+    "throws UpstreamErrorResponse if 500" in {
+      val mockRequestBuilder = mock[RequestBuilder]
+      val responseBody = """{
+                           |  "origin": "HoD",
+                           |  "response": {
+                           |    "error": {
+                           |      "code": "500",
+                           |      "logID": "D82EBAB67AC6D7565C0682CA91BDC577",
+                           |      "message": "string"
+                           |    }
+                           |  }
+                           |}
+                           |Headers""".stripMargin
+      val httpResponse = HttpResponse(500, responseBody)
+
+      val submissionRequest = Source.fromResource("json/valid/subscription/fhdds-create.json").mkString
+
+      when(mockHttpClient.post(any())(using any())).thenReturn(mockRequestBuilder)
+      when(mockRequestBuilder.setHeader(any())).thenReturn(mockRequestBuilder)
+      when(mockRequestBuilder.withBody[JsValue](any())(using any(), any(), any())).thenReturn(mockRequestBuilder)
+      when(mockRequestBuilder.execute[HttpResponse](using any(), any())).thenReturn(Future.successful(httpResponse))
+
+      val connector = new DefaultHipConnectorMock(mockHttpClient, configuration)
+
+      val result = connector.createOrUpdateFhdds("XA0001234567890", Json.parse(submissionRequest))(hc)
+
+      val exception = result.failed.futureValue
+      exception shouldBe a[UpstreamErrorResponse]
+      exception.asInstanceOf[UpstreamErrorResponse].statusCode shouldBe 500
+
+    }
+
   }
 
   "subscriptionDeregistration" should {
