@@ -441,7 +441,7 @@ class FhddsApplicationControllerSpec
         val result = controller.get(fhddsRegistrationNumber)(FakeRequest())
 
         status(result) mustBe BAD_GATEWAY
-        contentAsString(result) must include("DES is currently experiencing problems")
+        contentAsString(result) must include("ETMP API is currently experiencing problems")
       }
     }
 

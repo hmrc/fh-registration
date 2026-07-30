@@ -75,7 +75,6 @@ class FhddsApplicationController @Inject() (
     userGroupAction.async(parse.json[SubmissionRequest]) { implicit r =>
       val request = r.body
       (for {
-
         etmpResponse <- withDownstream(
                           hipConnector
                             .createOrUpdateFhdds(safeId, IdType.SAFE, request.submission)(hc)
@@ -292,9 +291,9 @@ class FhddsApplicationController @Inject() (
         case 403 => Forbidden("Unexpected business error received.")
         case _ =>
           logger.error(
-            s"FhddsApplicationController.get - Unexpected error from DES connector with status: ${resp.status} and body: ${resp.body}"
+            s"FhddsApplicationController.get - Unexpected error from ETMP API connector with status: ${resp.status} and body: ${resp.body}"
           )
-          BadGateway("DES is currently experiencing problems that require live service intervention.")
+          BadGateway("ETMP API is currently experiencing problems that require live service intervention.")
       }
     }
   }
