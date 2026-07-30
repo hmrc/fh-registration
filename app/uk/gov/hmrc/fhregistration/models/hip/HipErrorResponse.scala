@@ -25,12 +25,14 @@ object HipFailure {
   implicit val format: OFormat[HipFailure] = Json.format[HipFailure]
 }
 
-case class HipErrorResponse(code: String, reason: String)
+case class HipErrorResponse(code: String, reason: String, logId: Option[String] = None)
 
 object HipErrorResponse {
 
   private val systemErrorReads: Reads[HipErrorResponse] =
-    ((__ \ "code").read[String] and (__ \ "message").read[String])(HipErrorResponse.apply)
+    ((__ \ "response" \ "error" \ "code").read[String] and
+      (__ \ "response" \ "error" \ "message").read[String] and
+      (__ \ "response" \ "error" \ "logID").readNullable[String])(HipErrorResponse.apply)
 
   private val failuresReads: Reads[HipErrorResponse] =
     (__ \ "response").read[Seq[HipFailure]].map { failures =>
@@ -40,5 +42,14 @@ object HipErrorResponse {
       )
     }
 
-  implicit val reads: Reads[HipErrorResponse] = systemErrorReads.orElse(failuresReads)
+  private val nestedFailuresReads: Reads[HipErrorResponse] =
+    (__ \ "response" \ "failures").read[Seq[HipFailure]].map { failures =>
+      HipErrorResponse(
+        code = failures.map(_.`type`).mkString(","),
+        reason = failures.map(_.reason).mkString("; ")
+      )
+    }
+
+  implicit val reads: Reads[HipErrorResponse] =
+    systemErrorReads.orElse(failuresReads).orElse(nestedFailuresReads)
 }

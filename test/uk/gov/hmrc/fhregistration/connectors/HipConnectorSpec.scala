@@ -30,10 +30,12 @@ import org.scalatestplus.mockito.MockitoSugar
 import play.api.Configuration
 import play.api.libs.json.{JsValue, Json}
 import sttp.model.HeaderNames
+import uk.gov.hmrc.fhregistration.models.IdType
 import uk.gov.hmrc.fhregistration.models.hip.{HipStatus, SubscriptionStatusResponse}
 import uk.gov.hmrc.fhregistration.util.LogCapturing
 import uk.gov.hmrc.http.client.{HttpClientV2, RequestBuilder}
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, UpstreamErrorResponse}
+
 import java.text.SimpleDateFormat
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -737,7 +739,8 @@ class HipConnectorSpec extends AnyWordSpecLike with Matchers with OptionValues w
       when(mockRequestBuilder.execute[HttpResponse](using any(), any())).thenReturn(Future.successful(httpResponse))
 
       val connector = new DefaultHipConnectorMock(mockHttpClient, configuration)
-      val result = connector.createOrUpdateFhdds("XA0001234567890", Json.parse(submissionRequest))(hc).futureValue
+      val result =
+        connector.createOrUpdateFhdds("XA0001234567890", IdType.SAFE, Json.parse(submissionRequest))(hc).futureValue
 
       result.processingDate shouldBe new SimpleDateFormat("yyyy-MM-dd").parse("2001-12-17")
       result.etmpFormBundleNumber shouldBe "012345678901"
@@ -765,7 +768,8 @@ class HipConnectorSpec extends AnyWordSpecLike with Matchers with OptionValues w
       when(mockRequestBuilder.execute[HttpResponse](using any(), any())).thenReturn(Future.successful(httpResponse))
 
       val connector = new DefaultHipConnectorMock(mockHttpClient, configuration)
-      val result = connector.createOrUpdateFhdds("XA0001234567890", Json.parse(submissionRequest))(hc).futureValue
+      val result =
+        connector.createOrUpdateFhdds("XA0001234567890", IdType.FHDDS, Json.parse(submissionRequest))(hc).futureValue
 
       result.processingDate shouldBe new SimpleDateFormat("yyyy-MM-dd").parse("2001-12-17")
       result.etmpFormBundleNumber shouldBe "012345678901"
@@ -786,7 +790,7 @@ class HipConnectorSpec extends AnyWordSpecLike with Matchers with OptionValues w
 
       val connector = new DefaultHipConnectorMock(mockHttpClient, configuration)
 
-      val result = connector.createOrUpdateFhdds("XA0001234567890", Json.parse(submissionRequest))(hc)
+      val result = connector.createOrUpdateFhdds("XA0001234567890", IdType.SAFE, Json.parse(submissionRequest))(hc)
 
       val exception = result.failed.futureValue
       exception shouldBe a[HipSubmissionException]
@@ -823,7 +827,7 @@ class HipConnectorSpec extends AnyWordSpecLike with Matchers with OptionValues w
 
       val connector = new DefaultHipConnectorMock(mockHttpClient, configuration)
 
-      val result = connector.createOrUpdateFhdds("XA0001234567890", Json.parse(submissionRequest))(hc)
+      val result = connector.createOrUpdateFhdds("XA0001234567890", IdType.SAFE, Json.parse(submissionRequest))(hc)
 
       val exception = result.failed.futureValue
       exception shouldBe a[HipSubmissionException]
@@ -859,7 +863,7 @@ class HipConnectorSpec extends AnyWordSpecLike with Matchers with OptionValues w
 
       val connector = new DefaultHipConnectorMock(mockHttpClient, configuration)
 
-      val result = connector.createOrUpdateFhdds("XA0001234567890", Json.parse(submissionRequest))(hc)
+      val result = connector.createOrUpdateFhdds("XA0001234567890", IdType.FHDDS, Json.parse(submissionRequest))(hc)
 
       val exception = result.failed.futureValue
       val upstreamErrorResponse = exception.asInstanceOf[UpstreamErrorResponse]
@@ -891,7 +895,7 @@ class HipConnectorSpec extends AnyWordSpecLike with Matchers with OptionValues w
 
       val connector = new DefaultHipConnectorMock(mockHttpClient, configuration)
 
-      val result = connector.createOrUpdateFhdds("XA0001234567890", Json.parse(submissionRequest))(hc)
+      val result = connector.createOrUpdateFhdds("XA0001234567890", IdType.FHDDS, Json.parse(submissionRequest))(hc)
 
       val exception = result.failed.futureValue
       exception shouldBe a[UpstreamErrorResponse]

@@ -49,7 +49,7 @@ trait HipConnector extends HttpErrorFunctions {
     hc: HeaderCarrier
   ): Future[HipWithdrawalResponse]
 
-  def createOrUpdateFhdds(fhddsRegistrationNumber: String, submission: JsValue)(
+  def createOrUpdateFhdds(id: String, idType: String, submission: JsValue)(
     hc: HeaderCarrier
   ): Future[HipSubmissionResponse]
 
@@ -109,6 +109,8 @@ class DefaultHipConnector @Inject() (http: HttpClientV2, configuration: Configur
     response.status match {
       case 200 | 201 =>
         response
+      case 429 =>
+        throw UpstreamErrorResponse(s"${response.status} received from HIP - converted to 503", response.status, 503)
       case _ =>
         logger.error(s"Received error ${response.status} from HIP with message - ${response.body}")
         response
@@ -119,6 +121,8 @@ class DefaultHipConnector @Inject() (http: HttpClientV2, configuration: Configur
     response.status match {
       case 200 | 201 =>
         response
+      case 429 =>
+        throw UpstreamErrorResponse(s"${response.status} received from HIP - converted to 503", response.status, 503)
       case _ =>
         logger.error(s"Received error ${response.status} from HIP with message - ${response.body}")
         throw UpstreamErrorResponse(s"${response.status} received from HIP", response.status)
@@ -164,7 +168,7 @@ class DefaultHipConnector @Inject() (http: HttpClientV2, configuration: Configur
       .map(_.json.as[HipWithdrawalResponse])
   }
 
-  override def createOrUpdateFhdds(id: String, submission: JsValue)(
+  override def createOrUpdateFhdds(id: String, idType: String, submission: JsValue)(
     hc: HeaderCarrier
   ): Future[HipSubmissionResponse] = {
     logger.info(s"Sending fhdds registration data to HIP for safeId $id")

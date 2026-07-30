@@ -22,7 +22,7 @@ import play.api.libs.json.Json
 import play.api.mvc.{ControllerComponents, Request, Result}
 import uk.gov.hmrc.fhregistration.actions.Actions
 import uk.gov.hmrc.fhregistration.connectors.*
-import uk.gov.hmrc.fhregistration.models.TaxEnrolmentsCallback
+import uk.gov.hmrc.fhregistration.models.{IdType, TaxEnrolmentsCallback}
 import uk.gov.hmrc.fhregistration.models.des.{DesDeregistrationResponse, DesStatus, DesSubmissionResponse, DesWithdrawalResponse, StatusResponse}
 import uk.gov.hmrc.fhregistration.models.des.DesStatus.DesStatus
 import uk.gov.hmrc.fhregistration.models.fhdds.FhddsStatus.FhddsStatus
@@ -75,9 +75,10 @@ class FhddsApplicationController @Inject() (
     userGroupAction.async(parse.json[SubmissionRequest]) { implicit r =>
       val request = r.body
       (for {
+
         etmpResponse <- withDownstream(
                           hipConnector
-                            .createOrUpdateFhdds(safeId, request.submission)(hc)
+                            .createOrUpdateFhdds(safeId, IdType.SAFE, request.submission)(hc)
                             .map(_.toDesSubmissionResponse),
                           desConnector.sendSubmission(safeId, request.submission)(hc)
                         )
@@ -121,7 +122,7 @@ class FhddsApplicationController @Inject() (
     (for {
       etmpResponse <- withDownstream(
                         hipConnector
-                          .createOrUpdateFhdds(fhddsRegistrationNumber, request.submission)(hc)
+                          .createOrUpdateFhdds(fhddsRegistrationNumber, IdType.FHDDS, request.submission)(hc)
                           .map(_.toDesSubmissionResponse),
                         desConnector.sendAmendment(fhddsRegistrationNumber, request.submission)(hc)
                       )
