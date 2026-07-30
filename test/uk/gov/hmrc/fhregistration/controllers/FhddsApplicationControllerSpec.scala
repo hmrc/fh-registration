@@ -67,9 +67,8 @@ class FhddsApplicationControllerSpec
   implicit val materializer: Materializer = mock[Materializer]
   implicit val hc: HeaderCarrier = HeaderCarrier()
 
-  override def beforeEach(): Unit = {
+  override def beforeEach(): Unit =
     reset(mockServicesConfig)
-  }
 
   private val controller =
     new FhddsApplicationController(
@@ -139,7 +138,7 @@ class FhddsApplicationControllerSpec
         )
 
         if (hipFlag)
-          when(mockHipConnector.createOrUpdateFhdds(any(), any())(any()))
+          when(mockHipConnector.createOrUpdateFhdds(any(), any(), any())(any()))
             .thenReturn(Future.successful(hipSubmissionResponse))
         else
           when(mockDesConnector.sendAmendment(any(), any())(any()))
@@ -181,7 +180,7 @@ class FhddsApplicationControllerSpec
         ).thenReturn(Future.successful(mockRetrieval))
 
         if (hipFlag)
-          when(mockHipConnector.createOrUpdateFhdds(any(), any())(any()))
+          when(mockHipConnector.createOrUpdateFhdds(any(), any(), any())(any()))
             .thenReturn(Future.failed(HipSubmissionException(403, "ACTIVE_SUBSCRIPTION", "already active")))
         else
           when(mockDesConnector.sendSubmission(any(), any())(any()))
@@ -209,7 +208,7 @@ class FhddsApplicationControllerSpec
           .thenReturn(Future.failed(new NoActiveSession("No active session") {}))
 
         if (hipFlag)
-          when(mockHipConnector.createOrUpdateFhdds(any(), any())(any()))
+          when(mockHipConnector.createOrUpdateFhdds(any(), any(), any())(any()))
             .thenReturn(Future.failed(HipSubmissionException(403, "ACTIVE_SUBSCRIPTION", "already active")))
         else
           when(mockDesConnector.sendAmendment(any(), any())(any()))
