@@ -26,15 +26,15 @@ class HipErrorResponseSpec extends AnyWordSpec with Matchers {
 
     "deserialize a HoD system error" in {
       val json = Json.parse("""{
-                               |  "origin": "HoD",
-                               |  "response": {
-                               |    "error": {
-                               |      "code": "400",
-                               |      "logID": "D82EBAB67AC6D7565C0682CA91BDC577",
-                               |      "message": "bad request"
-                               |    }
-                               |  }
-                               |}""".stripMargin)
+                              |  "origin": "HoD",
+                              |  "response": {
+                              |    "error": {
+                              |      "code": "400",
+                              |      "logID": "D82EBAB67AC6D7565C0682CA91BDC577",
+                              |      "message": "bad request"
+                              |    }
+                              |  }
+                              |}""".stripMargin)
 
       json.validate[HipErrorResponse].asOpt.get shouldBe
         HipErrorResponse("400", "bad request", Some("D82EBAB67AC6D7565C0682CA91BDC577"))
@@ -42,16 +42,16 @@ class HipErrorResponseSpec extends AnyWordSpec with Matchers {
 
     "deserialize a HIP failure list nested under response.failures" in {
       val json = Json.parse("""{
-                               |  "origin": "HIP",
-                               |  "response": {
-                               |    "failures": [
-                               |      {
-                               |        "type": "503",
-                               |        "reason": "unknown error"
-                               |      }
-                               |    ]
-                               |  }
-                               |}""".stripMargin)
+                              |  "origin": "HIP",
+                              |  "response": {
+                              |    "failures": [
+                              |      {
+                              |        "type": "503",
+                              |        "reason": "unknown error"
+                              |      }
+                              |    ]
+                              |  }
+                              |}""".stripMargin)
 
       json.validate[HipErrorResponse].asOpt.get shouldBe
         HipErrorResponse("503", "unknown error", None)

@@ -173,7 +173,6 @@ class DefaultHipConnector @Inject() (http: HttpClientV2, configuration: Configur
   ): Future[HipSubmissionResponse] = {
     logger.info(s"Sending fhdds registration data to HIP for safeId $id")
     implicit val headerCarrier: HeaderCarrier = headerCarrierBuilder(hc)
-    val idType = "fhdds"
     http
       .post(url"${createOrUpdateFhddsUrl(id, idType)}")
       .setHeader(("correlationid", correlationId) +: hipHeaders*)
