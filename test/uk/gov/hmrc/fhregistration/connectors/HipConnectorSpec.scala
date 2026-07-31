@@ -18,8 +18,8 @@ package uk.gov.hmrc.fhregistration.connectors
 
 import ch.qos.logback.classic.{Level, Logger as LogbackLogger}
 import org.mockito.ArgumentCaptor
-import org.mockito.ArgumentMatchers.any
-import org.mockito.Mockito.{verify, when}
+import org.mockito.ArgumentMatchers.{any, eq as eqTo}
+import org.mockito.Mockito.{times, verify, when}
 import org.scalatest.OptionValues
 import org.scalatest.concurrent.PatienceConfiguration
 import org.scalatest.concurrent.ScalaFutures.convertScalaFuture
@@ -34,7 +34,7 @@ import uk.gov.hmrc.fhregistration.models.IdType
 import uk.gov.hmrc.fhregistration.models.hip.{HipStatus, SubscriptionStatusResponse}
 import uk.gov.hmrc.fhregistration.util.LogCapturing
 import uk.gov.hmrc.http.client.{HttpClientV2, RequestBuilder}
-import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, UpstreamErrorResponse}
+import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, StringContextOps, UpstreamErrorResponse}
 
 import java.text.SimpleDateFormat
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -54,8 +54,6 @@ class HipConnectorSpec extends AnyWordSpecLike with Matchers with OptionValues w
     )
   )
 
-  val mockHttpClient = mock[HttpClientV2]
-
   class DefaultHipConnectorMock(
     val httpClient: HttpClientV2,
     val config: Configuration
@@ -64,6 +62,7 @@ class HipConnectorSpec extends AnyWordSpecLike with Matchers with OptionValues w
   }
 
   val fhddsRegistrationNumber = "XAFH00000123456"
+  val hipBasePath = "http://localhost:1120/etmp/RESTAdapter"
 
   "hipServiceBasePath" should {
     val hipConnectorMock = new DefaultHipConnectorMock(mock[HttpClientV2], configuration)
@@ -75,7 +74,7 @@ class HipConnectorSpec extends AnyWordSpecLike with Matchers with OptionValues w
   }
 
   "subscription" should {
-    val connector = new DefaultHipConnectorMock(mockHttpClient, configuration)
+    val connector = new DefaultHipConnectorMock(mock[HttpClientV2], configuration)
 
     "have correct SubscriptionDisplay path" in {
       val result = connector.subscriptionDisplayUrl(fhddsRegistrationNumber)
@@ -89,13 +88,13 @@ class HipConnectorSpec extends AnyWordSpecLike with Matchers with OptionValues w
 
     "have correct CreateAndUpdate path" in {
       val idType = "fhdds"
-      val connector = new DefaultHipConnectorMock(mockHttpClient, configuration)
+      val connector = new DefaultHipConnectorMock(mock[HttpClientV2], configuration)
       val result = connector.createOrUpdateFhddsUrl(fhddsRegistrationNumber, idType)
       result shouldBe s"http://localhost:1120/etmp/RESTAdapter/fulfilment-diligence/subscription/id/$fhddsRegistrationNumber/id-type/$idType"
     }
 
     "have correct SubscriptionDeRegister path" in {
-      val connector = new DefaultHipConnectorMock(mockHttpClient, configuration)
+      val connector = new DefaultHipConnectorMock(mock[HttpClientV2], configuration)
       val result = connector.subscriptionDeregistrationUrl(fhddsRegistrationNumber)
       result shouldBe s"http://localhost:1120/etmp/RESTAdapter/fulfilment-diligence/subscription/deregistration/$fhddsRegistrationNumber"
     }
@@ -112,6 +111,7 @@ class HipConnectorSpec extends AnyWordSpecLike with Matchers with OptionValues w
                            |  }
                            |}""".stripMargin
       val httpResponse = HttpResponse(200, responseBody)
+      val mockHttpClient = mock[HttpClientV2]
       val mockRequestBuilder = mock[RequestBuilder]
       when(mockHttpClient.get(any())(using any())).thenReturn(mockRequestBuilder)
       when(mockRequestBuilder.setHeader(any())).thenReturn(mockRequestBuilder)
@@ -125,6 +125,12 @@ class HipConnectorSpec extends AnyWordSpecLike with Matchers with OptionValues w
         Some("EORI"),
         Some("GB123456789000")
       )
+
+      verify(mockHttpClient, times(1)).get(
+        eqTo(
+          url"$hipBasePath/subscription-status?idNumber=$fhddsRegistrationNumber&idType=fhddsRegistrationNumber&regime=FHDDS"
+        )
+      )(using any())
     }
 
     "throw exception for 400 from HIP and log" in {
@@ -139,6 +145,7 @@ class HipConnectorSpec extends AnyWordSpecLike with Matchers with OptionValues w
                            |}
                            |""".stripMargin
       val httpResponse = HttpResponse(400, responseBody)
+      val mockHttpClient = mock[HttpClientV2]
       val mockRequestBuilder = mock[RequestBuilder]
       when(mockHttpClient.get(any())(using any())).thenReturn(mockRequestBuilder)
       when(mockRequestBuilder.setHeader(any())).thenReturn(mockRequestBuilder)
@@ -158,6 +165,12 @@ class HipConnectorSpec extends AnyWordSpecLike with Matchers with OptionValues w
           s"Received error 400 from HIP with message - $responseBody"
         )
       }
+
+      verify(mockHttpClient, times(1)).get(
+        eqTo(
+          url"$hipBasePath/subscription-status?idNumber=$fhddsRegistrationNumber&idType=fhddsRegistrationNumber&regime=FHDDS"
+        )
+      )(using any())
     }
 
     "throw exception for 400 from HOD and log" in {
@@ -174,6 +187,7 @@ class HipConnectorSpec extends AnyWordSpecLike with Matchers with OptionValues w
           |}
           |""".stripMargin
       val httpResponse = HttpResponse(400, responseBody)
+      val mockHttpClient = mock[HttpClientV2]
       val mockRequestBuilder = mock[RequestBuilder]
       when(mockHttpClient.get(any())(using any())).thenReturn(mockRequestBuilder)
       when(mockRequestBuilder.setHeader(any())).thenReturn(mockRequestBuilder)
@@ -193,6 +207,12 @@ class HipConnectorSpec extends AnyWordSpecLike with Matchers with OptionValues w
           s"Received error 400 from HIP with message - $responseBody"
         )
       }
+
+      verify(mockHttpClient, times(1)).get(
+        eqTo(
+          url"$hipBasePath/subscription-status?idNumber=$fhddsRegistrationNumber&idType=fhddsRegistrationNumber&regime=FHDDS"
+        )
+      )(using any())
     }
 
     "throw exception for 422 and log" in {
@@ -204,6 +224,7 @@ class HipConnectorSpec extends AnyWordSpecLike with Matchers with OptionValues w
                            |  }
                            |}""".stripMargin
       val httpResponse = HttpResponse(422, responseBody)
+      val mockHttpClient = mock[HttpClientV2]
       val mockRequestBuilder = mock[RequestBuilder]
       when(mockHttpClient.get(any())(using any())).thenReturn(mockRequestBuilder)
       when(mockRequestBuilder.setHeader(any())).thenReturn(mockRequestBuilder)
@@ -222,9 +243,16 @@ class HipConnectorSpec extends AnyWordSpecLike with Matchers with OptionValues w
           s"Received error 422 from HIP with message - $responseBody"
         )
       }
+
+      verify(mockHttpClient, times(1)).get(
+        eqTo(
+          url"$hipBasePath/subscription-status?idNumber=$fhddsRegistrationNumber&idType=fhddsRegistrationNumber&regime=FHDDS"
+        )
+      )(using any())
     }
 
     "throw exception for Unauthorized and log" in {
+      val mockHttpClient = mock[HttpClientV2]
       val mockRequestBuilder = mock[RequestBuilder]
 
       val responseBody = "".stripMargin
@@ -247,6 +275,12 @@ class HipConnectorSpec extends AnyWordSpecLike with Matchers with OptionValues w
           s"Received error 401 from HIP with message - $responseBody"
         )
       }
+
+      verify(mockHttpClient, times(1)).get(
+        eqTo(
+          url"$hipBasePath/subscription-status?idNumber=$fhddsRegistrationNumber&idType=fhddsRegistrationNumber&regime=FHDDS"
+        )
+      )(using any())
     }
 
     "throw exception for 500 Internal Server Error and log" in {
@@ -261,6 +295,7 @@ class HipConnectorSpec extends AnyWordSpecLike with Matchers with OptionValues w
                            |  }
                            |}""".stripMargin
       val httpResponse = HttpResponse(500, responseBody)
+      val mockHttpClient = mock[HttpClientV2]
       val mockRequestBuilder = mock[RequestBuilder]
 
       when(mockHttpClient.get(any())(using any())).thenReturn(mockRequestBuilder)
@@ -281,6 +316,12 @@ class HipConnectorSpec extends AnyWordSpecLike with Matchers with OptionValues w
           s"Received error 500 from HIP with message - $responseBody"
         )
       }
+
+      verify(mockHttpClient, times(1)).get(
+        eqTo(
+          url"$hipBasePath/subscription-status?idNumber=$fhddsRegistrationNumber&idType=fhddsRegistrationNumber&regime=FHDDS"
+        )
+      )(using any())
     }
 
     "throw exception for 503 Internal Server Error and log" in {
@@ -297,6 +338,7 @@ class HipConnectorSpec extends AnyWordSpecLike with Matchers with OptionValues w
           |  }
           |}""".stripMargin
       val httpResponse = HttpResponse(503, responseBody)
+      val mockHttpClient = mock[HttpClientV2]
       val mockRequestBuilder = mock[RequestBuilder]
 
       when(mockHttpClient.get(any())(using any())).thenReturn(mockRequestBuilder)
@@ -317,11 +359,18 @@ class HipConnectorSpec extends AnyWordSpecLike with Matchers with OptionValues w
           s"Received error 503 from HIP with message - $responseBody"
         )
       }
+
+      verify(mockHttpClient, times(1)).get(
+        eqTo(
+          url"$hipBasePath/subscription-status?idNumber=$fhddsRegistrationNumber&idType=fhddsRegistrationNumber&regime=FHDDS"
+        )
+      )(using any())
     }
 
     "throw exception for Forbidden and log" in {
       val responseBody = ""
       val httpResponse = HttpResponse(403, responseBody)
+      val mockHttpClient = mock[HttpClientV2]
       val mockRequestBuilder = mock[RequestBuilder]
 
       when(mockHttpClient.get(any())(using any())).thenReturn(mockRequestBuilder)
@@ -342,11 +391,17 @@ class HipConnectorSpec extends AnyWordSpecLike with Matchers with OptionValues w
           s"Received error 403 from HIP with message - $responseBody"
         )
       }
+      verify(mockHttpClient, times(1)).get(
+        eqTo(
+          url"$hipBasePath/subscription-status?idNumber=$fhddsRegistrationNumber&idType=fhddsRegistrationNumber&regime=FHDDS"
+        )
+      )(using any())
     }
 
     "throw exception for NotFound and log" in {
       val responseBody = ""
       val httpResponse = HttpResponse(404, responseBody)
+      val mockHttpClient = mock[HttpClientV2]
       val mockRequestBuilder = mock[RequestBuilder]
 
       when(mockHttpClient.get(any())(using any())).thenReturn(mockRequestBuilder)
@@ -367,6 +422,12 @@ class HipConnectorSpec extends AnyWordSpecLike with Matchers with OptionValues w
           s"Received error 404 from HIP with message - $responseBody"
         )
       }
+
+      verify(mockHttpClient, times(1)).get(
+        eqTo(
+          url"$hipBasePath/subscription-status?idNumber=$fhddsRegistrationNumber&idType=fhddsRegistrationNumber&regime=FHDDS"
+        )
+      )(using any())
     }
 
     "return SubscriptionStatusResponse when idType and idValue are absent" in {
@@ -376,6 +437,7 @@ class HipConnectorSpec extends AnyWordSpecLike with Matchers with OptionValues w
                            |  }
                            |}""".stripMargin
       val httpResponse = HttpResponse(200, responseBody)
+      val mockHttpClient = mock[HttpClientV2]
       val mockRequestBuilder = mock[RequestBuilder]
       when(mockHttpClient.get(any())(using any())).thenReturn(mockRequestBuilder)
       when(mockRequestBuilder.setHeader(any())).thenReturn(mockRequestBuilder)
@@ -389,6 +451,12 @@ class HipConnectorSpec extends AnyWordSpecLike with Matchers with OptionValues w
         None,
         None
       )
+
+      verify(mockHttpClient, times(1)).get(
+        eqTo(
+          url"$hipBasePath/subscription-status?idNumber=$fhddsRegistrationNumber&idType=fhddsRegistrationNumber&regime=FHDDS"
+        )
+      )(using any())
     }
   }
 
@@ -397,6 +465,7 @@ class HipConnectorSpec extends AnyWordSpecLike with Matchers with OptionValues w
     "return the HIP response and send correct headers" in {
       val responseBody = Source.fromResource("json/valid/subscription/fhdds-display-response.json").mkString
       val httpResponse = HttpResponse(200, responseBody)
+      val mockHttpClient = mock[HttpClientV2]
       val mockRequestBuilder = mock[RequestBuilder]
 
       when(mockHttpClient.get(any())(using any())).thenReturn(mockRequestBuilder)
@@ -408,6 +477,10 @@ class HipConnectorSpec extends AnyWordSpecLike with Matchers with OptionValues w
 
       result.status shouldBe 200
       result.body shouldBe responseBody
+
+      verify(mockHttpClient, times(1)).get(
+        eqTo(url"$hipBasePath/fulfilment-diligence/subscription/$fhddsRegistrationNumber")
+      )(using any())
 
       val headersCaptor: ArgumentCaptor[Seq[(String, String)]] =
         ArgumentCaptor.forClass(classOf[Seq[(String, String)]])
@@ -435,6 +508,7 @@ class HipConnectorSpec extends AnyWordSpecLike with Matchers with OptionValues w
                            |}""".stripMargin
 
       val httpResponse = HttpResponse(400, responseBody)
+      val mockHttpClient = mock[HttpClientV2]
       val mockRequestBuilder = mock[RequestBuilder]
       when(mockHttpClient.get(any())(using any())).thenReturn(mockRequestBuilder)
       when(mockRequestBuilder.setHeader(any())).thenReturn(mockRequestBuilder)
@@ -452,6 +526,10 @@ class HipConnectorSpec extends AnyWordSpecLike with Matchers with OptionValues w
           s"Received error 400 from HIP with message - $responseBody"
         )
       }
+
+      verify(mockHttpClient, times(1)).get(
+        eqTo(url"$hipBasePath/fulfilment-diligence/subscription/$fhddsRegistrationNumber")
+      )(using any())
     }
 
     "return BadRequest from HIP and log error" in {
@@ -466,6 +544,7 @@ class HipConnectorSpec extends AnyWordSpecLike with Matchers with OptionValues w
           |}""".stripMargin
 
       val httpResponse = HttpResponse(400, responseBody)
+      val mockHttpClient = mock[HttpClientV2]
       val mockRequestBuilder = mock[RequestBuilder]
       when(mockHttpClient.get(any())(using any())).thenReturn(mockRequestBuilder)
       when(mockRequestBuilder.setHeader(any())).thenReturn(mockRequestBuilder)
@@ -483,11 +562,16 @@ class HipConnectorSpec extends AnyWordSpecLike with Matchers with OptionValues w
           s"Received error 400 from HIP with message - $responseBody"
         )
       }
+
+      verify(mockHttpClient, times(1)).get(
+        eqTo(url"$hipBasePath/fulfilment-diligence/subscription/$fhddsRegistrationNumber")
+      )(using any())
     }
 
     "return Unauthorized and log accordingly" in {
       val responseBody = ""
       val httpResponse = HttpResponse(401, responseBody)
+      val mockHttpClient = mock[HttpClientV2]
       val mockRequestBuilder = mock[RequestBuilder]
 
       when(mockHttpClient.get(any())(using any())).thenReturn(mockRequestBuilder)
@@ -506,11 +590,16 @@ class HipConnectorSpec extends AnyWordSpecLike with Matchers with OptionValues w
           s"Received error 401 from HIP with message - $responseBody"
         )
       }
+
+      verify(mockHttpClient, times(1)).get(
+        eqTo(url"$hipBasePath/fulfilment-diligence/subscription/$fhddsRegistrationNumber")
+      )(using any())
     }
 
     "return Forbidden and log accordingly" in {
       val responseBody = ""
       val httpResponse = HttpResponse(403, responseBody)
+      val mockHttpClient = mock[HttpClientV2]
       val mockRequestBuilder = mock[RequestBuilder]
       when(mockHttpClient.get(any())(using any())).thenReturn(mockRequestBuilder)
       when(mockRequestBuilder.setHeader(any())).thenReturn(mockRequestBuilder)
@@ -528,11 +617,16 @@ class HipConnectorSpec extends AnyWordSpecLike with Matchers with OptionValues w
           s"Received error 403 from HIP with message - $responseBody"
         )
       }
+
+      verify(mockHttpClient, times(1)).get(
+        eqTo(url"$hipBasePath/fulfilment-diligence/subscription/$fhddsRegistrationNumber")
+      )(using any())
     }
 
     "return NotFound and log accordingly" in {
       val responseBody = ""
       val httpResponse = HttpResponse(404, responseBody)
+      val mockHttpClient = mock[HttpClientV2]
       val mockRequestBuilder = mock[RequestBuilder]
 
       when(mockHttpClient.get(any())(using any())).thenReturn(mockRequestBuilder)
@@ -551,11 +645,16 @@ class HipConnectorSpec extends AnyWordSpecLike with Matchers with OptionValues w
           s"Received error 404 from HIP with message - $responseBody"
         )
       }
+
+      verify(mockHttpClient, times(1)).get(
+        eqTo(url"$hipBasePath/fulfilment-diligence/subscription/$fhddsRegistrationNumber")
+      )(using any())
     }
 
     "return 422 and log accordingly" in {
       val responseBody = """[{"code":"002", "text":"ID not found"}]"""
       val httpResponse = HttpResponse(422, responseBody)
+      val mockHttpClient = mock[HttpClientV2]
       val mockRequestBuilder = mock[RequestBuilder]
 
       when(mockHttpClient.get(any())(using any())).thenReturn(mockRequestBuilder)
@@ -574,6 +673,10 @@ class HipConnectorSpec extends AnyWordSpecLike with Matchers with OptionValues w
           s"Received error 422 from HIP with message - $responseBody"
         )
       }
+
+      verify(mockHttpClient, times(1)).get(
+        eqTo(url"$hipBasePath/fulfilment-diligence/subscription/$fhddsRegistrationNumber")
+      )(using any())
     }
 
     "return 500 from HIP and log error" in {
@@ -587,6 +690,7 @@ class HipConnectorSpec extends AnyWordSpecLike with Matchers with OptionValues w
           |}""".stripMargin
       val httpResponse = HttpResponse(500, responseBody)
 
+      val mockHttpClient = mock[HttpClientV2]
       val mockRequestBuilder = mock[RequestBuilder]
 
       when(mockHttpClient.get(any())(using any())).thenReturn(mockRequestBuilder)
@@ -605,6 +709,10 @@ class HipConnectorSpec extends AnyWordSpecLike with Matchers with OptionValues w
           s"Received error 500 from HIP with message - $responseBody"
         )
       }
+
+      verify(mockHttpClient, times(1)).get(
+        eqTo(url"$hipBasePath/fulfilment-diligence/subscription/$fhddsRegistrationNumber")
+      )(using any())
     }
 
     "return 503 from HIP and log error" in {
@@ -622,6 +730,7 @@ class HipConnectorSpec extends AnyWordSpecLike with Matchers with OptionValues w
           |}""".stripMargin
 
       val httpResponse = HttpResponse(503, responseBody)
+      val mockHttpClient = mock[HttpClientV2]
       val mockRequestBuilder = mock[RequestBuilder]
 
       when(mockHttpClient.get(any())(using any())).thenReturn(mockRequestBuilder)
@@ -640,12 +749,15 @@ class HipConnectorSpec extends AnyWordSpecLike with Matchers with OptionValues w
           s"Received error 503 from HIP with message - $responseBody"
         )
       }
+
+      verify(mockHttpClient, times(1)).get(
+        eqTo(url"$hipBasePath/fulfilment-diligence/subscription/$fhddsRegistrationNumber")
+      )(using any())
     }
 
   }
 
   "subscriptionWithdrawal" should {
-    val mockRequestBuilder = mock[RequestBuilder]
 
     "return the HIP response" in {
       val payload = """{
@@ -661,6 +773,9 @@ class HipConnectorSpec extends AnyWordSpecLike with Matchers with OptionValues w
                        |}""".stripMargin
       val httpResponse = HttpResponse(200, jsonBody)
 
+      val mockHttpClient = mock[HttpClientV2]
+      val mockRequestBuilder = mock[RequestBuilder]
+
       when(mockHttpClient.put(any())(using any())).thenReturn(mockRequestBuilder)
       when(mockRequestBuilder.setHeader(any())).thenReturn(mockRequestBuilder)
       when(mockRequestBuilder.withBody[JsValue](any())(using any(), any(), any())).thenReturn(mockRequestBuilder)
@@ -670,6 +785,10 @@ class HipConnectorSpec extends AnyWordSpecLike with Matchers with OptionValues w
       val result = connector.subscriptionWithdrawal(fhddsRegistrationNumber, Json.parse(payload))(hc).futureValue
 
       result.processingDate shouldBe new SimpleDateFormat("yyyy-MM-dd").parse("2001-12-17")
+
+      verify(mockHttpClient, times(1)).put(
+        eqTo(url"$hipBasePath/fulfilment-diligence/subscription/withdrawal/$fhddsRegistrationNumber")
+      )(using any())
 
       val headersCaptor: ArgumentCaptor[Seq[(String, String)]] =
         ArgumentCaptor.forClass(classOf[Seq[(String, String)]])
@@ -691,6 +810,7 @@ class HipConnectorSpec extends AnyWordSpecLike with Matchers with OptionValues w
                       |  "withdrawalReasonOther": "Other Reason"
                       |}""".stripMargin
       val responseBody = ""
+      val mockHttpClient = mock[HttpClientV2]
       val mockRequestBuilder = mock[RequestBuilder]
       val httpResponse = HttpResponse(401, responseBody)
 
@@ -713,12 +833,17 @@ class HipConnectorSpec extends AnyWordSpecLike with Matchers with OptionValues w
           s"Received error 401 from HIP with message - $responseBody"
         )
       }
+
+      verify(mockHttpClient, times(1)).put(
+        eqTo(url"$hipBasePath/fulfilment-diligence/subscription/withdrawal/$fhddsRegistrationNumber")
+      )(using any())
     }
 
   }
 
   "createOrUpdateFhdds" should {
     "return the HIP response for Create" in {
+      val mockHttpClient = mock[HttpClientV2]
       val mockRequestBuilder = mock[RequestBuilder]
 
       val jsonBody =
@@ -745,10 +870,15 @@ class HipConnectorSpec extends AnyWordSpecLike with Matchers with OptionValues w
       result.processingDate shouldBe new SimpleDateFormat("yyyy-MM-dd").parse("2001-12-17")
       result.etmpFormBundleNumber shouldBe "012345678901"
       result.registrationNumberFHDDS shouldBe "XDFH00000123456"
+
+      verify(mockHttpClient, times(1)).post(
+        eqTo(url"$hipBasePath/fulfilment-diligence/subscription/id/XA0001234567890/id-type/${IdType.SAFE}")
+      )(using any())
     }
 
     "return the HIP response for Update" in {
 
+      val mockHttpClient = mock[HttpClientV2]
       val mockRequestBuilder = mock[RequestBuilder]
       val jsonBody =
         """{
@@ -775,9 +905,13 @@ class HipConnectorSpec extends AnyWordSpecLike with Matchers with OptionValues w
       result.etmpFormBundleNumber shouldBe "012345678901"
       result.registrationNumberFHDDS shouldBe "XDFH00000123456"
 
+      verify(mockHttpClient, times(1)).post(
+        eqTo(url"$hipBasePath/fulfilment-diligence/subscription/id/XA0001234567890/id-type/${IdType.FHDDS}")
+      )(using any())
     }
 
     "throws HipSubmissionException  if HTTP response is 401" in {
+      val mockHttpClient = mock[HttpClientV2]
       val mockRequestBuilder = mock[RequestBuilder]
       val httpResponse = HttpResponse(401, "")
 
@@ -797,9 +931,14 @@ class HipConnectorSpec extends AnyWordSpecLike with Matchers with OptionValues w
       val hipSubmissionException = exception.asInstanceOf[HipSubmissionException]
       hipSubmissionException.statusCode shouldBe 401
       hipSubmissionException.code shouldBe "UNKNOWN_HIP_ERROR"
+
+      verify(mockHttpClient, times(1)).post(
+        eqTo(url"$hipBasePath/fulfilment-diligence/subscription/id/XA0001234567890/id-type/${IdType.SAFE}")
+      )(using any())
     }
 
     "throws HipSubmissionException with code and reason joined from multiple HIP failures if HTTP response is 400" in {
+      val mockHttpClient = mock[HttpClientV2]
       val mockRequestBuilder = mock[RequestBuilder]
       val httpResponse = HttpResponse(
         400,
@@ -835,9 +974,14 @@ class HipConnectorSpec extends AnyWordSpecLike with Matchers with OptionValues w
       hipSubmissionException.statusCode shouldBe 400
       hipSubmissionException.code shouldBe "Type of Failure,Type of Failure 2"
       hipSubmissionException.reason shouldBe "Reason for Failure; Reason for Failure 2"
+
+      verify(mockHttpClient, times(1)).post(
+        eqTo(url"$hipBasePath/fulfilment-diligence/subscription/id/XA0001234567890/id-type/${IdType.SAFE}")
+      )(using any())
     }
 
     "throws UpstreamErrorResponse  if HTTP response is 503" in {
+      val mockHttpClient = mock[HttpClientV2]
       val mockRequestBuilder = mock[RequestBuilder]
       val httpResponse = HttpResponse(
         503,
@@ -869,9 +1013,13 @@ class HipConnectorSpec extends AnyWordSpecLike with Matchers with OptionValues w
       val upstreamErrorResponse = exception.asInstanceOf[UpstreamErrorResponse]
       upstreamErrorResponse.statusCode shouldBe 503
 
+      verify(mockHttpClient, times(1)).post(
+        eqTo(url"$hipBasePath/fulfilment-diligence/subscription/id/XA0001234567890/id-type/${IdType.FHDDS}")
+      )(using any())
     }
 
     "throws UpstreamErrorResponse if 500" in {
+      val mockHttpClient = mock[HttpClientV2]
       val mockRequestBuilder = mock[RequestBuilder]
       val responseBody = """{
                            |  "origin": "HoD",
@@ -901,6 +1049,9 @@ class HipConnectorSpec extends AnyWordSpecLike with Matchers with OptionValues w
       exception shouldBe a[UpstreamErrorResponse]
       exception.asInstanceOf[UpstreamErrorResponse].statusCode shouldBe 500
 
+      verify(mockHttpClient, times(1)).post(
+        eqTo(url"$hipBasePath/fulfilment-diligence/subscription/id/XA0001234567890/id-type/${IdType.FHDDS}")
+      )(using any())
     }
 
   }
@@ -908,6 +1059,7 @@ class HipConnectorSpec extends AnyWordSpecLike with Matchers with OptionValues w
   "subscriptionDeregistration" should {
 
     "return the HIP response and pass correct headers" in {
+      val mockHttpClient = mock[HttpClientV2]
       val mockRequestBuilder = mock[RequestBuilder]
       val payload =
         """{
@@ -934,6 +1086,10 @@ class HipConnectorSpec extends AnyWordSpecLike with Matchers with OptionValues w
         connector.subscriptionDeregistration(fhddsRegistrationNumber, Json.parse(payload))(using hc).futureValue
 
       result.processingDate shouldBe new SimpleDateFormat("yyyy-MM-dd").parse("2001-12-17")
+
+      verify(mockHttpClient, times(1)).post(
+        eqTo(url"$hipBasePath/fulfilment-diligence/subscription/deregistration/$fhddsRegistrationNumber")
+      )(using any())
 
       val headersCaptor: ArgumentCaptor[Seq[(String, String)]] =
         ArgumentCaptor.forClass(classOf[Seq[(String, String)]])
