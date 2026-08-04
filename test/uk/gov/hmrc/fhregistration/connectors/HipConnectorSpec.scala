@@ -910,6 +910,32 @@ class HipConnectorSpec extends AnyWordSpecLike with Matchers with OptionValues w
       )(using any())
     }
 
+    "throws UpstreamErrorResponse if HTTP response is 429" in {
+      val mockHttpClient = mock[HttpClientV2]
+      val mockRequestBuilder = mock[RequestBuilder]
+      val httpResponse = HttpResponse(429, "")
+
+      val submissionRequest = Source.fromResource("json/valid/subscription/fhdds-create.json").mkString
+
+      when(mockHttpClient.post(any())(using any())).thenReturn(mockRequestBuilder)
+      when(mockRequestBuilder.setHeader(any())).thenReturn(mockRequestBuilder)
+      when(mockRequestBuilder.withBody[JsValue](any())(using any(), any(), any())).thenReturn(mockRequestBuilder)
+      when(mockRequestBuilder.execute[HttpResponse](using any(), any())).thenReturn(Future.successful(httpResponse))
+
+      val connector = new DefaultHipConnectorMock(mockHttpClient, configuration)
+
+      val result = connector.createOrUpdateFhdds("XA0001234567890", IdType.SAFE, Json.parse(submissionRequest))(hc)
+
+      val exception = result.failed.futureValue
+      exception shouldBe a[UpstreamErrorResponse]
+      val upstreamErrorResponse = exception.asInstanceOf[UpstreamErrorResponse]
+      upstreamErrorResponse.message shouldBe "429 received from HIP - converted to 503"
+
+      verify(mockHttpClient, times(1)).post(
+        eqTo(url"$hipBasePath/fulfilment-diligence/subscription/id/XA0001234567890/id-type/${IdType.SAFE}")
+      )(using any())
+    }
+
     "throws HipSubmissionException  if HTTP response is 401" in {
       val mockHttpClient = mock[HttpClientV2]
       val mockRequestBuilder = mock[RequestBuilder]
@@ -1103,6 +1129,60 @@ class HipConnectorSpec extends AnyWordSpecLike with Matchers with OptionValues w
         "X-Transmitting-System"
       )
 
+    }
+
+    "throws UpstreamErrorResponse is http status is 429 with message converted to 503" in {
+      val mockHttpClient = mock[HttpClientV2]
+      val mockRequestBuilder = mock[RequestBuilder]
+      val payload =
+        """{
+          |  "date": "2012-02-10",
+          |  "reason": "Others",
+          |  "reasonOther": "Text And Reason here"
+          |}""".stripMargin
+      val httpResponse = HttpResponse(429, "")
+
+      when(mockHttpClient.post(any())(using any())).thenReturn(mockRequestBuilder)
+      when(mockRequestBuilder.setHeader(any())).thenReturn(mockRequestBuilder)
+      when(mockRequestBuilder.withBody[JsValue](any())(using any(), any(), any())).thenReturn(mockRequestBuilder)
+      when(mockRequestBuilder.execute[HttpResponse](using any(), any())).thenReturn(Future.successful(httpResponse))
+
+      val connector = new DefaultHipConnectorMock(mockHttpClient, configuration)
+      val result =
+        connector.subscriptionDeregistration(fhddsRegistrationNumber, Json.parse(payload))(using hc)
+
+      val exception = result.failed.futureValue
+      val upstreamErrorResponse = exception.asInstanceOf[UpstreamErrorResponse]
+      upstreamErrorResponse.statusCode shouldBe 429
+      upstreamErrorResponse.message shouldBe "429 received from HIP - converted to 503"
+    }
+
+    "throws UpstreamErrorResponse is http status anything other than 201 or 429 with correct Error Message" in {
+      val mockHttpClient = mock[HttpClientV2]
+      val mockRequestBuilder = mock[RequestBuilder]
+      val payload =
+        """{
+          |  "date": "2012-02-10",
+          |  "reason": "Others",
+          |  "reasonOther": "Text And Reason here"
+          |}""".stripMargin
+      val responseBody = ""
+      val httpResponse = HttpResponse(400, responseBody)
+
+      when(mockHttpClient.post(any())(using any())).thenReturn(mockRequestBuilder)
+      when(mockRequestBuilder.setHeader(any())).thenReturn(mockRequestBuilder)
+      when(mockRequestBuilder.withBody[JsValue](any())(using any(), any(), any())).thenReturn(mockRequestBuilder)
+      when(mockRequestBuilder.execute[HttpResponse](using any(), any())).thenReturn(Future.successful(httpResponse))
+
+      val connector = new DefaultHipConnectorMock(mockHttpClient, configuration)
+
+      val result = connector.subscriptionDeregistration(fhddsRegistrationNumber, Json.parse(payload))(using hc)
+
+      val exception = result.failed.futureValue
+      exception shouldBe a[UpstreamErrorResponse]
+      val upstreamErrorResponse = exception.asInstanceOf[UpstreamErrorResponse]
+      upstreamErrorResponse.statusCode shouldBe 400
+      upstreamErrorResponse.message shouldBe "400 received from HIP"
     }
 
   }

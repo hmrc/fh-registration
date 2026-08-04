@@ -136,6 +136,9 @@ class DefaultHipConnector @Inject() (http: HttpClientV2, configuration: Configur
     response.status match {
       case status if is2xx(status) =>
         response.json.as[A]
+      case 429 =>
+        logger.error("[RATE LIMITED] Received 429 from HIP - converting to 503")
+        throw UpstreamErrorResponse("429 received from HIP - converted to 503", 429, 503)
       case status if is4xx(status) =>
         val error = hipErrorResponse(response)
         logger.warn(s"Received error ${response.status} from HIP with code ${error.code} and reason ${error.reason}")
@@ -191,7 +194,7 @@ class DefaultHipConnector @Inject() (http: HttpClientV2, configuration: Configur
       .setHeader(("correlationid", correlationId) +: hipHeaders*)
       .withBody[JsValue](submission)
       .execute[HttpResponse]
-      .map(logIfError)
+      .map(logAndThrowExceptionIfError)
       .map(_.json.as[HipDeregistrationResponse])
   }
 
