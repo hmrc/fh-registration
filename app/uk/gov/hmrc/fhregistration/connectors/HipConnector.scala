@@ -105,6 +105,14 @@ class DefaultHipConnector @Inject() (http: HttpClientV2, configuration: Configur
   def getStatusUrl(fhddsRegistrationNumber: String, idType: String, regime: String) =
     s"$hipServiceBasePath/subscription-status?idNumber=$fhddsRegistrationNumber&idType=$idType&regime=$regime"
 
+  private[connectors] def rawResult(response: HttpResponse): HttpResponse =
+    response.status match {
+      case 200 =>
+        val jsonBody = (response.json \ "success").get
+        HttpResponse(response.status, jsonBody, Map.empty)
+      case _ => response
+    }
+
   private[connectors] def logIfError(response: HttpResponse): HttpResponse =
     response.status match {
       case 200 | 201 =>
@@ -155,6 +163,7 @@ class DefaultHipConnector @Inject() (http: HttpClientV2, configuration: Configur
       .setHeader(("correlationid", correlationId) +: hipHeaders*)
       .execute[HttpResponse]
       .map(logIfError)
+      .map(rawResult)
   }
 
   override def subscriptionWithdrawal(fhddsRegistrationNumber: String, submission: JsValue)(

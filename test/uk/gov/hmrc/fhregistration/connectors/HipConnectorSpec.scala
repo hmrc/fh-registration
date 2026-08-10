@@ -465,6 +465,7 @@ class HipConnectorSpec extends AnyWordSpecLike with Matchers with OptionValues w
     "return the HIP response and send correct headers" in {
       val responseBody = Source.fromResource("json/valid/subscription/fhdds-display-response.json").mkString
       val httpResponse = HttpResponse(200, responseBody)
+
       val mockHttpClient = mock[HttpClientV2]
       val mockRequestBuilder = mock[RequestBuilder]
 
@@ -474,9 +475,9 @@ class HipConnectorSpec extends AnyWordSpecLike with Matchers with OptionValues w
 
       val connector = new DefaultHipConnectorMock(mockHttpClient, configuration)
       val result = connector.subscriptionDisplay(fhddsRegistrationNumber)(hc).futureValue
-
+      val expectedResponseBody = connector.rawResult(HttpResponse(200, responseBody)).body.toString
       result.status shouldBe 200
-      result.body shouldBe responseBody
+      result.body shouldBe expectedResponseBody
 
       verify(mockHttpClient, times(1)).get(
         eqTo(url"$hipBasePath/fulfilment-diligence/subscription/$fhddsRegistrationNumber")
