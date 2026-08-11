@@ -17,7 +17,7 @@
 package uk.gov.hmrc.fhregistration.connectors
 
 import com.google.inject.{ImplementedBy, Inject}
-import play.api.libs.json.{JsValue, Reads}
+import play.api.libs.json.{JsObject, JsValue, Reads}
 import play.api.libs.ws.writeableOf_JsValue
 import play.api.{Configuration, Logging}
 import sttp.model.HeaderNames
@@ -109,7 +109,8 @@ class DefaultHipConnector @Inject() (http: HttpClientV2, configuration: Configur
     response.status match {
       case 200 =>
         val jsonBody = (response.json \ "success").get
-        HttpResponse(response.status, jsonBody, response.headers)
+        val resultingJsonBody = JsObject(fields = Seq(("subScriptionDisplay", jsonBody)))
+        HttpResponse(response.status, resultingJsonBody, response.headers)
       case _ => response
     }
 

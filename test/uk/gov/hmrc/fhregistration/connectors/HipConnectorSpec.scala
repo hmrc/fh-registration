@@ -1188,4 +1188,22 @@ class HipConnectorSpec extends AnyWordSpecLike with Matchers with OptionValues w
 
   }
 
+  "rawResult" should {
+    "remove success wrapper and replace with subScriptionDisplay just line DES" in {
+      val responseBody = Source.fromResource("json/valid/subscription/fhdds-display-response.json").mkString
+      val expectedBody = Source.fromResource("json/valid/subscription/fhdds-display-result.json").mkString
+      val httpResponse = HttpResponse(200, responseBody)
+
+      val mockHttpClient = mock[HttpClientV2]
+      val mockRequestBuilder = mock[RequestBuilder]
+
+      when(mockHttpClient.get(any())(using any())).thenReturn(mockRequestBuilder)
+      when(mockRequestBuilder.setHeader(any())).thenReturn(mockRequestBuilder)
+      when(mockRequestBuilder.execute[HttpResponse](using any(), any())).thenReturn(Future.successful(httpResponse))
+
+      val connector = new DefaultHipConnectorMock(mockHttpClient, configuration)
+      val result = connector.rawResult(HttpResponse(200, responseBody)).body.toString
+        result shouldBe expectedBody
+    }
+  }
 }
