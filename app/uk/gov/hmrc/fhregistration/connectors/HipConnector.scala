@@ -108,9 +108,13 @@ class DefaultHipConnector @Inject() (http: HttpClientV2, configuration: Configur
   private[connectors] def rawResult(response: HttpResponse): HttpResponse =
     response.status match {
       case 200 =>
-        val jsonBody = (response.json \ "success").get
-        val resultingJsonBody = JsObject(fields = Seq(("subScriptionDisplay", jsonBody)))
-        HttpResponse(response.status, resultingJsonBody, response.headers)
+        (response.json \ "success").asOpt[JsValue] match {
+          case Some(jsonBody) =>
+            HttpResponse(response.status, JsObject(Seq("subScriptionDisplay" -> jsonBody)), response.headers)
+          case None =>
+            logger.error(s"HIP returned 200 without a success wrapper")
+            throw new RuntimeException("HIP 200 response missing success field")
+        }
       case _ => response
     }
 
