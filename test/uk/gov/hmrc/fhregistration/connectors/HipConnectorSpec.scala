@@ -1203,7 +1203,7 @@ class HipConnectorSpec extends AnyWordSpecLike with Matchers with OptionValues w
 
       val connector = new DefaultHipConnectorMock(mockHttpClient, configuration)
       val result = connector.rawResult(HttpResponse(200, responseBody)).body.toString
-        result shouldBe expectedBody
+      result shouldBe expectedBody
     }
   }
 }
