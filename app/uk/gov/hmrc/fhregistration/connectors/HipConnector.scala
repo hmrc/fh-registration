@@ -109,7 +109,7 @@ class DefaultHipConnector @Inject() (http: HttpClientV2, configuration: Configur
     response.status match {
       case 200 =>
         val jsonBody = (response.json \ "success").get
-        HttpResponse(response.status, jsonBody, Map.empty)
+        HttpResponse(response.status, jsonBody, response.headers)
       case _ => response
     }
 
