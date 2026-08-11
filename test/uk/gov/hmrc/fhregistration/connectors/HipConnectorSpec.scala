@@ -1189,7 +1189,7 @@ class HipConnectorSpec extends AnyWordSpecLike with Matchers with OptionValues w
   }
 
   "rawResult" should {
-    "remove success wrapper and replace with subScriptionDisplay just line DES" in {
+    "remove success wrapper and replace with subScriptionDisplay just like DES" in {
       val responseBody = Source.fromResource("json/valid/subscription/fhdds-display-response.json").mkString
       val expectedBody = Source.fromResource("json/valid/subscription/fhdds-display-result.json").mkString
       val httpResponse = HttpResponse(200, responseBody)
