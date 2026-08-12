@@ -22,15 +22,19 @@ import uk.gov.hmrc.fhregistration.models.des.DesSubmissionResponse
 
 import java.util.Date
 
-case class HipSubmissionResponse(processingDate: Date, etmpFormBundleNumber: String, registrationNumberFHDDS: String) {
+case class HipSubmissionResponse(
+  processingDate: Date,
+  etmpFormBundleNumber: Option[String],
+  registrationNumberFHDDS: String
+) {
   def toDesSubmissionResponse =
-    DesSubmissionResponse(processingDate, etmpFormBundleNumber, registrationNumberFHDDS)
+    DesSubmissionResponse(processingDate, etmpFormBundleNumber.getOrElse(""), registrationNumberFHDDS)
 }
 
 object HipSubmissionResponse {
   implicit val reads: Reads[HipSubmissionResponse] = (
     (__ \ "success" \ "processingDate").read[Date] and
-      (__ \ "success" \ "etmpFormBundleNumber").read[String] and
+      (__ \ "success" \ "etmpFormBundleNumber").readNullable[String] and
       (__ \ "success" \ "registrationNumberFHDDS").read[String]
   )(HipSubmissionResponse.apply)
 }

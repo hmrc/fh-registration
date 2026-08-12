@@ -56,5 +56,18 @@ class HipErrorResponseSpec extends AnyWordSpec with Matchers {
       json.validate[HipErrorResponse].asOpt.get shouldBe
         HipErrorResponse("503", "unknown error", None)
     }
+
+    "deserialize a HIP 422 error" in {
+      val json = Json.parse("""{
+                              |  "errors": {
+                              |    "code": "002",
+                              |    "processingDate": "2026-03-09T12:34:46Z",
+                              |    "text": "ID not found"
+                              |  }
+                              |}""".stripMargin)
+
+      json.validate[HipErrorResponse].asOpt.get shouldBe
+        HipErrorResponse("002", "ID not found, 2026-03-09T12:34:46Z", None)
+    }
   }
 }

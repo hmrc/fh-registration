@@ -21,7 +21,6 @@ import play.api.libs.json.{JsObject, JsValue, Reads}
 import play.api.libs.ws.writeableOf_JsValue
 import play.api.{Configuration, Logging}
 import sttp.model.HeaderNames
-import uk.gov.hmrc.fhregistration.models.des.*
 import uk.gov.hmrc.fhregistration.models.hip.*
 import uk.gov.hmrc.http.HttpReads.Implicits.readRaw
 import uk.gov.hmrc.http.client.HttpClientV2
@@ -82,7 +81,7 @@ class DefaultHipConnector @Inject() (http: HttpClientV2, configuration: Configur
 
   private def hipHeaders: Seq[(String, String)] = Seq(
     HeaderNames.Authorization -> s"Basic $authSecret",
-    "X-Originating-System"    -> "fh-registration",
+    "X-Originating-System"    -> "FHDDS",
     "X-Receipt-Date"          -> DateTimeFormatter.ISO_INSTANT.format(Instant.now().truncatedTo(ChronoUnit.SECONDS)),
     "X-Transmitting-System"   -> "HIP"
   )
@@ -113,7 +112,7 @@ class DefaultHipConnector @Inject() (http: HttpClientV2, configuration: Configur
             HttpResponse(response.status, JsObject(Seq("subScriptionDisplay" -> jsonBody)), response.headers)
           case None =>
             logger.error(s"HIP returned 200 without a success wrapper")
-            throw new RuntimeException("HIP 200 response missing success field")
+            throw UpstreamErrorResponse("HIP 200 response missing success field", response.status, 502)
         }
       case _ => response
     }

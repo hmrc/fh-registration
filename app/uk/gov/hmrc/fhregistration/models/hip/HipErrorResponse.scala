@@ -50,6 +50,13 @@ object HipErrorResponse {
       )
     }
 
+  private val validationErrorReads: Reads[HipErrorResponse] =
+    ((__ \ "errors" \ "code").read[String] and
+      (__ \ "errors" \ "text").read[String] and
+      (__ \ "errors" \ "processingDate").readNullable[String])((code, text, processingDate) =>
+      HipErrorResponse(code, processingDate.fold(text)(date => s"$text, $date"))
+    )
+
   implicit val reads: Reads[HipErrorResponse] =
-    systemErrorReads.orElse(failuresReads).orElse(nestedFailuresReads)
+    systemErrorReads.orElse(failuresReads).orElse(nestedFailuresReads).orElse(validationErrorReads)
 }

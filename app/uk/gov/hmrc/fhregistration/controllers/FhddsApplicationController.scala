@@ -288,6 +288,7 @@ class FhddsApplicationController @Inject() (
         case 200 => Ok(resp.json)
         case 400 => BadRequest("Submission has not passed validation. Invalid parameter FHDDS Registration Number.")
         case 404 => NotFound("No SAP Number found for the provided FHDDS Registration Number.")
+        case 422 => NotFound(s"Validation errors. ${resp.body}")
         case 403 => Forbidden("Unexpected business error received.")
         case _ =>
           logger.error(

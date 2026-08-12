@@ -134,7 +134,7 @@ class FhddsApplicationControllerSpec
         val hipSubmissionResponse = HipSubmissionResponse(
           registrationNumberFHDDS = "reg123",
           processingDate = dateFromString("2023-12-01"),
-          etmpFormBundleNumber = "formBundle123"
+          etmpFormBundleNumber = Some("formBundle123")
         )
 
         if (hipFlag)
@@ -403,6 +403,29 @@ class FhddsApplicationControllerSpec
 
         status(result) mustBe NOT_FOUND
         contentAsString(result) must include("No SAP Number found")
+      }
+
+      s"handle 422 Validation errors from $etmp connector" in {
+        val fhddsRegistrationNumber = "XMFH00000123456"
+        val httpResponse = mock[HttpResponse]
+        when(httpResponse.status).thenReturn(422)
+        when(httpResponse.body).thenReturn(
+          """{"errors":{"code":"002","processingDate":"2026-03-09T12:34:46Z","text":"ID not found"}}"""
+        )
+
+        if (hipFlag)
+          when(mockHipConnector.subscriptionDisplay(eqTo(fhddsRegistrationNumber))(any()))
+            .thenReturn(Future.successful(httpResponse))
+        else
+          when(mockDesConnector.display(eqTo(fhddsRegistrationNumber))(any()))
+            .thenReturn(Future.successful(httpResponse))
+
+        when(mockServicesConfig.getBoolean("features.hip")).thenReturn(hipFlag)
+        val result = controller.get(fhddsRegistrationNumber)(FakeRequest())
+
+        status(result) mustBe NOT_FOUND
+        contentAsString(result) must include("Validation errors")
+        contentAsString(result) must include("ID not found")
       }
 
       s"handle forbidden response from $etmp connector" in {

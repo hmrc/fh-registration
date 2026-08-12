@@ -869,7 +869,7 @@ class HipConnectorSpec extends AnyWordSpecLike with Matchers with OptionValues w
         connector.createOrUpdateFhdds("XA0001234567890", IdType.SAFE, Json.parse(submissionRequest))(hc).futureValue
 
       result.processingDate shouldBe new SimpleDateFormat("yyyy-MM-dd").parse("2001-12-17")
-      result.etmpFormBundleNumber shouldBe "012345678901"
+      result.etmpFormBundleNumber shouldBe Some("012345678901")
       result.registrationNumberFHDDS shouldBe "XDFH00000123456"
 
       verify(mockHttpClient, times(1)).post(
@@ -903,7 +903,7 @@ class HipConnectorSpec extends AnyWordSpecLike with Matchers with OptionValues w
         connector.createOrUpdateFhdds("XA0001234567890", IdType.FHDDS, Json.parse(submissionRequest))(hc).futureValue
 
       result.processingDate shouldBe new SimpleDateFormat("yyyy-MM-dd").parse("2001-12-17")
-      result.etmpFormBundleNumber shouldBe "012345678901"
+      result.etmpFormBundleNumber shouldBe Some("012345678901")
       result.registrationNumberFHDDS shouldBe "XDFH00000123456"
 
       verify(mockHttpClient, times(1)).post(
