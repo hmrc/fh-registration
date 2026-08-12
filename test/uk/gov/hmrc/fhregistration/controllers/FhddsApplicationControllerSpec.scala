@@ -468,6 +468,42 @@ class FhddsApplicationControllerSpec
       }
     }
 
+    "return BadGateway when HIP creation response has no etmpFormBundleNumber" in {
+      val submissionRequest = SubmissionRequest(
+        emailAddress = "test@email.com",
+        submission = Json.obj("someKey" -> "someValue")
+      )
+      val request = FakeRequest(POST, routes.FhddsApplicationController.subscribe("safe123", None).url)
+        .withBody(submissionRequest)
+        .withHeaders(CONTENT_TYPE -> JSON)
+
+      when(mockActions.userGroupAction).thenReturn(new UserGroupAction(mockAuthConnector, mcc))
+      when(
+        mockAuthConnector.authorise(
+          any(),
+          any[Retrieval[Option[String] ~ Option[String]]]()
+        )(using any[HeaderCarrier](), any())
+      ).thenReturn(Future.successful(new ~(Some("someUserId"), Some("someGroupId"))))
+
+      val hipSubmissionResponse = HipSubmissionResponse(
+        registrationNumberFHDDS = "reg123",
+        processingDate = dateFromString("2023-12-01"),
+        etmpFormBundleNumber = None
+      )
+
+      when(mockHipConnector.createOrUpdateFhdds(any(), any(), any())(any()))
+        .thenReturn(Future.successful(hipSubmissionResponse))
+
+      when(mockServicesConfig.getBoolean("features.hip")).thenReturn(true)
+      val result = controller.subscribe("safe123", None)(request)
+
+      status(result) mustBe BAD_GATEWAY
+      contentAsJson(result) mustBe Json.obj(
+        "code"   -> "EtmpFormBundleNumber is missing in HIP response",
+        "reason" -> "HIP creation response for registration reg123 did not include an etmpFormBundleNumber"
+      )
+    }
+
     "return BadRequest for amend when user id is not found" in {
       val fhddsRegistrationNumber = "reg123"
       val submissionRequest = SubmissionRequest(

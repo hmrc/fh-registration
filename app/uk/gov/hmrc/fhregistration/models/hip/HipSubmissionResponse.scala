@@ -18,6 +18,7 @@ package uk.gov.hmrc.fhregistration.models.hip
 
 import play.api.libs.functional.syntax.*
 import play.api.libs.json.{Reads, __}
+import uk.gov.hmrc.fhregistration.connectors.HipSubmissionException
 import uk.gov.hmrc.fhregistration.models.des.DesSubmissionResponse
 
 import java.util.Date
@@ -29,6 +30,19 @@ case class HipSubmissionResponse(
 ) {
   def toDesSubmissionResponse =
     DesSubmissionResponse(processingDate, etmpFormBundleNumber.getOrElse(""), registrationNumberFHDDS)
+
+  def toDesCreationResponse: DesSubmissionResponse =
+    DesSubmissionResponse(
+      processingDate,
+      etmpFormBundleNumber.getOrElse(
+        throw HipSubmissionException(
+          502,
+          "EtmpFormBundleNumber is missing in HIP response",
+          s"HIP creation response for registration $registrationNumberFHDDS did not include an etmpFormBundleNumber"
+        )
+      ),
+      registrationNumberFHDDS
+    )
 }
 
 object HipSubmissionResponse {

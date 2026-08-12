@@ -22,12 +22,12 @@ import play.api.libs.json.Json
 import play.api.mvc.{ControllerComponents, Request, Result}
 import uk.gov.hmrc.fhregistration.actions.Actions
 import uk.gov.hmrc.fhregistration.connectors.*
-import uk.gov.hmrc.fhregistration.models.{IdType, TaxEnrolmentsCallback}
-import uk.gov.hmrc.fhregistration.models.des.{DesDeregistrationResponse, DesStatus, DesSubmissionResponse, DesWithdrawalResponse, StatusResponse}
+import uk.gov.hmrc.fhregistration.models.des.DesStatus
 import uk.gov.hmrc.fhregistration.models.des.DesStatus.DesStatus
-import uk.gov.hmrc.fhregistration.models.fhdds.FhddsStatus.FhddsStatus
 import uk.gov.hmrc.fhregistration.models.fhdds.*
-import uk.gov.hmrc.fhregistration.models.hip.HipStatus
+import uk.gov.hmrc.fhregistration.models.fhdds.FhddsStatus.FhddsStatus
+import uk.gov.hmrc.fhregistration.models.hip.HipErrorResponse
+import uk.gov.hmrc.fhregistration.models.{IdType, TaxEnrolmentsCallback}
 import uk.gov.hmrc.fhregistration.repositories.DefaultSubmissionTrackingRepository
 import uk.gov.hmrc.fhregistration.services.{AuditService, SubmissionTrackingService}
 import uk.gov.hmrc.http.HeaderCarrier
@@ -39,7 +39,7 @@ import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 import java.text.SimpleDateFormat
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
-import scala.util.{Failure, Success}
+import scala.util.{Failure, Success, Try}
 
 class FhddsApplicationController @Inject() (
   val desConnector: DesConnector,
@@ -56,7 +56,7 @@ class FhddsApplicationController @Inject() (
 )(implicit val ec: ExecutionContext)
     extends BackendController(cc) with Logging {
 
-  import actions._
+  import actions.*
 
   def useHip: Boolean = configuration.getBoolean("features.hip")
 
@@ -78,7 +78,7 @@ class FhddsApplicationController @Inject() (
         etmpResponse <- withDownstream(
                           hipConnector
                             .createOrUpdateFhdds(safeId, IdType.SAFE, request.submission)(hc)
-                            .map(_.toDesSubmissionResponse),
+                            .map(_.toDesCreationResponse),
                           desConnector.sendSubmission(safeId, request.submission)(hc)
                         )
         response = SubmissionResponse(etmpResponse.registrationNumberFHDDS, etmpResponse.processingDate)
@@ -288,7 +288,12 @@ class FhddsApplicationController @Inject() (
         case 200 => Ok(resp.json)
         case 400 => BadRequest("Submission has not passed validation. Invalid parameter FHDDS Registration Number.")
         case 404 => NotFound("No SAP Number found for the provided FHDDS Registration Number.")
-        case 422 => NotFound(s"Validation errors. ${resp.body}")
+        case 422 =>
+          val errorCode = Try(Json.parse(resp.body).as[HipErrorResponse]).toOption.map(_.code)
+          errorCode match {
+            case Some("002") | Some("005") => NotFound(s"Validation errors. ${resp.body}")
+            case _                         => BadRequest(s"Validation errors. ${resp.body}")
+          }
         case 403 => Forbidden("Unexpected business error received.")
         case _ =>
           logger.error(
@@ -300,7 +305,7 @@ class FhddsApplicationController @Inject() (
   }
 
   def mdtpSubscriptionStatus(desStatus: DesStatus): FhddsStatus = {
-    import DesStatus._
+    import DesStatus.*
     desStatus match {
 
       case InProcessing | SentToDs | DsOutcomeInProgress | SentToRcm => FhddsStatus.Processing
