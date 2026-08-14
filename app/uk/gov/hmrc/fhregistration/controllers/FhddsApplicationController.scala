@@ -16,31 +16,35 @@
 
 package uk.gov.hmrc.fhregistration.controllers
 
-import cats.implicits._
+import cats.implicits.*
 import play.api.Logging
 import play.api.libs.json.Json
 import play.api.mvc.{ControllerComponents, Request, Result}
 import uk.gov.hmrc.fhregistration.actions.Actions
-import uk.gov.hmrc.fhregistration.connectors.{DesConnector, DesSubmissionException, EmailConnector, TaxEnrolmentConnector}
-import uk.gov.hmrc.fhregistration.models.TaxEnrolmentsCallback
+import uk.gov.hmrc.fhregistration.connectors.*
 import uk.gov.hmrc.fhregistration.models.des.DesStatus
 import uk.gov.hmrc.fhregistration.models.des.DesStatus.DesStatus
+import uk.gov.hmrc.fhregistration.models.fhdds.*
 import uk.gov.hmrc.fhregistration.models.fhdds.FhddsStatus.FhddsStatus
-import uk.gov.hmrc.fhregistration.models.fhdds._
+import uk.gov.hmrc.fhregistration.models.hip.HipErrorResponse
+import uk.gov.hmrc.fhregistration.models.{IdType, TaxEnrolmentsCallback}
 import uk.gov.hmrc.fhregistration.repositories.DefaultSubmissionTrackingRepository
 import uk.gov.hmrc.fhregistration.services.{AuditService, SubmissionTrackingService}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import uk.gov.hmrc.play.audit.model.DataEvent
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
+import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 
 import java.text.SimpleDateFormat
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
-import scala.util.{Failure, Success}
+import scala.util.{Failure, Success, Try}
 
 class FhddsApplicationController @Inject() (
   val desConnector: DesConnector,
+  val hipConnector: HipConnector,
+  val configuration: ServicesConfig,
   val taxEnrolmentConnector: TaxEnrolmentConnector,
   val emailConnector: EmailConnector,
   val submissionTrackingService: SubmissionTrackingService,
@@ -52,7 +56,11 @@ class FhddsApplicationController @Inject() (
 )(implicit val ec: ExecutionContext)
     extends BackendController(cc) with Logging {
 
-  import actions._
+  import actions.*
+
+  def useHip: Boolean = configuration.getBoolean("features.hip")
+
+  def withDownstream[A](hip: => Future[A], des: => Future[A]): Future[A] = if (useHip) hip else des
 
   def findAllSubmissions = Action.async { _ =>
     repo.findAll().map(submissionTrackingList => Ok(Json.toJson(submissionTrackingList)))
@@ -67,10 +75,15 @@ class FhddsApplicationController @Inject() (
     userGroupAction.async(parse.json[SubmissionRequest]) { implicit r =>
       val request = r.body
       (for {
-        desResponse <- desConnector.sendSubmission(safeId, request.submission)(hc)
-        response = SubmissionResponse(desResponse.registrationNumberFHDDS, desResponse.processingDate)
+        etmpResponse <- withDownstream(
+                          hipConnector
+                            .createOrUpdateFhdds(safeId, IdType.SAFE, request.submission)(hc)
+                            .map(_.toDesCreationResponse),
+                          desConnector.sendSubmission(safeId, request.submission)(hc)
+                        )
+        response = SubmissionResponse(etmpResponse.registrationNumberFHDDS, etmpResponse.processingDate)
       } yield {
-        logger.info(s"Received registration number ${desResponse.registrationNumberFHDDS} for safeId $safeId")
+        logger.info(s"Received registration number ${etmpResponse.registrationNumberFHDDS} for safeId $safeId")
 
         currentRegNumber foreach { regNumber =>
           taxEnrolmentConnector.deleteGroupEnrolment(r.groupId, regNumber)
@@ -81,13 +94,13 @@ class FhddsApplicationController @Inject() (
         submissionTrackingService.saveSubscriptionTracking(
           safeId,
           r.userId,
-          desResponse.etmpFormBundleNumber,
+          etmpResponse.etmpFormBundleNumber,
           request.emailAddress,
           response.registrationNumber
         ) andThen { case _ =>
-          subscribeToTaxEnrolment(safeId, desResponse.etmpFormBundleNumber).failed.foreach { e =>
+          subscribeToTaxEnrolment(safeId, etmpResponse.etmpFormBundleNumber).failed.foreach { e =>
             submissionTrackingService
-              .updateSubscriptionTracking(desResponse.etmpFormBundleNumber, EnrolmentProgress.Error)
+              .updateSubscriptionTracking(etmpResponse.etmpFormBundleNumber, EnrolmentProgress.Error)
           }
         }
 
@@ -106,8 +119,13 @@ class FhddsApplicationController @Inject() (
   def amend(fhddsRegistrationNumber: String) = Action.async(parse.json[SubmissionRequest]) { implicit r =>
     val request = r.body
     (for {
-      desResponse <- desConnector.sendAmendment(fhddsRegistrationNumber, request.submission)(hc)
-      response = SubmissionResponse(desResponse.registrationNumberFHDDS, desResponse.processingDate)
+      etmpResponse <- withDownstream(
+                        hipConnector
+                          .createOrUpdateFhdds(fhddsRegistrationNumber, IdType.FHDDS, request.submission)(hc)
+                          .map(_.toDesSubmissionResponse),
+                        desConnector.sendAmendment(fhddsRegistrationNumber, request.submission)(hc)
+                      )
+      response = SubmissionResponse(etmpResponse.registrationNumberFHDDS, etmpResponse.processingDate)
     } yield {
       val event = auditService.buildSubmissionAmendAuditEvent(request, response.registrationNumber)
       auditSubmission(response.registrationNumber, event)
@@ -120,8 +138,13 @@ class FhddsApplicationController @Inject() (
   def withdrawal(fhddsRegistrationNumber: String) = userGroupAction.async(parse.json[WithdrawalRequest]) { implicit r =>
     val request = r.body
     for {
-      desResponse <- desConnector.sendWithdrawal(fhddsRegistrationNumber, request.withdrawal)(hc)
-      processingDate = desResponse.processingDate
+      etmpResponse <- withDownstream(
+                        hipConnector
+                          .subscriptionWithdrawal(fhddsRegistrationNumber, request.withdrawal)(hc)
+                          .map(_.toDesWithdrawalResponse),
+                        desConnector.sendWithdrawal(fhddsRegistrationNumber, request.withdrawal)(hc)
+                      )
+      processingDate = etmpResponse.processingDate
     } yield {
       val event = auditService.buildSubmissionWithdrawalAuditEvent(request, fhddsRegistrationNumber)
       auditSubmission(fhddsRegistrationNumber, event)
@@ -139,8 +162,13 @@ class FhddsApplicationController @Inject() (
     implicit r =>
       val request = r.body
       for {
-        desResponse <- desConnector.sendDeregistration(fhddsRegistrationNumber, request.deregistration)(hc)
-        processingDate = desResponse.processingDate
+        etmpResponse <- withDownstream(
+                          hipConnector
+                            .subscriptionDeregistration(fhddsRegistrationNumber, request.deregistration)(hc)
+                            .map(_.toDesDeregistrationResponse),
+                          desConnector.sendDeregistration(fhddsRegistrationNumber, request.deregistration)(hc)
+                        )
+        processingDate = etmpResponse.processingDate
       } yield {
         val event = auditService.buildSubmissionDeregisterAuditEvent(request, fhddsRegistrationNumber)
         auditSubmission(fhddsRegistrationNumber, event)
@@ -202,6 +230,10 @@ class FhddsApplicationController @Inject() (
     case DesSubmissionException(statusCode, code, reason) =>
       logger.warn(s"DES submission failed with status $statusCode and code $code: $reason")
       Status(statusCode)(Json.obj("code" -> code, "reason" -> reason))
+
+    case HipSubmissionException(statusCode, code, reason) =>
+      logger.warn(s"HIP submission failed with status $statusCode and code $code: $reason")
+      Status(statusCode)(Json.obj("code" -> code, "reason" -> reason))
   }
 
   def subscriptionCallback(formBundleId: String) = Action.async(parse.json[TaxEnrolmentsCallback]) { implicit request =>
@@ -232,8 +264,12 @@ class FhddsApplicationController @Inject() (
   }
 
   def checkStatus(fhddsRegistrationNumber: String) = Action.async { implicit request =>
-    desConnector
-      .getStatus(fhddsRegistrationNumber)(hc)
+    withDownstream(
+      hipConnector
+        .getStatus(fhddsRegistrationNumber)(hc)
+        .map(_.toDesStatusResponse),
+      desConnector.getStatus(fhddsRegistrationNumber)(hc)
+    )
       .map(_.subscriptionStatus)
       .map(mdtpSubscriptionStatus)
       .map { status =>
@@ -242,25 +278,34 @@ class FhddsApplicationController @Inject() (
   }
 
   def get(fhddsRegistrationNumber: String) = Action.async { implicit request =>
-    desConnector.display(fhddsRegistrationNumber)(hc) map { resp =>
+    withDownstream(
+      hipConnector.subscriptionDisplay(fhddsRegistrationNumber)(hc),
+      desConnector.display(fhddsRegistrationNumber)(hc)
+    ) map { resp =>
       val dfsResponseStatus = resp.status
       logger.info(s"Got back subscription data for $fhddsRegistrationNumber with status $dfsResponseStatus")
       dfsResponseStatus match {
         case 200 => Ok(resp.json)
         case 400 => BadRequest("Submission has not passed validation. Invalid parameter FHDDS Registration Number.")
         case 404 => NotFound("No SAP Number found for the provided FHDDS Registration Number.")
+        case 422 =>
+          val errorCode = Try(Json.parse(resp.body).as[HipErrorResponse]).toOption.map(_.code)
+          errorCode match {
+            case Some("002") | Some("005") => NotFound(s"Validation errors. ${resp.body}")
+            case _                         => BadRequest(s"Validation errors. ${resp.body}")
+          }
         case 403 => Forbidden("Unexpected business error received.")
         case _ =>
           logger.error(
-            s"FhddsApplicationController.get - Unexpected error from DES connector with status: ${resp.status} and body: ${resp.body}"
+            s"FhddsApplicationController.get - Unexpected error from ETMP API connector with status: ${resp.status} and body: ${resp.body}"
           )
-          BadGateway("DES is currently experiencing problems that require live service intervention.")
+          BadGateway("ETMP API is currently experiencing problems that require live service intervention.")
       }
     }
   }
 
   def mdtpSubscriptionStatus(desStatus: DesStatus): FhddsStatus = {
-    import DesStatus._
+    import DesStatus.*
     desStatus match {
 
       case InProcessing | SentToDs | DsOutcomeInProgress | SentToRcm => FhddsStatus.Processing

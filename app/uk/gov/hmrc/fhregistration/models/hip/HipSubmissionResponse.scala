@@ -1,0 +1,54 @@
+/*
+ * Copyright 2026 HM Revenue & Customs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package uk.gov.hmrc.fhregistration.models.hip
+
+import play.api.libs.functional.syntax.*
+import play.api.libs.json.{Reads, __}
+import uk.gov.hmrc.fhregistration.connectors.HipSubmissionException
+import uk.gov.hmrc.fhregistration.models.des.DesSubmissionResponse
+
+import java.util.Date
+
+case class HipSubmissionResponse(
+  processingDate: Date,
+  etmpFormBundleNumber: Option[String],
+  registrationNumberFHDDS: String
+) {
+  def toDesSubmissionResponse =
+    DesSubmissionResponse(processingDate, etmpFormBundleNumber.getOrElse(""), registrationNumberFHDDS)
+
+  def toDesCreationResponse: DesSubmissionResponse =
+    DesSubmissionResponse(
+      processingDate,
+      etmpFormBundleNumber.getOrElse(
+        throw HipSubmissionException(
+          502,
+          "EtmpFormBundleNumber is missing in HIP response",
+          s"HIP creation response for registration $registrationNumberFHDDS did not include an etmpFormBundleNumber"
+        )
+      ),
+      registrationNumberFHDDS
+    )
+}
+
+object HipSubmissionResponse {
+  implicit val reads: Reads[HipSubmissionResponse] = (
+    (__ \ "success" \ "processingDate").read[Date] and
+      (__ \ "success" \ "etmpFormBundleNumber").readNullable[String] and
+      (__ \ "success" \ "registrationNumberFHDDS").read[String]
+  )(HipSubmissionResponse.apply)
+}

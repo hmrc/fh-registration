@@ -73,8 +73,8 @@ class DefaultTaxEnrolmentConnectorSpec extends PlaySpec with ScalaFutures {
       connector.subscribe(safeId, etmpFormBundleNumber).map { result =>
         result mustBe mockResponse
         verify(mockHttpClient)
-          .put(eqTo(new URL(s"$serviceBaseUrl/subscriptions/$etmpFormBundleNumber/subscriber")))(
-            using any[HeaderCarrier]
+          .put(eqTo(new URL(s"$serviceBaseUrl/subscriptions/$etmpFormBundleNumber/subscriber")))(using
+            any[HeaderCarrier]
           )
         verify(mockRequestBuilder).withBody(eqTo(requestBody))(using any(), any(), any())
         verify(mockRequestBuilder).execute[HttpResponse](using any(), any())
