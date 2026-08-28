@@ -36,7 +36,7 @@ class DefaultTaxEnrolmentConnectorSpec extends PlaySpec with ScalaFutures {
 
   "DefaultTaxEnrolmentConnector" should {
     "subscribe successfully" in {
-      val serviceBaseUrl = "http://test/tax-enrolments"
+      val serviceBaseUrl = "http://localhost:8080/tax-enrolments"
       val callbackBase = "http://test/callback"
       val safeId = "safe123"
       val etmpFormBundleNumber = "bundle456"
@@ -49,17 +49,17 @@ class DefaultTaxEnrolmentConnectorSpec extends PlaySpec with ScalaFutures {
       val mockResponse = mock(classOf[HttpResponse])
       val mockEnvironment = mock(classOf[Environment])
       val realConfiguration = Configuration(
-        "microservice.services.tax-enrolments.host" -> "localhost",
-        "microservice.services.tax-enrolments.port" -> "8080",
-        "tax-enrolments.callback"                   -> "http://test/callback",
-        "tax-enrolments.serviceName"                -> "HMRC-OBTDS-ORG"
+        "microservice.services.tax-enrolments.host"        -> "localhost",
+        "microservice.services.tax-enrolments.port"        -> "8080",
+        "microservice.services.tax-enrolments.callback"    -> "http://test/callback",
+        "microservice.services.tax-enrolments.serviceName" -> "HMRC-OBTDS-ORG"
       )
       val realEnvironment = Environment.simple()
       val mockHttpClient = mock(classOf[HttpClientV2])
       val mockRequestBuilder = mock(classOf[RequestBuilder])
 
-      when(mockResponse.status).thenReturn(200)
-      when(mockResponse.body).thenReturn("Success")
+      when(mockResponse.status).thenReturn(204)
+      when(mockResponse.body).thenReturn("")
       when(mockEnvironment.mode).thenReturn(Mode.Test)
 
       when(mockHttpClient.put(any[URL])(using any[HeaderCarrier])).thenReturn(mockRequestBuilder)
@@ -70,15 +70,15 @@ class DefaultTaxEnrolmentConnectorSpec extends PlaySpec with ScalaFutures {
 
       val connector = new DefaultTaxEnrolmentConnector(mockHttpClient, realConfiguration, realEnvironment)
 
-      connector.subscribe(safeId, etmpFormBundleNumber).map { result =>
-        result mustBe mockResponse
-        verify(mockHttpClient)
-          .put(eqTo(new URL(s"$serviceBaseUrl/subscriptions/$etmpFormBundleNumber/subscriber")))(using
-            any[HeaderCarrier]
-          )
-        verify(mockRequestBuilder).withBody(eqTo(requestBody))(using any(), any(), any())
-        verify(mockRequestBuilder).execute[HttpResponse](using any(), any())
-      }
+      val result = connector.subscribe(safeId, etmpFormBundleNumber).futureValue
+
+      result mustBe mockResponse
+      verify(mockHttpClient)
+        .put(eqTo(new URL(s"$serviceBaseUrl/subscriptions/$etmpFormBundleNumber/subscriber")))(using
+          any[HeaderCarrier]
+        )
+      verify(mockRequestBuilder).withBody(eqTo(requestBody))(using any(), any(), any())
+      verify(mockRequestBuilder).execute[HttpResponse](using any(), any())
     }
 
     "fail to subscribe with non-2xx response" in {
